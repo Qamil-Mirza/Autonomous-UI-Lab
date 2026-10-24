@@ -1,10 +1,9 @@
 import { z } from "zod";
 import { SchemaVersion } from "./version";
-import { CandidateId, PatchId, ValidationId, VersionId } from "./ids";
+import { CandidateId, EvaluationId, PatchId, ValidationId, VersionId } from "./ids";
 import { CandidateReviewStatus, CheckKind, FigmaStatus } from "./enums";
 import type { DesignManifest } from "./manifest";
 import type { MutationPatch } from "./analysis";
-import { EvaluationId } from "./ids";
 
 export const FigmaReference = z.object({
   frameUrl: z.string().min(1),

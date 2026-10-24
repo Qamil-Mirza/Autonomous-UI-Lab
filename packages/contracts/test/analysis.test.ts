@@ -1,19 +1,20 @@
 import { describe, it, expect } from "vitest";
 import {
-  MutationPatch, RawFeedbackProposal, Hypothesis, ObservationTrend, DesignFeedbackPacket,
-  RunMetrics, ScenarioMetrics, Evaluation, Experiment, CandidateDesign, ValidationResult, ObservationKind,
+  MutationPatch, type PatchValue, RawFeedbackProposal, Hypothesis, ObservationTrend, DesignFeedbackPacket,
+  RunMetrics, ScenarioMetrics, Approval, BatchRecord, Evaluation, Experiment, CandidateDesign, ValidationResult, ObservationKind,
 } from "../src/index";
 
 const basePatch = {
   schemaVersion: "1.0.0", id: "pat_1", experimentId: "exp_1", round: 1, sourceVersionId: "ver_1",
   targetElementId: "plan.free.cta", observationIds: ["obs_1"], rationale: "r", risk: "low", state: "proposed",
 };
+const draft = { schemaVersion: "1.0.0", baseVersionId: "ver_1", task: "t", hiddenGoalRef: "goal_1", allowedPaths: ["plan"], intentConstraints: [], protectedElements: [], protectedCategories: [], approvedStyleTokens: [], mode: "manual", scenarios: [{ id: "scn_a", name: "n", description: "d", inputs: {}, runs: 3 }], budgets: { maxActionsPerRun: 8, runsPerBatch: 12, maxConcurrency: 4, maxIterations: 3, maxCandidates: 3, maxInferenceUsd: 5, maxWallClockMs: 1800000 }, policy: { targetCompletionRate: 0.8 } };
 const rawPatch = { targetElementId: "plan.free.cta", op: "set_label", value: "Start free", observationIds: ["obs_1"], rationale: "r" };
-const hyp = { schemaVersion: "1.0.0", id: "hyp_1", observationIds: ["obs_1"], statement: "s", label: "hypothesis" };
+const hyp = { schemaVersion: "1.0.0", id: "hyp_1", experimentId: "exp_1", round: 1, observationIds: ["obs_1"], statement: "s", label: "hypothesis" };
 const outcomeCounts = { goal: 1, agent_stop: 0, step_limit: 0, flow_blocked: 0, model_error: 0, browser_error: 0, user_cancelled: 0 };
 const metrics = {
   versionId: "ver_1", batchId: "batch_1", plannedRuns: 12, validRuns: 12, successes: 6, completionRate: 0.5, outcomeCounts,
-  infraErrors: 0, cancelled: false, medianActionsToSuccess: 4, backtrackRuns: 5, validationErrorRuns: 1, perScenario: [], complete: true,
+  infraErrors: 0, cancelled: 0, medianActionsToSuccess: 4, backtrackRuns: 5, validationErrorRuns: 1, perScenario: [], complete: true,
 };
 
 describe("analysis schemas", () => {
@@ -34,6 +35,9 @@ describe("analysis schemas", () => {
   it("hypothesis must be labeled", () => {
     expect(Hypothesis.safeParse({ ...hyp, label: "fact" }).success).toBe(false);
     expect(Hypothesis.safeParse(hyp).success).toBe(true);
+    expect(Hypothesis.safeParse({ ...hyp, round: 0 }).success).toBe(false);
+    const { experimentId: _e, ...noExp } = hyp;
+    expect(Hypothesis.safeParse(noExp).success).toBe(false);
   });
   it("observation kinds", () => {
     expect(ObservationKind.options).toEqual(["outcome_count", "screen_revisit", "repeated_failed_action", "validation_error", "step_limit"]);
@@ -52,6 +56,8 @@ describe("evaluation/candidate/experiment schemas", () => {
     expect(RunMetrics.shape.completionRate.safeParse(null).success).toBe(true);
     expect(RunMetrics.shape.medianActionsToSuccess.safeParse(null).success).toBe(true);
     expect(RunMetrics.safeParse(metrics).success).toBe(true);
+    expect(RunMetrics.safeParse({ ...metrics, cancelled: 1 }).success).toBe(true);
+    expect(RunMetrics.safeParse({ ...metrics, cancelled: true }).success).toBe(false);
     expect(ScenarioMetrics.safeParse({ scenarioId: "scn_1", plannedRuns: 3, validRuns: 0, successes: 0, completionRate: null, outcomeCounts, medianActionsToSuccess: null, complete: false }).success).toBe(true);
   });
   it("evaluation allows null candidate and deltaPp", () => {
@@ -62,9 +68,22 @@ describe("evaluation/candidate/experiment schemas", () => {
     expect(CandidateDesign.safeParse({ schemaVersion: "1.0.0", id: "cand_1", versionId: "ver_2", parentVersionId: "ver_1", patchIds: ["pat_1"], url: "http://x/y", reviewStatus: "pending", createdAt: "2026-10-23T00:00:00Z", figma: { frameUrl: "http://f", status: "verified", manifestHash: "h", patchIds: [] } }).success).toBe(true);
     expect(ValidationResult.safeParse({ schemaVersion: "1.0.0", candidateId: "cand_1", ok: true, checks: [{ name: "build", kind: "runnable", passed: true }], at: "2026-10-23T00:00:00Z" }).success).toBe(true);
   });
-  it("experiment parses", () => {
-    const x = { schemaVersion: "1.0.0", id: "exp_1", protocol: undefined, state: "created", incumbentVersionId: "ver_1", round: { index: 0, analysisAttempts: 0 }, transitions: [], usage: { inferenceCalls: 0, inferenceUsd: 0, wallClockMs: 0 }, cancelRequested: false };
-    expect(Experiment.safeParse(x).success).toBe(false); // protocol required
-    expect(Experiment.shape).toHaveProperty("stopping");
+  it("experiment parses with round state and stopping record", () => {
+    const protocol = { id: "proto_1", experimentId: "exp_1", ...draft, frozenAt: "2026-10-23T00:00:00Z" };
+    const x = { schemaVersion: "1.0.0", id: "exp_1", protocol, state: "created", incumbentVersionId: "ver_1", round: { index: 0, analysisAttempts: 0 }, transitions: [{ from: "created", to: "baseline_running", at: "2026-10-23T00:00:00Z" }], usage: { inferenceCalls: 0, inferenceUsd: 0, wallClockMs: 0 }, cancelRequested: false };
+    expect(Experiment.safeParse(x).success).toBe(true);
+    const stopping = { reason: "TARGET_MET", at: "2026-10-23T00:00:00Z", bestVersionId: "ver_1", attemptedCandidateIds: [], evaluationIds: [], rejectedPatchIds: [], remainingObservationIds: [] };
+    expect(Experiment.safeParse({ ...x, stopping, round: { index: 1, baselineBatchId: "batch_1", packetId: "pkt_1", analysisAttempts: 1 } }).success).toBe(true);
+    expect(Experiment.safeParse({ ...x, protocol: undefined }).success).toBe(false);
+  });
+  it("approval and batch record parse", () => {
+    expect(Approval.safeParse({ schemaVersion: "1.0.0", id: "appr_1", experimentId: "exp_1", round: 1, sourceVersionId: "ver_1", patchIds: ["pat_1"], approvedBy: "me", at: "2026-10-23T00:00:00Z" }).success).toBe(true);
+    const b = { batchId: "batch_1", experimentId: "exp_1", versionId: "ver_1", phase: "baseline", round: 0, plannedRuns: 12, cancelled: false, usage: { inferenceCalls: 1, inferenceUsd: 0.1, wallClockMs: 5 }, superseded: false };
+    expect(BatchRecord.safeParse(b).success).toBe(true);
+    expect(BatchRecord.safeParse({ ...b, phase: "other" }).success).toBe(false);
+  });
+  it("PatchValue type follows MutationPatch", () => {
+    const v: PatchValue[] = ["a", 1, true];
+    expect(v).toHaveLength(3);
   });
 });

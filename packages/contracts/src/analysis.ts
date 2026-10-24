@@ -37,6 +37,8 @@ export type Confidence = z.infer<typeof Confidence>;
 export const Hypothesis = z.object({
   schemaVersion: SchemaVersion,
   id: HypothesisId,
+  experimentId: ExperimentId,
+  round: z.number().int().positive(),
   observationIds: z.array(ObservationId),
   statement: z.string().min(1),
   label: z.literal("hypothesis"),
@@ -45,8 +47,6 @@ export const Hypothesis = z.object({
 export type Hypothesis = z.infer<typeof Hypothesis>;
 
 const orderValue = z.number().int().nonnegative();
-export const PatchValue = z.union([z.string(), orderValue, z.boolean()]);
-export type PatchValue = z.infer<typeof PatchValue>;
 
 const patchBase = {
   schemaVersion: SchemaVersion,
@@ -70,6 +70,7 @@ export const MutationPatch = z.discriminatedUnion("op", [
   z.object({ ...patchBase, op: z.literal("set_visibility"), value: z.boolean() }),
 ]);
 export type MutationPatch = z.infer<typeof MutationPatch>;
+export type PatchValue = MutationPatch["value"];
 
 const rawBase = {
   targetElementId: z.string().min(1),

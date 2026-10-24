@@ -31,7 +31,7 @@ export const RunMetrics = z.object({
   completionRate: rate,
   outcomeCounts: OutcomeCounts,
   infraErrors: z.number().int().nonnegative(),
-  cancelled: z.boolean(),
+  cancelled: z.number().int().nonnegative(),
   medianActionsToSuccess: z.number().nonnegative().nullable(),
   backtrackRuns: z.number().int().nonnegative(),
   validationErrorRuns: z.number().int().nonnegative(),
