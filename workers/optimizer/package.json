@@ -10,7 +10,12 @@
     "worker": "tsx src/cli/worker.ts",
     "watch": "tsx src/cli/watch.ts"
   },
-  "dependencies": { "@ghostloop/contracts": "*", "@ghostloop/db": "*", "zod": "^3.25.0" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
+    "@ghostloop/contracts": "*",
+    "@ghostloop/db": "*",
+    "zod": "^3.25.0"
+  },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "spacetimedb": "2.13.*",
