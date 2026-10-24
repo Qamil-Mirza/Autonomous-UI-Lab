@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { Stage } from "../components/Stage";
-import { Button, Checkbox, FieldError, Ordered, Text, TextField } from "../components/controls";
+import { ApiError, Button, Checkbox, FieldError, Ordered, Text, TextField } from "../components/controls";
 import { useFlow, useGo } from "../state/flow";
-import { isEmail, isFilled, MIN_PASSWORD_LENGTH } from "../state/validation";
+import { useStep } from "../state/run";
+import { isEmail, isFilled, MIN_PASSWORD_LENGTH } from "@ghostloop/prototype-adapter/validation";
 
 const FIELD_WIDTH = 466;
 
@@ -12,6 +13,7 @@ export function Signup() {
   const go = useGo();
   const { flow, update } = useFlow();
   const [errors, setErrors] = useState<ReadonlySet<Field>>(new Set());
+  const { send, failed } = useStep<Field>("signup");
 
   const clear = (field: Field) =>
     setErrors((prev) => {
@@ -22,7 +24,8 @@ export function Signup() {
     });
 
   // Submit stays clickable; every rule is re-checked on each submit and failures show inline.
-  const submit = (e: FormEvent) => {
+  // The server re-validates; only an accepted signup advances.
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     const next = new Set<Field>();
     if (!isFilled(flow.name)) next.add("name");
@@ -30,7 +33,10 @@ export function Signup() {
     if (flow.password.length < MIN_PASSWORD_LENGTH) next.add("password");
     if (!flow.consent) next.add("consent");
     setErrors(next);
-    if (next.size === 0) go("workspace");
+    if (next.size > 0) return;
+    const result = await send({ name: flow.name, email: flow.email, password: flow.password, consent: flow.consent });
+    if (result?.kind === "invalid") setErrors(new Set(result.errors));
+    if (result?.kind === "ok") go("workspace");
   };
 
   return (
@@ -98,6 +104,7 @@ export function Signup() {
             "signup.submit": <Button id="signup.submit" type="submit" />,
           }}
         </Ordered>
+        <ApiError show={failed} />
       </form>
     </Stage>
   );

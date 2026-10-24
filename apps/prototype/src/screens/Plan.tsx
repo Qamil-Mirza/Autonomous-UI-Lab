@@ -1,6 +1,7 @@
 import { Stage } from "../components/Stage";
-import { BackLink, Button, Ordered, Text } from "../components/controls";
+import { ApiError, BackLink, Button, Ordered, Text } from "../components/controls";
 import { useFlow, useGo, type Plan as PlanId } from "../state/flow";
+import { useStep } from "../state/run";
 import bullet from "../assets/bullet.svg";
 
 const BULLETS: Record<PlanId, string[]> = {
@@ -24,7 +25,11 @@ function Bullets({ plan }: { plan: PlanId }) {
 export function Plan() {
   const go = useGo();
   const { update } = useFlow();
-  const choose = (plan: PlanId) => {
+  const { send, failed } = useStep<"plan">("plan");
+  // Choosing Pro starts a paid trial server-side, which the goal checker sees even if the user comes back for Free.
+  const choose = async (plan: PlanId) => {
+    const result = await send({ plan });
+    if (result?.kind !== "ok") return;
     update({ plan });
     go("invite");
   };
@@ -64,6 +69,7 @@ export function Plan() {
             <Button id="plan.pro.cta" className="plan-cta" minWidth={118} onClick={() => choose("pro")} />
           </article>
         </div>
+        <ApiError show={failed} />
       </section>
     </Stage>
   );

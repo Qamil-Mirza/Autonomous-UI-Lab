@@ -5,3 +5,6 @@ dist/
 coverage/
 .DS_Store
 .ghostloop/
+.runs/
+test-results/
+playwright-report/

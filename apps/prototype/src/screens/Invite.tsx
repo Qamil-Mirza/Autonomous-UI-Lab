@@ -1,24 +1,29 @@
 import { useState, type FormEvent } from "react";
 import { Stage } from "../components/Stage";
-import { BackLink, Button, Ordered, Text, TextField } from "../components/controls";
+import { ApiError, BackLink, Button, Ordered, Text, TextField } from "../components/controls";
 import { useEl } from "../manifest/context";
 import { useFlow, useGo } from "../state/flow";
-import { isEmail } from "../state/validation";
+import { useStep } from "../state/run";
+import { isEmail } from "@ghostloop/prototype-adapter/validation";
 
 export function Invite() {
   const go = useGo();
   const { flow, update } = useFlow();
   const form = useEl("invite.form");
   const [invalid, setInvalid] = useState(false);
+  const { send, failed } = useStep<"email">("invite");
 
   // Re-checked on every submit, so resubmitting an unchanged invalid address keeps the error.
-  const submit = (e: FormEvent) => {
+  // The simulated invite service records only addresses it accepts as sent.
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!isEmail(flow.inviteEmail)) {
       setInvalid(true);
       return;
     }
-    go("confirm");
+    const result = await send({ email: flow.inviteEmail });
+    if (result?.kind === "invalid") setInvalid(true);
+    if (result?.kind === "ok") go("confirm");
   };
 
   return (
@@ -53,6 +58,7 @@ export function Invite() {
             }}
           </Ordered>
         </div>
+        <ApiError show={failed} />
       </form>
     </Stage>
   );

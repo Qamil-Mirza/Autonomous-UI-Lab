@@ -507,3 +507,13 @@ p {
   color: var(--color-muted);
   overflow-wrap: anywhere;
 }
+
+/* Generic submit failure: sits just below the card so it never shifts the Figma layout. */
+.api-error {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 8px;
+  text-align: center;
+}
