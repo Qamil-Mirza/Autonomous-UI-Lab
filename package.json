@@ -2,11 +2,22 @@
   "name": "ghostloop",
   "private": true,
   "type": "module",
-  "workspaces": ["packages/*", "workers/*", "apps/*"],
-  "engines": { "node": ">=22" },
+  "workspaces": [
+    "packages/*",
+    "workers/*",
+    "apps/*",
+    "spacetimedb"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "check": "npm run check --workspaces --if-present",
     "demo:mock": "npm run demo:mock -w @ghostloop/optimizer --",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "stdb:start": "spacetime start",
+    "stdb:publish": "spacetime publish --server local --module-path spacetimedb --yes ghostloop",
+    "stdb:publish:fresh": "spacetime publish --server local --module-path spacetimedb --delete-data --yes ghostloop",
+    "stdb:generate": "spacetime generate --lang typescript --out-dir packages/db/src/bindings --module-path spacetimedb --yes"
   }
 }
