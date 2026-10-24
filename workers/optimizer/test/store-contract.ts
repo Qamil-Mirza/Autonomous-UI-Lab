@@ -131,6 +131,18 @@ export function runStoreContract(
         approvedBy: "designer",
         at: "2026-10-23T09:00:00.000Z",
       };
+      // An approval always belongs to a stored experiment whose incumbent is the approval's source version.
+      await s.putExperiment({
+        schemaVersion: "1.0.0",
+        id: "exp_x",
+        protocol: loadFixture("protocol.default.json", ExperimentProtocol),
+        state: "awaiting_approval",
+        incumbentVersionId: a.sourceVersionId,
+        round: { index: 1, analysisAttempts: 0 },
+        transitions: [],
+        usage: { inferenceCalls: 0, inferenceUsd: 0, wallClockMs: 0 },
+        cancelRequested: false,
+      });
       await s.putApproval(a);
       expect(await s.getApproval("exp_x", 1)).toEqual(a);
       await expect(s.putApproval({ ...a, id: "appr_2" })).rejects.toThrow(/insert-only/);

@@ -288,7 +288,8 @@ export class SpacetimeStore implements ExperimentStore {
     }
   }
   async putPacket(p: DesignFeedbackPacket) {
-    // A packet has no round field of its own; it takes the round of the patches or hypotheses it carries.
+    // The packet contract has no round field, but the row needs one (an index helper only, never read back): use the
+    // round of its first patch, else of its first hypothesis, else 0.
     const round = p.patches[0]?.round ?? p.hypotheses[0]?.round ?? 0;
     await this.connection.reducers.putPacket({ id: p.id, experimentId: p.experimentId, round, json: JSON.stringify(p) });
   }
