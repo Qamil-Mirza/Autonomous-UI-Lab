@@ -19,12 +19,16 @@ const COMMAND_KINDS = [
 
 function requireWriter(ctx: Ctx): void {
   const w = ctx.db.writer.slot.find(0);
-  if (!w || !w.identity.isEqual(ctx.sender)) throw new SenderError('NOT_WRITER');
+  if (!w || !w.identity.isEqual(ctx.sender)) {
+    throw new SenderError('NOT_WRITER: caller is not the writer');
+  }
 }
 
 function checkSize(...values: Array<string | null | undefined>): void {
   for (const v of values) {
-    if (v != null && v.length > MAX_JSON_CHARS) throw new SenderError('TOO_LARGE');
+    if (v != null && v.length > MAX_JSON_CHARS) {
+      throw new SenderError(`TOO_LARGE: ${v.length} > ${MAX_JSON_CHARS}`);
+    }
   }
 }
 
@@ -34,7 +38,9 @@ export const claimWriter = spacetimedb.reducer((ctx) => {
     ctx.db.writer.insert({ slot: 0, identity: ctx.sender });
     return;
   }
-  if (!w.identity.isEqual(ctx.sender)) throw new SenderError('NOT_WRITER');
+  if (!w.identity.isEqual(ctx.sender)) {
+    throw new SenderError('NOT_WRITER: writer slot is held by another identity');
+  }
 });
 
 export const devReset = spacetimedb.reducer((ctx) => {
@@ -69,7 +75,9 @@ export const putExperiment = spacetimedb.reducer(
     checkSize(json);
     const cur = ctx.db.experiment.id.find(id);
     const curRev = cur ? cur.rev : 0n;
-    if (curRev !== expectedRev) throw new SenderError('STALE_REV');
+    if (curRev !== expectedRev) throw new SenderError(
+      `STALE_REV: experiment ${id} expected rev ${expectedRev}, have ${curRev}`
+    );
     const row = { id, rev: curRev + 1n, state, round, updatedAt: ctx.timestamp, json };
     if (cur) ctx.db.experiment.id.update(row);
     else ctx.db.experiment.insert(row);
@@ -81,7 +89,9 @@ export const insertVersion = spacetimedb.reducer(
   (ctx, { id, parentId, json }) => {
     requireWriter(ctx);
     checkSize(json);
-    if (ctx.db.designVersion.id.find(id)) throw new SenderError('ALREADY_EXISTS');
+    if (ctx.db.designVersion.id.find(id)) {
+      throw new SenderError(`ALREADY_EXISTS: design version ${id}`);
+    }
     ctx.db.designVersion.insert({ id, parentId, json });
   }
 );
@@ -186,11 +196,15 @@ export const putApproval = spacetimedb.reducer(
     requireWriter(ctx);
     checkSize(json);
     const key = `${experimentId}:${round}`;
-    if (ctx.db.approval.key.find(key)) throw new SenderError('ALREADY_EXISTS');
+    if (ctx.db.approval.key.find(key)) throw new SenderError(`ALREADY_EXISTS: approval ${key}`);
     const exp = ctx.db.experiment.id.find(experimentId);
-    if (!exp) throw new SenderError('NOT_FOUND');
+    if (!exp) throw new SenderError(`NOT_FOUND: experiment ${experimentId}`);
     const { incumbentVersionId } = JSON.parse(exp.json) as { incumbentVersionId?: string };
-    if (incumbentVersionId !== sourceVersionId) throw new SenderError('STALE_SOURCE_VERSION');
+    if (incumbentVersionId !== sourceVersionId) {
+      throw new SenderError(
+        `STALE_SOURCE_VERSION: experiment ${experimentId} incumbent is ${incumbentVersionId}, approval is for ${sourceVersionId}`
+      );
+    }
     ctx.db.approval.insert({ key, experimentId, round, json });
   }
 );
@@ -202,7 +216,11 @@ export const putCandidate = spacetimedb.reducer(
     checkSize(row.json);
     const cur = ctx.db.candidate.id.find(row.id);
     if (cur) {
-      if (cur.experimentId !== row.experimentId) throw new SenderError('OWNER_MISMATCH');
+      if (cur.experimentId !== row.experimentId) {
+        throw new SenderError(
+          `OWNER_MISMATCH: candidate ${row.id} belongs to ${cur.experimentId}, not ${row.experimentId}`
+        );
+      }
       ctx.db.candidate.id.update(row);
     } else {
       ctx.db.candidate.insert(row);
@@ -238,7 +256,7 @@ export const submitCommand = spacetimedb.reducer(
   { kind: t.string(), payloadJson: t.string() },
   (ctx, { kind, payloadJson }) => {
     checkSize(payloadJson);
-    if (!COMMAND_KINDS.includes(kind)) throw new SenderError('UNKNOWN_COMMAND');
+    if (!COMMAND_KINDS.includes(kind)) throw new SenderError(`UNKNOWN_COMMAND: ${kind}`);
     ctx.db.command.insert({
       id: 0n,
       kind,
@@ -255,7 +273,9 @@ export const submitCommand = spacetimedb.reducer(
 export const startCommand = spacetimedb.reducer({ id: t.u64() }, (ctx, { id }) => {
   requireWriter(ctx);
   const cmd = ctx.db.command.id.find(id);
-  if (!cmd || cmd.status !== 'pending') throw new SenderError('NOT_RUNNING');
+  if (!cmd || cmd.status !== 'pending') {
+    throw new SenderError(`NOT_RUNNING: command ${id} is ${cmd ? cmd.status : 'missing'}, expected pending`);
+  }
   ctx.db.command.id.update({ ...cmd, status: 'running' });
 });
 
@@ -265,7 +285,9 @@ export const completeCommand = spacetimedb.reducer(
     requireWriter(ctx);
     checkSize(resultJson);
     const cmd = ctx.db.command.id.find(id);
-    if (!cmd || cmd.status !== 'running') throw new SenderError('NOT_RUNNING');
+    if (!cmd || cmd.status !== 'running') {
+      throw new SenderError(`NOT_RUNNING: command ${id} is ${cmd ? cmd.status : 'missing'}, expected running`);
+    }
     ctx.db.command.id.update({
       ...cmd,
       status: ok ? 'ok' : 'error',
