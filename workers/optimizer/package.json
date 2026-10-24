@@ -8,7 +8,7 @@
     "test": "vitest run",
     "demo:mock": "tsx src/cli/demo-mock.ts"
   },
-  "dependencies": { "@ghostloop/contracts": "*", "zod": "^3.25.0" },
+  "dependencies": { "@ghostloop/contracts": "*", "@ghostloop/db": "*", "zod": "^3.25.0" },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "tsx": "^4.19.0",
