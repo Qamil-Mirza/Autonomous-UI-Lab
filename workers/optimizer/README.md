@@ -1,0 +1,94 @@
+# @ghostloop/optimizer (workstream D)
+
+The optimizer owns the experiment loop: observe a baseline batch, diagnose, propose patches, wait for a human
+approval, build a candidate, retest, and decide with a fixed acceptance rule. This first deliverable runs the whole
+round end to end on **mock adapters** and an in-memory store. All mock data is synthetic
+(`provenance: "synthetic-fixture"`); never present it as real evidence.
+
+## Setup and commands
+
+```sh
+npm install                                  # at the repo root
+npm run check -w @ghostloop/optimizer        # typecheck + vitest
+npm run demo:mock                            # improved candidate: accepted, then cancelled (USER_STOP)
+npm run demo:mock -- --candidate flat        # inconclusive / INCONCLUSIVE
+npm run demo:mock -- --candidate zero-valid  # candidate has no valid runs: inconclusive
+```
+
+The demo prints a `MOCK MODE` banner, every state transition, observations, labeled hypotheses, patches with risk,
+auto-approves the first non-blocked patch through `approvePatches`, then prints exact baseline/candidate counts
+(infra errors and cancels shown separately, `n/a` for a null rate), the decision, reasons and the stopping record.
+It exits non-zero if the drive fails or parks somewhere unexpected.
+
+Env vars: none yet. `ANTHROPIC_API_KEY` is reserved for the Claude analysis slice.
+
+## Module map
+
+| Path | Role |
+| --- | --- |
+| `src/evaluator.ts` | Run metrics (valid runs, outcome counts, backtracks) and baseline vs candidate comparison |
+| `src/policy.ts` | Patch risk classification (protected elements, token allowlist) and feedback packet validation |
+| `src/observations.ts` | Observation trends from baseline runs |
+| `src/store.ts` | `ExperimentStore` interface and `InMemoryStore` (`onChange` subscription) |
+| `src/commands.ts` | Designer commands: create, start, cancel, approve patches, set disposition, final review |
+| `src/controller.ts`, `src/controller/*` | Resumable step machine and `ExperimentRuntime` driver |
+| `src/mocks/*` | Mock B (simulation), mock model (analysis), mock C (candidates) |
+| `src/cli/demo-mock.ts` | The demo CLI |
+
+## State machine
+
+```
+created -> baseline_running -> observing -> diagnosing -> proposing -> awaiting_approval
+  -> patching -> validating -> candidate_running -> comparing -> accepted | rejected | inconclusive -> stopped
+```
+
+Each `step` reads the stored experiment, does one state's work, persists results with the transition, and returns,
+so a restart resumes from stored state. `awaiting_approval` (no approval yet) and `accepted` (below target) park the
+driver; budgets do not run while parked. Cancel is checked before every step and records `USER_STOP`. Integration
+errors stop with `INTEGRATION_FAILURE`; budgets stop with `COST_BUDGET`, `TIME_BUDGET`, `ITERATION_BUDGET`.
+
+## Acceptance rule
+
+Candidates are compared with a fresh retest of the same scenarios against the baseline, using only behaviorally
+valid runs (infra errors and cancels are excluded from the rate and reported separately). In order: a failed
+guardrail rejects; incomplete data (`minValidFraction`, `minValidPerScenario`) is inconclusive; a secondary
+regression (median actions up more than `maxMedianActionsIncrease`, validation-error runs up more than
+`maxValidationErrorRateIncreasePp`) rejects; otherwise the completion-rate delta is judged against
+`minImprovementPp` (default 10 pp): at or above is `accepted`, at or below the negative is `rejected`, anything
+between is `inconclusive`. See `src/evaluator.ts` for the exact order.
+Accepted but below `targetCompletionRate` (0.8) parks for a final review instead of stopping. Promotion of the
+winner happens only through `recordFinalReview`.
+
+## What is mocked
+
+- **B (simulation):** replays a synthetic batch fixture under the request's batch/version IDs with fresh run IDs.
+- **Model (analysis):** deterministic observations-to-patches response, fixed cost.
+- **C (candidates):** every version shares the base manifest; candidates get fresh IDs; validation outcome is selectable.
+- **Store:** in-process maps. No persistence.
+
+## Integration checklist
+
+- **B (simulation):** implement `runBatch(BatchRequest)`. The controller uses the incumbent version URL for the
+  baseline and the candidate URL for the retest. `BatchRequest` has no `experimentId`; the controller stamps runs
+  with it after the batch returns.
+- **C (candidates):** implement `createCandidate`, `validateCandidate`, `getManifest` (see
+  `packages/contracts/fixtures/README.md` for fixtures and placeholder element IDs).
+- **A (app):** call the commands in `src/commands.ts` and subscribe to `store.onChange(table, key)` for live state.
+  Root scripts are owned by A: the root `package.json` `demo:mock` script was added by D for convenience; A should
+  keep or adjust it. It ends with `--` so extra flags reach the CLI.
+
+## Notes for the SpacetimeDB store (next slice)
+
+- `updateExperiment(id, change)` must be **atomic** (one reducer). The controller and the commands both write the
+  experiment while the other may be mid-await; get + put would lose updates (e.g. a cancel flag).
+- Approval must be **one reducer**: claim the round, set patch states (approved/declined) and insert the `Approval`
+  record together. The Approval record is the commit marker; patching follows it.
+- `putApproval` and `insertVersion` are **insert-only**; a duplicate must fail.
+- `putCandidate(experimentId, c)` records ownership explicitly; never infer it from `patchIds` or evaluations.
+  Updating keeps the owner and rejects a different `experimentId`.
+
+## Next slices
+
+1. SpacetimeDB store behind `ExperimentStore`.
+2. Claude analysis adapter (`ANTHROPIC_API_KEY`).
+3. Real B and C adapters replacing the mocks.

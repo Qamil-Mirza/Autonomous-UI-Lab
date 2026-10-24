@@ -1,0 +1,128 @@
+import { pathToFileURL } from "node:url";
+import { DesignManifest, ExperimentProtocol, type Experiment, type Hypothesis, type RunMetrics } from "@ghostloop/contracts";
+import { loadFixture } from "@ghostloop/contracts/fixtures";
+import { createCommands } from "../commands";
+import { ExperimentRuntime } from "../controller";
+import { createMockAnalysis } from "../mocks/analysis";
+import { createMockCandidates } from "../mocks/candidates";
+import { createMockSimulation } from "../mocks/simulation";
+import { InMemoryStore } from "../store";
+
+const CANDIDATES = { improved: "batch.candidate-improved.json", flat: "batch.candidate-flat.json", "zero-valid": "batch.zero-valid.json" } as const;
+type CandidateName = keyof typeof CANDIDATES;
+
+export interface DemoSummary {
+  state: string;
+  decision?: string;
+  stoppingReason?: string;
+}
+
+/** Keeps the hypotheses the controller writes, since the store has no reader for them. */
+class DemoStore extends InMemoryStore {
+  seenHypotheses: Hypothesis[] = [];
+  override async putHypotheses(h: Hypothesis[]) {
+    this.seenHypotheses.push(...h);
+    return super.putHypotheses(h);
+  }
+}
+
+const rate = (m: RunMetrics) => (m.completionRate === null ? "n/a" : `${(m.completionRate * 100).toFixed(1)}%`);
+const metricsLine = (label: string, m: RunMetrics) =>
+  `  ${label}: ${m.successes}/${m.validRuns} valid runs succeeded (rate ${rate(m)}), planned ${m.plannedRuns}; ` +
+  `infra errors ${m.infraErrors}, cancelled ${m.cancelled} (excluded from rate)`;
+
+function parseCandidate(argv: string[]): CandidateName {
+  const i = argv.indexOf("--candidate");
+  const v = i < 0 ? "improved" : argv[i + 1];
+  if (v === undefined || !(v in CANDIDATES)) throw new Error(`--candidate must be one of: ${Object.keys(CANDIDATES).join(", ")}`);
+  return v as CandidateName;
+}
+
+export async function main(argv: string[], log: (line: string) => void = console.log): Promise<DemoSummary> {
+  const candidate = parseCandidate(argv);
+  const NOW = () => new Date().toISOString();
+  const store = new DemoStore();
+  const runtime = new ExperimentRuntime({
+    store,
+    simulation: createMockSimulation({ baseline: "batch.baseline.json", candidate: CANDIDATES[candidate] }),
+    analysis: createMockAnalysis([], 0.05),
+    candidates: createMockCandidates(),
+    clock: NOW,
+    now: Date.now,
+  });
+  const cmd = createCommands(store, runtime, NOW);
+
+  log("MOCK MODE — synthetic fixtures, not real evidence");
+  log(`candidate fixture: ${candidate}`);
+
+  const fixture = loadFixture("protocol.default.json", ExperimentProtocol);
+  const { id: _id, frozenAt: _f, experimentId: _e, ...protocol } = fixture;
+  const manifest = loadFixture("manifest.base.json", DesignManifest);
+  const created = await cmd.createExperiment({ protocol, baseVersionUrl: "http://localhost:5173/v/ver_base0001", baseManifestHash: manifest.manifestHash });
+  if (!created.ok) throw new Error(`create failed: ${created.message}`);
+  const id = created.value.experimentId;
+  const base = manifest.versionId;
+
+  let last = "";
+  store.onChange((table) => {
+    if (table !== "experiments") return;
+    void store.getExperiment(id).then((e) => {
+      if (e && e.state !== last) log(`[state] ${last || "(new)"} -> ${(last = e.state)}`);
+    });
+  });
+
+  const started = await cmd.startExperiment({ experimentId: id });
+  if (!started.ok) throw new Error(`start failed: ${started.message}`);
+  await runtime.idle(id);
+  let exp = (await store.getExperiment(id))!;
+  expectState(exp, "awaiting_approval");
+
+  log("\nObservations");
+  for (const o of await store.listObservations(id)) log(`  - ${o.statement} (${o.numerator}/${o.denominator})`);
+  log("Hypotheses (model-labeled, unproven)");
+  for (const h of store.seenHypotheses) log(`  - [${h.label}] ${h.statement}`);
+  const patches = await store.listPatches(id, 1);
+  log("Patches");
+  for (const p of patches) log(`  - ${p.id} ${p.op} ${p.targetElementId} = ${JSON.stringify(p.value)} risk=${p.risk} state=${p.state}${p.blockReason ? ` (${p.blockReason})` : ""}`);
+
+  const pick = patches.find((p) => p.state !== "blocked");
+  if (!pick) throw new Error("no non-blocked patch to approve");
+  log(`\nAuto-approving ${pick.id}`);
+  const approved = await cmd.approvePatches({ experimentId: id, sourceVersionId: base, round: 1, patchIds: [pick.id], approvedBy: "demo-cli" });
+  if (!approved.ok) throw new Error(`approval failed: ${approved.message}`);
+  await runtime.idle(id);
+  exp = (await store.getExperiment(id))!;
+
+  const evaluation = exp.round.evaluationId ? await store.getEvaluation(exp.round.evaluationId) : undefined;
+  if (!evaluation) throw new Error(`no evaluation recorded; experiment is ${exp.state}${exp.stopping ? ` (${exp.stopping.reason})` : ""}`);
+  log("\nMetrics");
+  log(metricsLine("baseline ", evaluation.baseline));
+  log(evaluation.candidate ? metricsLine("candidate", evaluation.candidate) : "  candidate: n/a");
+  log(`  delta: ${evaluation.deltaPp === null ? "n/a" : `${evaluation.deltaPp} pp`}`);
+  log(`Decision: ${evaluation.decision}`);
+  for (const r of evaluation.reasons) log(`  reason: ${r}`);
+
+  if (!exp.stopping) {
+    // Accepted below target parks; cancel so the demo shows a stopping record.
+    expectState(exp, "accepted");
+    const cancelled = await cmd.cancelExperiment({ experimentId: id });
+    if (!cancelled.ok) throw new Error(`cancel failed: ${cancelled.message}`);
+    await runtime.idle(id);
+    exp = (await store.getExperiment(id))!;
+  }
+  if (exp.state !== "stopped" || !exp.stopping) throw new Error(`expected stopped with a stopping record, got ${exp.state}`);
+  log(`Stopping reason: ${exp.stopping.reason} (best version ${exp.stopping.bestVersionId})`);
+  await new Promise((r) => setTimeout(r, 0)); // let the last [state] lines flush
+  return { state: exp.state, decision: evaluation.decision, stoppingReason: exp.stopping.reason };
+}
+
+function expectState(e: Experiment, want: string): void {
+  if (e.state !== want) throw new Error(`expected state ${want}, got ${e.state}${e.stopping ? ` (stopping: ${e.stopping.reason})` : ""}`);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main(process.argv.slice(2)).catch((err: unknown) => {
+    console.error(`demo failed: ${err instanceof Error ? err.message : String(err)}`);
+    process.exit(1);
+  });
+}
