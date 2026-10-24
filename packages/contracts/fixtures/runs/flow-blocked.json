@@ -1,0 +1,233 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "runId": "run_met_05",
+  "experimentId": "exp_demo0001",
+  "protocolId": "proto_demo0001",
+  "versionId": "ver_base0001",
+  "scenarioId": "scn_invalid_email",
+  "batchId": "batch_metrics01",
+  "events": [
+    {
+      "runId": "run_met_05",
+      "seq": 0,
+      "at": "2026-10-23T09:08:04.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "signup",
+      "screenAfter": "signup",
+      "action": {
+        "type": "type",
+        "elementId": "signup.email",
+        "value": "lin@example.com"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_05/0.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_05",
+      "seq": 1,
+      "at": "2026-10-23T09:08:08.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "signup",
+      "screenAfter": "workspace",
+      "action": {
+        "type": "click",
+        "elementId": "signup.submit"
+      },
+      "result": "ok",
+      "pointer": {
+        "x": 651,
+        "y": 294
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_05/1.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_05",
+      "seq": 2,
+      "at": "2026-10-23T09:08:12.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "workspace",
+      "screenAfter": "workspace",
+      "action": {
+        "type": "type",
+        "elementId": "workspace.name",
+        "value": "Lin Labs"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_05/2.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_05",
+      "seq": 3,
+      "at": "2026-10-23T09:08:16.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "workspace",
+      "screenAfter": "plan",
+      "action": {
+        "type": "click",
+        "elementId": "workspace.submit"
+      },
+      "result": "ok",
+      "pointer": {
+        "x": 725,
+        "y": 370
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_05/3.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_05",
+      "seq": 4,
+      "at": "2026-10-23T09:08:20.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "plan",
+      "screenAfter": "invite",
+      "action": {
+        "type": "click",
+        "elementId": "plan.free.cta"
+      },
+      "result": "ok",
+      "pointer": {
+        "x": 562,
+        "y": 408
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_05/4.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_05",
+      "seq": 5,
+      "at": "2026-10-23T09:08:24.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "invite",
+      "screenAfter": "invite",
+      "action": {
+        "type": "type",
+        "elementId": "invite.email",
+        "value": "teammate@example"
+      },
+      "result": "validation_error",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_05/5.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_05",
+      "seq": 6,
+      "at": "2026-10-23T09:08:28.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "invite",
+      "screenAfter": "invite",
+      "action": {
+        "type": "click",
+        "elementId": "invite.submit"
+      },
+      "result": "no_effect",
+      "pointer": {
+        "x": 584,
+        "y": 636
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_05/6.png",
+        "width": 1280,
+        "height": 800
+      }
+    }
+  ],
+  "goalVerified": false,
+  "stepCount": 7,
+  "outcome": "flow_blocked",
+  "terminalScreen": "invite",
+  "lastPointer": {
+    "x": 584,
+    "y": 636
+  },
+  "screenshots": [
+    {
+      "uri": "artifacts/run_met_05/0.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_05/1.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_05/2.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_05/3.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_05/4.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_05/5.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_05/6.png",
+      "width": 1280,
+      "height": 800
+    }
+  ],
+  "behaviorallyValid": true,
+  "startedAt": "2026-10-23T09:08:00.000Z",
+  "endedAt": "2026-10-23T09:08:32.000Z"
+}

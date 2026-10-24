@@ -1,0 +1,789 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "batchId": "batch_zero0001",
+  "versionId": "ver_base0001",
+  "runs": [
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_01",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_baseline",
+      "batchId": "batch_zero0001",
+      "events": [
+        {
+          "runId": "run_zero_01",
+          "seq": 0,
+          "at": "2026-10-23T11:00:04.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "ada@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_01/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_01",
+          "seq": 1,
+          "at": "2026-10-23T11:00:08.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-1"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_01/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_01",
+          "seq": 2,
+          "at": "2026-10-23T11:00:12.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_01/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 3,
+      "outcome": "model_error",
+      "terminalScreen": "workspace",
+      "lastPointer": {
+        "x": 651,
+        "y": 294
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_zero_01/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_01/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_01/2.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:00:00.000Z",
+      "endedAt": "2026-10-23T11:00:16.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_02",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_baseline",
+      "batchId": "batch_zero0001",
+      "events": [],
+      "goalVerified": false,
+      "stepCount": 0,
+      "outcome": "browser_error",
+      "terminalScreen": "signup",
+      "screenshots": [],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:00:45.000Z",
+      "endedAt": "2026-10-23T11:00:49.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_03",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_baseline",
+      "batchId": "batch_zero0001",
+      "events": [
+        {
+          "runId": "run_zero_03",
+          "seq": 0,
+          "at": "2026-10-23T11:01:34.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "ada@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_03/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_03",
+          "seq": 1,
+          "at": "2026-10-23T11:01:38.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-1"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_03/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_03",
+          "seq": 2,
+          "at": "2026-10-23T11:01:42.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_03/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 3,
+      "outcome": "model_error",
+      "terminalScreen": "workspace",
+      "lastPointer": {
+        "x": 651,
+        "y": 294
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_zero_03/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_03/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_03/2.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:01:30.000Z",
+      "endedAt": "2026-10-23T11:01:46.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_04",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_invalid_email",
+      "batchId": "batch_zero0001",
+      "events": [],
+      "goalVerified": false,
+      "stepCount": 0,
+      "outcome": "browser_error",
+      "terminalScreen": "signup",
+      "screenshots": [],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:02:15.000Z",
+      "endedAt": "2026-10-23T11:02:19.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_05",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_invalid_email",
+      "batchId": "batch_zero0001",
+      "events": [
+        {
+          "runId": "run_zero_05",
+          "seq": 0,
+          "at": "2026-10-23T11:03:04.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "lin@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_05/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_05",
+          "seq": 1,
+          "at": "2026-10-23T11:03:08.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-2"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_05/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_05",
+          "seq": 2,
+          "at": "2026-10-23T11:03:12.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_05/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 3,
+      "outcome": "model_error",
+      "terminalScreen": "workspace",
+      "lastPointer": {
+        "x": 651,
+        "y": 294
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_zero_05/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_05/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_05/2.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:03:00.000Z",
+      "endedAt": "2026-10-23T11:03:16.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_06",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_invalid_email",
+      "batchId": "batch_zero0001",
+      "events": [],
+      "goalVerified": false,
+      "stepCount": 0,
+      "outcome": "browser_error",
+      "terminalScreen": "signup",
+      "screenshots": [],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:03:45.000Z",
+      "endedAt": "2026-10-23T11:03:49.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_07",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_hesitant",
+      "batchId": "batch_zero0001",
+      "events": [
+        {
+          "runId": "run_zero_07",
+          "seq": 0,
+          "at": "2026-10-23T11:04:34.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "sam@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_07/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_07",
+          "seq": 1,
+          "at": "2026-10-23T11:04:38.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-3"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_07/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_07",
+          "seq": 2,
+          "at": "2026-10-23T11:04:42.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_07/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 3,
+      "outcome": "model_error",
+      "terminalScreen": "workspace",
+      "lastPointer": {
+        "x": 651,
+        "y": 294
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_zero_07/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_07/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_07/2.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:04:30.000Z",
+      "endedAt": "2026-10-23T11:04:46.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_08",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_hesitant",
+      "batchId": "batch_zero0001",
+      "events": [],
+      "goalVerified": false,
+      "stepCount": 0,
+      "outcome": "browser_error",
+      "terminalScreen": "signup",
+      "screenshots": [],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:05:15.000Z",
+      "endedAt": "2026-10-23T11:05:19.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_09",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_hesitant",
+      "batchId": "batch_zero0001",
+      "events": [
+        {
+          "runId": "run_zero_09",
+          "seq": 0,
+          "at": "2026-10-23T11:06:04.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "sam@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_09/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_09",
+          "seq": 1,
+          "at": "2026-10-23T11:06:08.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-3"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_09/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_09",
+          "seq": 2,
+          "at": "2026-10-23T11:06:12.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_09/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 3,
+      "outcome": "model_error",
+      "terminalScreen": "workspace",
+      "lastPointer": {
+        "x": 651,
+        "y": 294
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_zero_09/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_09/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_09/2.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:06:00.000Z",
+      "endedAt": "2026-10-23T11:06:16.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_10",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_fast",
+      "batchId": "batch_zero0001",
+      "events": [],
+      "goalVerified": false,
+      "stepCount": 0,
+      "outcome": "browser_error",
+      "terminalScreen": "signup",
+      "screenshots": [],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:06:45.000Z",
+      "endedAt": "2026-10-23T11:06:49.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_11",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_fast",
+      "batchId": "batch_zero0001",
+      "events": [
+        {
+          "runId": "run_zero_11",
+          "seq": 0,
+          "at": "2026-10-23T11:07:34.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "jo@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_11/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_11",
+          "seq": 1,
+          "at": "2026-10-23T11:07:38.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-4"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_11/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_zero_11",
+          "seq": 2,
+          "at": "2026-10-23T11:07:42.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_zero_11/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 3,
+      "outcome": "model_error",
+      "terminalScreen": "workspace",
+      "lastPointer": {
+        "x": 651,
+        "y": 294
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_zero_11/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_11/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_zero_11/2.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:07:30.000Z",
+      "endedAt": "2026-10-23T11:07:46.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_zero_12",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_fast",
+      "batchId": "batch_zero0001",
+      "events": [],
+      "goalVerified": false,
+      "stepCount": 0,
+      "outcome": "browser_error",
+      "terminalScreen": "signup",
+      "screenshots": [],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T11:08:15.000Z",
+      "endedAt": "2026-10-23T11:08:19.000Z"
+    }
+  ],
+  "usage": {
+    "inferenceCalls": 18,
+    "inferenceUsd": 0.072,
+    "wallClockMs": 540000
+  },
+  "cancelled": false,
+  "plannedRuns": 12
+}

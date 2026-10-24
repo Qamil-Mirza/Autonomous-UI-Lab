@@ -1,0 +1,35 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "id": "val_0001",
+  "candidateId": "cand_0001",
+  "ok": true,
+  "checks": [
+    {
+      "name": "build",
+      "kind": "runnable",
+      "passed": true
+    },
+    {
+      "name": "renders_all_screens",
+      "kind": "runnable",
+      "passed": true
+    },
+    {
+      "name": "protected_elements_unchanged",
+      "kind": "guardrail",
+      "passed": true
+    },
+    {
+      "name": "manifest_ids_stable",
+      "kind": "guardrail",
+      "passed": true
+    },
+    {
+      "name": "checker_unchanged",
+      "kind": "guardrail",
+      "passed": true
+    }
+  ],
+  "at": "2026-10-23T09:50:00.000Z"
+}

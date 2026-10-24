@@ -1,0 +1,198 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "runId": "run_met_02",
+  "experimentId": "exp_demo0001",
+  "protocolId": "proto_demo0001",
+  "versionId": "ver_base0001",
+  "scenarioId": "scn_baseline",
+  "batchId": "batch_metrics01",
+  "events": [
+    {
+      "runId": "run_met_02",
+      "seq": 0,
+      "at": "2026-10-23T09:05:49.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "signup",
+      "screenAfter": "signup",
+      "action": {
+        "type": "type",
+        "elementId": "signup.email",
+        "value": "ada@example.com"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_02/0.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_02",
+      "seq": 1,
+      "at": "2026-10-23T09:05:53.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "signup",
+      "screenAfter": "signup",
+      "action": {
+        "type": "type",
+        "elementId": "signup.password",
+        "value": "correct-horse-1"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_02/1.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_02",
+      "seq": 2,
+      "at": "2026-10-23T09:05:57.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "signup",
+      "screenAfter": "workspace",
+      "action": {
+        "type": "click",
+        "elementId": "signup.submit"
+      },
+      "result": "ok",
+      "pointer": {
+        "x": 651,
+        "y": 294
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_02/2.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_02",
+      "seq": 3,
+      "at": "2026-10-23T09:06:01.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "workspace",
+      "screenAfter": "workspace",
+      "action": {
+        "type": "type",
+        "elementId": "workspace.name",
+        "value": "Acme Research"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_02/3.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_02",
+      "seq": 4,
+      "at": "2026-10-23T09:06:05.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "workspace",
+      "screenAfter": "plan",
+      "action": {
+        "type": "click",
+        "elementId": "workspace.submit"
+      },
+      "result": "ok",
+      "pointer": {
+        "x": 725,
+        "y": 370
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_02/4.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_02",
+      "seq": 5,
+      "at": "2026-10-23T09:06:09.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "plan",
+      "screenAfter": "plan",
+      "action": {
+        "type": "stop",
+        "reason": "Not sure which plan fits; stopping here."
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_02/5.png",
+        "width": 1280,
+        "height": 800
+      }
+    }
+  ],
+  "goalVerified": false,
+  "stepCount": 5,
+  "outcome": "agent_stop",
+  "terminalScreen": "plan",
+  "lastPointer": {
+    "x": 725,
+    "y": 370
+  },
+  "screenshots": [
+    {
+      "uri": "artifacts/run_met_02/0.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_02/1.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_02/2.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_02/3.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_02/4.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_02/5.png",
+      "width": 1280,
+      "height": 800
+    }
+  ],
+  "behaviorallyValid": true,
+  "startedAt": "2026-10-23T09:05:45.000Z",
+  "endedAt": "2026-10-23T09:06:13.000Z"
+}

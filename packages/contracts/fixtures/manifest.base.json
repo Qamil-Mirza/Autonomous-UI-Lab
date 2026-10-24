@@ -1,0 +1,167 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "versionId": "ver_base0001",
+  "manifestHash": "sha256:fixture-base-0001",
+  "elements": [
+    {
+      "elementId": "signup.email",
+      "screen": "signup",
+      "role": "textbox",
+      "label": "Work email",
+      "protected": true,
+      "categories": [
+        "signup"
+      ],
+      "supportedOps": []
+    },
+    {
+      "elementId": "signup.password",
+      "screen": "signup",
+      "role": "textbox",
+      "label": "Password",
+      "protected": true,
+      "categories": [
+        "auth"
+      ],
+      "supportedOps": []
+    },
+    {
+      "elementId": "signup.consent",
+      "screen": "signup",
+      "role": "checkbox",
+      "label": "I agree to the Terms and Privacy Policy",
+      "protected": true,
+      "categories": [
+        "consent"
+      ],
+      "supportedOps": []
+    },
+    {
+      "elementId": "signup.submit",
+      "screen": "signup",
+      "role": "button",
+      "label": "Create account",
+      "protected": true,
+      "categories": [
+        "signup"
+      ],
+      "supportedOps": []
+    },
+    {
+      "elementId": "workspace.name",
+      "screen": "workspace",
+      "role": "textbox",
+      "label": "Workspace name",
+      "protected": false,
+      "categories": [],
+      "supportedOps": [
+        "set_label"
+      ]
+    },
+    {
+      "elementId": "workspace.submit",
+      "screen": "workspace",
+      "role": "button",
+      "label": "Continue",
+      "protected": false,
+      "categories": [],
+      "supportedOps": [
+        "set_label",
+        "set_style_token"
+      ]
+    },
+    {
+      "elementId": "plan.free.cta",
+      "screen": "plan",
+      "role": "button",
+      "label": "Choose Free",
+      "protected": false,
+      "categories": [],
+      "supportedOps": [
+        "set_label",
+        "set_style_token"
+      ]
+    },
+    {
+      "elementId": "plan.pro.cta",
+      "screen": "plan",
+      "role": "button",
+      "label": "Choose Pro",
+      "protected": false,
+      "categories": [],
+      "supportedOps": [
+        "set_label",
+        "set_style_token"
+      ]
+    },
+    {
+      "elementId": "plan.free.price",
+      "screen": "plan",
+      "role": "text",
+      "label": "$0 / month",
+      "protected": true,
+      "categories": [
+        "pricing"
+      ],
+      "supportedOps": []
+    },
+    {
+      "elementId": "plan.pro.price",
+      "screen": "plan",
+      "role": "text",
+      "label": "$12 / month",
+      "protected": true,
+      "categories": [
+        "pricing"
+      ],
+      "supportedOps": []
+    },
+    {
+      "elementId": "plan.compare.link",
+      "screen": "plan",
+      "role": "link",
+      "label": "Compare plans",
+      "protected": false,
+      "categories": [],
+      "supportedOps": [
+        "set_visibility",
+        "set_label"
+      ]
+    },
+    {
+      "elementId": "invite.email",
+      "screen": "invite",
+      "role": "textbox",
+      "label": "Teammate email",
+      "protected": true,
+      "categories": [
+        "validation"
+      ],
+      "supportedOps": []
+    },
+    {
+      "elementId": "invite.submit",
+      "screen": "invite",
+      "role": "button",
+      "label": "Send invite or skip",
+      "protected": false,
+      "categories": [],
+      "supportedOps": [
+        "set_label",
+        "set_style_token"
+      ]
+    },
+    {
+      "elementId": "done.heading",
+      "screen": "done",
+      "role": "heading",
+      "label": "You're all set",
+      "protected": false,
+      "categories": [],
+      "supportedOps": [
+        "set_label"
+      ]
+    }
+  ]
+}

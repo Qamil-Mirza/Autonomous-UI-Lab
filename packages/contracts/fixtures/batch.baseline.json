@@ -1,0 +1,2823 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "batchId": "batch_base0001",
+  "versionId": "ver_base0001",
+  "runs": [
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_01",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_baseline",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_01",
+          "seq": 0,
+          "at": "2026-10-23T09:15:04.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "ada@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_01/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_01",
+          "seq": 1,
+          "at": "2026-10-23T09:15:08.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_01/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_01",
+          "seq": 2,
+          "at": "2026-10-23T09:15:12.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Acme Research"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_01/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_01",
+          "seq": 3,
+          "at": "2026-10-23T09:15:16.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_01/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_01",
+          "seq": 4,
+          "at": "2026-10-23T09:15:20.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_01/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_01",
+          "seq": 5,
+          "at": "2026-10-23T09:15:24.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "done",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_01/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": true,
+      "goalEvidence": "checker: workspace exists on the free plan and the done screen was reached",
+      "stepCount": 6,
+      "outcome": "goal",
+      "terminalScreen": "done",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_01/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_01/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_01/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_01/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_01/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_01/5.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:15:00.000Z",
+      "endedAt": "2026-10-23T09:15:28.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_02",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_baseline",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_02",
+          "seq": 0,
+          "at": "2026-10-23T09:15:49.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "ada@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_02/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_02",
+          "seq": 1,
+          "at": "2026-10-23T09:15:53.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_02/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_02",
+          "seq": 2,
+          "at": "2026-10-23T09:15:57.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Acme Research"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_02/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_02",
+          "seq": 3,
+          "at": "2026-10-23T09:16:01.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_02/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_02",
+          "seq": 4,
+          "at": "2026-10-23T09:16:05.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_02/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_02",
+          "seq": 5,
+          "at": "2026-10-23T09:16:09.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "invite",
+          "action": {
+            "type": "type",
+            "elementId": "invite.email",
+            "value": "grace@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_02/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_02",
+          "seq": 6,
+          "at": "2026-10-23T09:16:13.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "done",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_02/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": true,
+      "goalEvidence": "checker: workspace exists on the free plan and the done screen was reached",
+      "stepCount": 7,
+      "outcome": "goal",
+      "terminalScreen": "done",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_02/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_02/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_02/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_02/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_02/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_02/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_02/6.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:15:45.000Z",
+      "endedAt": "2026-10-23T09:16:17.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_03",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_baseline",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_03",
+          "seq": 0,
+          "at": "2026-10-23T09:16:34.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "ada@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_03/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_03",
+          "seq": 1,
+          "at": "2026-10-23T09:16:38.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-1"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_03/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_03",
+          "seq": 2,
+          "at": "2026-10-23T09:16:42.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_03/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_03",
+          "seq": 3,
+          "at": "2026-10-23T09:16:46.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Acme Research"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_03/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_03",
+          "seq": 4,
+          "at": "2026-10-23T09:16:50.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_03/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_03",
+          "seq": 5,
+          "at": "2026-10-23T09:16:54.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "plan",
+          "action": {
+            "type": "stop",
+            "reason": "Not sure which plan fits; stopping here."
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_03/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 5,
+      "outcome": "agent_stop",
+      "terminalScreen": "plan",
+      "lastPointer": {
+        "x": 725,
+        "y": 370
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_03/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_03/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_03/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_03/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_03/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_03/5.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:16:30.000Z",
+      "endedAt": "2026-10-23T09:16:58.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_04",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_invalid_email",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_04",
+          "seq": 0,
+          "at": "2026-10-23T09:17:19.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "lin@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_04/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_04",
+          "seq": 1,
+          "at": "2026-10-23T09:17:23.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-2"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_04/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_04",
+          "seq": 2,
+          "at": "2026-10-23T09:17:27.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "click",
+            "elementId": "signup.consent"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 614,
+            "y": 256
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_04/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_04",
+          "seq": 3,
+          "at": "2026-10-23T09:17:31.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_04/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_04",
+          "seq": 4,
+          "at": "2026-10-23T09:17:35.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Lin Labs"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_04/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_04",
+          "seq": 5,
+          "at": "2026-10-23T09:17:39.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_04/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_04",
+          "seq": 6,
+          "at": "2026-10-23T09:17:43.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_04/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_04",
+          "seq": 7,
+          "at": "2026-10-23T09:17:47.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "done",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_04/7.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": true,
+      "goalEvidence": "checker: workspace exists on the free plan and the done screen was reached",
+      "stepCount": 8,
+      "outcome": "goal",
+      "terminalScreen": "done",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_04/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_04/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_04/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_04/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_04/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_04/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_04/6.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_04/7.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:17:15.000Z",
+      "endedAt": "2026-10-23T09:17:51.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_05",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_invalid_email",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_05",
+          "seq": 0,
+          "at": "2026-10-23T09:18:04.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "lin@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_05/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_05",
+          "seq": 1,
+          "at": "2026-10-23T09:18:08.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_05/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_05",
+          "seq": 2,
+          "at": "2026-10-23T09:18:12.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Lin Labs"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_05/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_05",
+          "seq": 3,
+          "at": "2026-10-23T09:18:16.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_05/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_05",
+          "seq": 4,
+          "at": "2026-10-23T09:18:20.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_05/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_05",
+          "seq": 5,
+          "at": "2026-10-23T09:18:24.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "invite",
+          "action": {
+            "type": "type",
+            "elementId": "invite.email",
+            "value": "teammate@example"
+          },
+          "result": "validation_error",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_05/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_05",
+          "seq": 6,
+          "at": "2026-10-23T09:18:28.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "no_effect",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_05/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 7,
+      "outcome": "flow_blocked",
+      "terminalScreen": "invite",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_05/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_05/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_05/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_05/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_05/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_05/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_05/6.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:18:00.000Z",
+      "endedAt": "2026-10-23T09:18:32.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_06",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_invalid_email",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_06",
+          "seq": 0,
+          "at": "2026-10-23T09:18:49.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "lin@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_06/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_06",
+          "seq": 1,
+          "at": "2026-10-23T09:18:53.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "no_effect",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_06/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_06",
+          "seq": 2,
+          "at": "2026-10-23T09:18:57.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-2"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_06/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_06",
+          "seq": 3,
+          "at": "2026-10-23T09:19:01.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "no_effect",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_06/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 4,
+      "outcome": "flow_blocked",
+      "terminalScreen": "signup",
+      "lastPointer": {
+        "x": 651,
+        "y": 294
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_06/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_06/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_06/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_06/3.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:18:45.000Z",
+      "endedAt": "2026-10-23T09:19:05.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_07",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_hesitant",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_07",
+          "seq": 0,
+          "at": "2026-10-23T09:19:34.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "sam@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_07/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_07",
+          "seq": 1,
+          "at": "2026-10-23T09:19:38.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_07/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_07",
+          "seq": 2,
+          "at": "2026-10-23T09:19:42.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Sam & Co"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_07/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_07",
+          "seq": 3,
+          "at": "2026-10-23T09:19:46.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_07/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_07",
+          "seq": 4,
+          "at": "2026-10-23T09:19:50.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "compare",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_07/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_07",
+          "seq": 5,
+          "at": "2026-10-23T09:19:54.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "compare",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_07/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_07",
+          "seq": 6,
+          "at": "2026-10-23T09:19:58.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_07/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_07",
+          "seq": 7,
+          "at": "2026-10-23T09:20:02.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "done",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_07/7.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": true,
+      "goalEvidence": "checker: workspace exists on the free plan and the done screen was reached",
+      "stepCount": 8,
+      "outcome": "goal",
+      "terminalScreen": "done",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_07/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_07/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_07/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_07/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_07/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_07/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_07/6.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_07/7.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:19:30.000Z",
+      "endedAt": "2026-10-23T09:20:06.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_08",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_hesitant",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_08",
+          "seq": 0,
+          "at": "2026-10-23T09:20:19.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "sam@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_08/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_08",
+          "seq": 1,
+          "at": "2026-10-23T09:20:23.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_08/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_08",
+          "seq": 2,
+          "at": "2026-10-23T09:20:27.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Sam & Co"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_08/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_08",
+          "seq": 3,
+          "at": "2026-10-23T09:20:31.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_08/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_08",
+          "seq": 4,
+          "at": "2026-10-23T09:20:35.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "compare",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_08/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_08",
+          "seq": 5,
+          "at": "2026-10-23T09:20:39.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "compare",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_08/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_08",
+          "seq": 6,
+          "at": "2026-10-23T09:20:43.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "plan",
+          "action": {
+            "type": "stop",
+            "reason": "Not sure which plan fits; stopping here."
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_08/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 6,
+      "outcome": "agent_stop",
+      "terminalScreen": "plan",
+      "lastPointer": {
+        "x": 710,
+        "y": 560
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_08/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_08/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_08/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_08/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_08/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_08/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_08/6.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:20:15.000Z",
+      "endedAt": "2026-10-23T09:20:47.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_09",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_hesitant",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_09",
+          "seq": 0,
+          "at": "2026-10-23T09:21:04.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "sam@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_09/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_09",
+          "seq": 1,
+          "at": "2026-10-23T09:21:08.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_09/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_09",
+          "seq": 2,
+          "at": "2026-10-23T09:21:12.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Sam & Co"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_09/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_09",
+          "seq": 3,
+          "at": "2026-10-23T09:21:16.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_09/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_09",
+          "seq": 4,
+          "at": "2026-10-23T09:21:20.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "compare",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_09/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_09",
+          "seq": 5,
+          "at": "2026-10-23T09:21:24.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "compare",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_09/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_09",
+          "seq": 6,
+          "at": "2026-10-23T09:21:28.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "compare",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_09/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_09",
+          "seq": 7,
+          "at": "2026-10-23T09:21:32.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "compare",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_09/7.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 8,
+      "outcome": "step_limit",
+      "terminalScreen": "plan",
+      "lastPointer": {
+        "x": 710,
+        "y": 560
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_09/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_09/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_09/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_09/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_09/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_09/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_09/6.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_09/7.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:21:00.000Z",
+      "endedAt": "2026-10-23T09:21:36.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_10",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_fast",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_10",
+          "seq": 0,
+          "at": "2026-10-23T09:21:49.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "jo@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_10/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_10",
+          "seq": 1,
+          "at": "2026-10-23T09:21:53.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-4"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_10/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_10",
+          "seq": 2,
+          "at": "2026-10-23T09:21:57.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_10/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_10",
+          "seq": 3,
+          "at": "2026-10-23T09:22:01.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Jo Ventures"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_10/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_10",
+          "seq": 4,
+          "at": "2026-10-23T09:22:05.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_10/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_10",
+          "seq": 5,
+          "at": "2026-10-23T09:22:09.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_10/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_10",
+          "seq": 6,
+          "at": "2026-10-23T09:22:13.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "done",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_10/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": true,
+      "goalEvidence": "checker: workspace exists on the free plan and the done screen was reached",
+      "stepCount": 7,
+      "outcome": "goal",
+      "terminalScreen": "done",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_10/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_10/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_10/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_10/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_10/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_10/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_10/6.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:21:45.000Z",
+      "endedAt": "2026-10-23T09:22:17.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_11",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_fast",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_11",
+          "seq": 0,
+          "at": "2026-10-23T09:22:34.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "jo@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_11/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_11",
+          "seq": 1,
+          "at": "2026-10-23T09:22:38.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_11/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_11",
+          "seq": 2,
+          "at": "2026-10-23T09:22:42.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Jo Ventures"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_11/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_11",
+          "seq": 3,
+          "at": "2026-10-23T09:22:46.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_11/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_11",
+          "seq": 4,
+          "at": "2026-10-23T09:22:50.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "compare",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_11/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_11",
+          "seq": 5,
+          "at": "2026-10-23T09:22:54.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "compare",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_11/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_11",
+          "seq": 6,
+          "at": "2026-10-23T09:22:58.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_11/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_11",
+          "seq": 7,
+          "at": "2026-10-23T09:23:02.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "done",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_11/7.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": true,
+      "goalEvidence": "checker: workspace exists on the free plan and the done screen was reached",
+      "stepCount": 8,
+      "outcome": "goal",
+      "terminalScreen": "done",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_11/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_11/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_11/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_11/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_11/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_11/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_11/6.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_11/7.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:22:30.000Z",
+      "endedAt": "2026-10-23T09:23:06.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_base_12",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_fast",
+      "batchId": "batch_base0001",
+      "events": [
+        {
+          "runId": "run_base_12",
+          "seq": 0,
+          "at": "2026-10-23T09:23:19.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "jo@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_12/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_12",
+          "seq": 1,
+          "at": "2026-10-23T09:23:23.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-4"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_12/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_12",
+          "seq": 2,
+          "at": "2026-10-23T09:23:27.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_12/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_12",
+          "seq": 3,
+          "at": "2026-10-23T09:23:31.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Jo Ventures"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_12/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_12",
+          "seq": 4,
+          "at": "2026-10-23T09:23:35.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_12/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_12",
+          "seq": 5,
+          "at": "2026-10-23T09:23:39.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "compare",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_12/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_12",
+          "seq": 6,
+          "at": "2026-10-23T09:23:43.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "compare",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_12/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_base_12",
+          "seq": 7,
+          "at": "2026-10-23T09:23:47.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "plan",
+          "action": {
+            "type": "stop",
+            "reason": "Not sure which plan fits; stopping here."
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_base_12/7.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 7,
+      "outcome": "agent_stop",
+      "terminalScreen": "plan",
+      "lastPointer": {
+        "x": 710,
+        "y": 560
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_base_12/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_12/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_12/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_12/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_12/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_12/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_12/6.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_base_12/7.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:23:15.000Z",
+      "endedAt": "2026-10-23T09:23:51.000Z"
+    }
+  ],
+  "usage": {
+    "inferenceCalls": 84,
+    "inferenceUsd": 0.336,
+    "wallClockMs": 540000
+  },
+  "cancelled": false,
+  "plannedRuns": 12
+}

@@ -1,0 +1,154 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "id": "pkt_r1_0001",
+  "experimentId": "exp_demo0001",
+  "versionId": "ver_base0001",
+  "task": "Create a workspace on the free plan and finish onboarding.",
+  "intentConstraints": [
+    "Keep the free plan available and selectable.",
+    "Do not change prices, signup fields, consent, or validation rules.",
+    "Inviting a teammate stays optional."
+  ],
+  "observations": [
+    {
+      "id": "obs_0001",
+      "statement": "6 of 12 valid runs reached the goal"
+    },
+    {
+      "id": "obs_0002",
+      "statement": "5 of 12 runs revisited plan selection"
+    },
+    {
+      "id": "obs_0003",
+      "statement": "3 of 12 runs stopped on plan selection without choosing a plan"
+    },
+    {
+      "id": "obs_0004",
+      "statement": "1 of 12 runs hit a validation error on invite.email"
+    },
+    {
+      "id": "obs_0005",
+      "statement": "1 of 12 runs used all 8 actions without finishing"
+    },
+    {
+      "id": "obs_0006",
+      "statement": "1 of 12 runs repeated a no-effect click on signup.submit"
+    }
+  ],
+  "traceEvidence": [
+    {
+      "runId": "run_base_07",
+      "seq": 5
+    },
+    {
+      "runId": "run_base_08",
+      "seq": 5
+    },
+    {
+      "runId": "run_base_09",
+      "seq": 5
+    },
+    {
+      "runId": "run_base_11",
+      "seq": 5
+    },
+    {
+      "runId": "run_base_12",
+      "seq": 6
+    }
+  ],
+  "hypotheses": [
+    {
+      "schemaVersion": "1.0.0",
+      "id": "hyp_0001",
+      "experimentId": "exp_demo0001",
+      "round": 1,
+      "observationIds": [
+        "obs_0002",
+        "obs_0003"
+      ],
+      "label": "hypothesis",
+      "confidence": "medium",
+      "statement": "Agents are unsure which plan to pick and use the comparison view to decide, then stall."
+    }
+  ],
+  "patches": [
+    {
+      "schemaVersion": "1.0.0",
+      "experimentId": "exp_demo0001",
+      "round": 1,
+      "sourceVersionId": "ver_base0001",
+      "id": "pat_0001",
+      "op": "set_label",
+      "value": "Start free",
+      "targetElementId": "plan.free.cta",
+      "observationIds": [
+        "obs_0002",
+        "obs_0003"
+      ],
+      "rationale": "Runs paused on plan selection; a label that states the outcome may reduce hesitation.",
+      "modelRisk": "low",
+      "risk": "review_required",
+      "state": "proposed"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "experimentId": "exp_demo0001",
+      "round": 1,
+      "sourceVersionId": "ver_base0001",
+      "id": "pat_0002",
+      "op": "set_style_token",
+      "value": "button.primary",
+      "targetElementId": "plan.free.cta",
+      "observationIds": [
+        "obs_0003"
+      ],
+      "rationale": "Give the free plan call to action primary emphasis so the default choice is visible.",
+      "risk": "low",
+      "state": "proposed"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "experimentId": "exp_demo0001",
+      "round": 1,
+      "sourceVersionId": "ver_base0001",
+      "id": "pat_0003",
+      "op": "set_visibility",
+      "value": false,
+      "targetElementId": "plan.compare.link",
+      "observationIds": [
+        "obs_0002",
+        "obs_0005"
+      ],
+      "rationale": "Every plan revisit went through the comparison view; hiding it may remove the loop.",
+      "modelRisk": "review_required",
+      "risk": "review_required",
+      "state": "proposed"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "experimentId": "exp_demo0001",
+      "round": 1,
+      "sourceVersionId": "ver_base0001",
+      "id": "pat_0004",
+      "op": "set_label",
+      "value": "Free forever",
+      "targetElementId": "plan.pro.price",
+      "observationIds": [
+        "obs_0003"
+      ],
+      "rationale": "Clarify pricing on the plan screen.",
+      "modelRisk": "low",
+      "risk": "blocked",
+      "state": "blocked",
+      "blockReason": "plan.pro.price is protected (category pricing)"
+    }
+  ],
+  "protectedConstraints": [
+    "Prices (plan.free.price, plan.pro.price) are protected.",
+    "Signup, consent, auth and validation elements are protected."
+  ],
+  "reviewPolicy": "manual_required",
+  "createdAt": "2026-10-23T09:30:00.000Z"
+}

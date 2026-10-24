@@ -1,0 +1,23 @@
+{
+  "name": "@ghostloop/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./hidden": "./src/hidden.ts",
+    "./fixtures": "./fixtures/index.ts",
+    "./fixtures/*": "./fixtures/*"
+  },
+  "scripts": {
+    "check": "tsc -p . && vitest run",
+    "test": "vitest run",
+    "fixtures:generate": "node scripts/generate-fixtures.mjs"
+  },
+  "dependencies": { "zod": "^3.25.0" },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

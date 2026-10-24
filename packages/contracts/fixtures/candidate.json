@@ -1,0 +1,24 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "id": "cand_0001",
+  "versionId": "ver_cand0001",
+  "parentVersionId": "ver_base0001",
+  "patchIds": [
+    "pat_0001",
+    "pat_0002"
+  ],
+  "url": "http://localhost:4100/v/ver_cand0001",
+  "figma": {
+    "frameUrl": "https://www.figma.com/design/FIXTURE/ghostloop?node-id=1-2",
+    "status": "verified",
+    "manifestHash": "sha256:fixture-cand-0001",
+    "patchIds": [
+      "pat_0001",
+      "pat_0002"
+    ]
+  },
+  "reviewStatus": "pending",
+  "evaluationId": "eval_0001",
+  "createdAt": "2026-10-23T09:45:00.000Z"
+}

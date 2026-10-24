@@ -1,0 +1,19 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "runId": "run_met_06",
+  "experimentId": "exp_demo0001",
+  "protocolId": "proto_demo0001",
+  "versionId": "ver_base0001",
+  "scenarioId": "scn_invalid_email",
+  "batchId": "batch_metrics01",
+  "events": [],
+  "goalVerified": false,
+  "stepCount": 0,
+  "outcome": "browser_error",
+  "terminalScreen": "signup",
+  "screenshots": [],
+  "behaviorallyValid": false,
+  "startedAt": "2026-10-23T09:08:45.000Z",
+  "endedAt": "2026-10-23T09:08:49.000Z"
+}

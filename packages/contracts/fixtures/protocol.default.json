@@ -1,0 +1,112 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "id": "proto_demo0001",
+  "experimentId": "exp_demo0001",
+  "baseVersionId": "ver_base0001",
+  "task": "Create a workspace on the free plan and finish onboarding.",
+  "hiddenGoalRef": "goal.onboarding.free-plan",
+  "allowedPaths": [
+    "/signup",
+    "/workspace",
+    "/plan",
+    "/invite",
+    "/done"
+  ],
+  "intentConstraints": [
+    "Keep the free plan available and selectable.",
+    "Do not change prices, signup fields, consent, or validation rules.",
+    "Inviting a teammate stays optional."
+  ],
+  "protectedElements": [
+    "signup.email",
+    "signup.password",
+    "signup.consent",
+    "signup.submit",
+    "plan.free.price",
+    "plan.pro.price",
+    "invite.email"
+  ],
+  "protectedCategories": [
+    "signup",
+    "pricing",
+    "auth",
+    "consent",
+    "validation",
+    "checker"
+  ],
+  "approvedStyleTokens": [
+    "button.primary",
+    "button.secondary",
+    "emphasis.strong"
+  ],
+  "mode": "manual",
+  "scenarios": [
+    {
+      "id": "scn_baseline",
+      "name": "Baseline",
+      "description": "A new user signs up, names a workspace, picks the free plan, and finishes onboarding.",
+      "inputs": {
+        "email": "ada@example.com",
+        "password": "correct-horse-1",
+        "workspaceName": "Acme Research",
+        "inviteEmail": "grace@example.com"
+      },
+      "runs": 3
+    },
+    {
+      "id": "scn_invalid_email",
+      "name": "Invalid invite email",
+      "description": "Same task, but the teammate email the user has on hand is malformed.",
+      "inputs": {
+        "email": "lin@example.com",
+        "password": "correct-horse-2",
+        "workspaceName": "Lin Labs",
+        "inviteEmail": "teammate@example"
+      },
+      "runs": 3
+    },
+    {
+      "id": "scn_hesitant",
+      "name": "Hesitant evaluator",
+      "description": "A cautious user who wants to understand plan differences before committing.",
+      "inputs": {
+        "email": "sam@example.com",
+        "password": "correct-horse-3",
+        "workspaceName": "Sam & Co",
+        "inviteEmail": "kim@example.com"
+      },
+      "runs": 3
+    },
+    {
+      "id": "scn_fast",
+      "name": "Fast path",
+      "description": "An experienced user who moves quickly and skips optional steps.",
+      "inputs": {
+        "email": "jo@example.com",
+        "password": "correct-horse-4",
+        "workspaceName": "Jo Ventures",
+        "inviteEmail": "max@example.com"
+      },
+      "runs": 3
+    }
+  ],
+  "budgets": {
+    "maxActionsPerRun": 8,
+    "runsPerBatch": 12,
+    "maxConcurrency": 4,
+    "maxIterations": 3,
+    "maxCandidates": 3,
+    "maxInferenceUsd": 5,
+    "maxWallClockMs": 1800000
+  },
+  "policy": {
+    "targetCompletionRate": 0.8,
+    "minImprovementPp": 10,
+    "maxMedianActionsIncrease": 2,
+    "maxValidationErrorRateIncreasePp": 15,
+    "minValidFraction": 0.75,
+    "minValidPerScenario": 1
+  },
+  "frozenAt": "2026-10-23T09:00:00.000Z"
+}
