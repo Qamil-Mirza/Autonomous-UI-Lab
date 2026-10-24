@@ -373,6 +373,71 @@ describe("controller round on mocks", () => {
     expect(t.candidates.created).toEqual([{ sourceVersionId: BASE, patchIds: stored!.patchIds }]);
   });
 
+  it("a drive step between the approval claim/patch writes and the Approval record does not lose the approval", async () => {
+    const t = await setup();
+    await t.runtime.idle(t.id);
+    const [label] = await t.proposedPatches();
+    const orig = t.store.updatePatch.bind(t.store);
+    const midStates: string[] = [];
+    t.store.updatePatch = async (id, changes) => {
+      // Inside approvePatches: the round is claimed, patch states are being written, no Approval record yet.
+      if (midStates.length === 0 && (await t.store.getExperiment(t.id))!.round.approvalId) {
+        midStates.push((await t.runtime.drive(t.id)).state);
+      }
+      return orig(id, changes);
+    };
+    const r = await t.cmd.approvePatches({ ...t.okApproval(), patchIds: [label!.id] });
+    expect(r.ok).toBe(true);
+    expect(midStates).toEqual(["awaiting_approval"]); // the mid-write drive parked
+    await t.runtime.idle(t.id);
+    const e = await t.exp();
+    expect(e.state).toBe("accepted");
+    expect(t.candidates.created).toEqual([{ sourceVersionId: BASE, patchIds: [label!.id] }]);
+  });
+
+  it("patching selects patches by the stored Approval, not by patch state", async () => {
+    const t = await setup();
+    await t.runtime.idle(t.id);
+    const [label, token] = await t.proposedPatches();
+    // Approval record and claim exist, but patch states were never updated (still "proposed").
+    await t.store.updateExperiment(t.id, (x) => ({ ...x, round: { ...x.round, approvalId: "appr_direct0001" } }));
+    await t.store.putApproval({
+      schemaVersion: SCHEMA_VERSION,
+      id: "appr_direct0001",
+      experimentId: t.id as `exp_${string}`,
+      round: 1,
+      sourceVersionId: BASE,
+      patchIds: [label!.id],
+      approvedBy: "d",
+      at: NOW,
+    });
+    t.runtime.launch(t.id);
+    await t.runtime.idle(t.id);
+    expect((await t.exp()).state).toBe("accepted");
+    expect(t.candidates.created).toEqual([{ sourceVersionId: BASE, patchIds: [label!.id] }]);
+    expect((await t.store.getPatch(label!.id))!.state).toBe("applied");
+    expect((await t.store.getPatch(token!.id))!.state).toBe("proposed");
+  });
+
+  it("approval re-check maps a mid-flight incumbent change to STALE_SOURCE_VERSION", async () => {
+    const t = await setup();
+    await t.runtime.idle(t.id);
+    const ids = (await t.proposedPatches()).map((p) => p.id);
+    const orig = t.store.listPatches.bind(t.store);
+    let fired = false;
+    t.store.listPatches = async (experimentId, round) => {
+      if (!fired) {
+        fired = true; // after approve's pre-guard, before its claim
+        await t.store.updateExperiment(t.id, (x) => ({ ...x, incumbentVersionId: "ver_other0001" }));
+      }
+      return orig(experimentId, round);
+    };
+    const r = await t.cmd.approvePatches({ ...t.okApproval(), patchIds: ids });
+    expect(r).toMatchObject({ ok: false, code: "STALE_SOURCE_VERSION" });
+    expect(await t.store.getApproval(t.id, 1)).toBeUndefined();
+    expect((await t.exp()).round.approvalId).toBeUndefined();
+  });
+
   it("approval recorded against a non-incumbent source version is not applied", async () => {
     const t = await setup();
     await t.runtime.idle(t.id);

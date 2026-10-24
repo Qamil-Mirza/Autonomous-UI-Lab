@@ -28,7 +28,7 @@ export async function awaitingApproval(ctx: StepContext, e: Experiment): Promise
 }
 
 /**
- * `patching`: only `approved` patches of this round's approval go to C, against the incumbent. C's answer must
+ * `patching`: only the patches named by this round's stored Approval (never blocked ones) go to C, against the incumbent. C's answer must
  * cover exactly those patches (ruling R9) and build on the incumbent; the candidate and its immutable
  * `DesignVersion` are recorded and the patches marked `applied`.
  */
@@ -43,8 +43,10 @@ export async function patching(ctx: StepContext, e: Experiment): Promise<boolean
     await stop(ctx, "NO_VALID_PATCH", `approval is for ${approval?.sourceVersionId ?? "(none)"}, not the incumbent ${e.incumbentVersionId}`);
     return true;
   }
+  // The stored Approval is authoritative for which patches apply (not patch state, which the command writes
+  // separately); blocked patches can never be applied.
   const approvedIds = new Set<string>(approval.patchIds);
-  const patches = (await store.listPatches(e.id, e.round.index)).filter((p) => approvedIds.has(p.id) && p.state === "approved");
+  const patches = (await store.listPatches(e.id, e.round.index)).filter((p) => approvedIds.has(p.id) && p.state !== "blocked");
   if (patches.length === 0) {
     await stop(ctx, "NO_VALID_PATCH", "no approved patches to apply");
     return true;

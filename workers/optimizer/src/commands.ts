@@ -161,8 +161,12 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
     try {
       await store.updateExperiment(experimentId, (x) => {
         if (x.round.approvalId) refused = fail("ALREADY_APPROVED", `round ${round} of experiment ${experimentId} is already approved`);
-        else if (x.state !== "awaiting_approval" || x.cancelRequested || x.round.index !== round || x.incumbentVersionId !== sourceVersionId) {
+        else if (x.state !== "awaiting_approval" || x.cancelRequested) {
           refused = fail("INVALID_STATE", `experiment ${experimentId} changed before the approval was recorded (state ${x.state}${x.cancelRequested ? ", cancel requested" : ""})`);
+        } else if (x.incumbentVersionId !== sourceVersionId) {
+          refused = fail("STALE_SOURCE_VERSION", `source version ${sourceVersionId} is not the incumbent ${x.incumbentVersionId}`);
+        } else if (x.round.index !== round) {
+          refused = fail("STALE_SOURCE_VERSION", `round ${round} is not the current round ${x.round.index}`);
         }
         if (refused) throw refused;
         return { ...x, round: { ...x.round, approvalId: approval.id } };
@@ -171,12 +175,14 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
       if (refused && err === refused) return refused;
       throw err;
     }
-    await store.putApproval(approval);
+    // Write order matters: patch states first, the Approval record last. The record is the commit marker the
+    // controller waits on (`awaiting_approval` parks until it exists), so a drive never sees a half-written approval.
     const chosen = new Set<string>(selected);
     for (const p of roundPatches) {
       if (p.state === "blocked") continue;
       await store.updatePatch(p.id, { state: chosen.has(p.id) ? "approved" : "declined" });
     }
+    await store.putApproval(approval);
     runtime.launch(experimentId);
     return done({ approvalId: approval.id });
   });
