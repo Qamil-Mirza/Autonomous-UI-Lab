@@ -8,7 +8,7 @@ describe('prototype handoff contracts', () => {
   it('rejects unsupported success and empty or duplicate checks', () => {
     const base = { runId: 'run_example', achieved: true, at: new Date().toISOString() };
     expect(GoalCheckResult.safeParse({ ...base, checks: [] }).success).toBe(false);
-    expect(GoalCheckResult.safeParse({ ...base, checks: [{ name: 'Free selected', passed: false }] }).success).toBe(false);
-    expect(GoalCheckResult.safeParse({ ...base, checks: [{ name: 'Free selected', passed: true }, { name: 'Free selected', passed: true }] }).success).toBe(false);
+    expect(GoalCheckResult.safeParse({ ...base, checks: [{ name: 'Free selected', passed: false, detail: 'Not selected' }] }).success).toBe(false);
+    expect(GoalCheckResult.safeParse({ ...base, checks: [{ name: 'Free selected', passed: true, detail: 'Selected' }, { name: 'Free selected', passed: true, detail: 'Selected' }] }).success).toBe(false);
   });
 });

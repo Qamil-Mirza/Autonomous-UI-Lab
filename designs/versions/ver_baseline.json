@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0.0",
+  "versionId": "ver_baseline",
+  "manifestHash": "sha256:38cb11e170dea53a334c7c1ce761b1203485a1181b948f14ce0de7781da2347e",
+  "elements": [
+    { "elementId": "signup.title", "screen": "signup", "role": "heading", "label": "Create your account", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 0 },
+    { "elementId": "signup.helper", "screen": "signup", "role": "text", "label": "Start organizing your team's contacts and deals.", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 1 },
+    { "elementId": "signup.name", "screen": "signup", "role": "textbox", "label": "Full name", "protected": true, "categories": ["signup"], "supportedOps": [], "order": 2 },
+    { "elementId": "signup.name.error", "screen": "signup", "role": "alert", "label": "Enter your full name", "protected": true, "categories": ["signup"], "supportedOps": [], "order": 3 },
+    { "elementId": "signup.email", "screen": "signup", "role": "textbox", "label": "Work email", "protected": true, "categories": ["signup"], "supportedOps": [], "order": 4 },
+    { "elementId": "signup.email.error", "screen": "signup", "role": "alert", "label": "Enter a valid email address", "protected": true, "categories": ["signup"], "supportedOps": [], "order": 5 },
+    { "elementId": "signup.password", "screen": "signup", "role": "textbox", "label": "Password", "protected": true, "categories": ["auth"], "supportedOps": [], "order": 6 },
+    { "elementId": "signup.password.error", "screen": "signup", "role": "alert", "label": "Use at least 8 characters", "protected": true, "categories": ["auth"], "supportedOps": [], "order": 7 },
+    { "elementId": "signup.consent", "screen": "signup", "role": "checkbox", "label": "I agree to the Terms of Service and Privacy Policy", "protected": true, "categories": ["consent"], "supportedOps": [], "order": 8 },
+    { "elementId": "signup.consent.error", "screen": "signup", "role": "alert", "label": "Agree to the terms to continue", "protected": true, "categories": ["consent"], "supportedOps": [], "order": 9 },
+    { "elementId": "signup.submit", "screen": "signup", "role": "button", "label": "Create account", "protected": true, "categories": ["signup"], "supportedOps": [], "styleToken": "button.primary", "order": 10 },
+
+    { "elementId": "workspace.back", "screen": "workspace", "role": "link", "label": "Back", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 0 },
+    { "elementId": "workspace.form", "screen": "workspace", "role": "group", "protected": false, "categories": [], "supportedOps": [], "order": 1 },
+    { "elementId": "workspace.title", "screen": "workspace", "role": "heading", "label": "Name your workspace", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 2 },
+    { "elementId": "workspace.helper", "screen": "workspace", "role": "text", "label": "This is where your team will manage contacts and deals.", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 3 },
+    { "elementId": "workspace.name", "screen": "workspace", "role": "textbox", "label": "Workspace name", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 4 },
+    { "elementId": "workspace.name.error", "screen": "workspace", "role": "alert", "label": "Enter a workspace name", "protected": true, "categories": ["validation"], "supportedOps": [], "order": 5 },
+    { "elementId": "workspace.continue", "screen": "workspace", "role": "button", "label": "Continue", "protected": false, "categories": [], "supportedOps": ["set_label", "set_style_token"], "styleToken": "button.primary", "order": 6 },
+
+    { "elementId": "plan.back", "screen": "plan", "role": "link", "label": "Back", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 0 },
+    { "elementId": "plan.title", "screen": "plan", "role": "heading", "label": "Choose your plan", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 1 },
+    { "elementId": "plan.helper", "screen": "plan", "role": "text", "label": "You can change plans anytime.", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 2 },
+    { "elementId": "plan.free.price", "screen": "plan", "role": "text", "label": "$0 / month", "protected": true, "categories": ["pricing"], "supportedOps": [], "order": 3 },
+    { "elementId": "plan.free.note", "screen": "plan", "role": "text", "label": "No card required", "protected": false, "categories": [], "supportedOps": ["set_label", "set_visibility"], "order": 4, "visible": false },
+    { "elementId": "plan.free.cta", "screen": "plan", "role": "button", "label": "Continue", "protected": false, "categories": [], "supportedOps": ["set_label", "set_style_token"], "styleToken": "button.secondary", "order": 5 },
+    { "elementId": "plan.pro.price", "screen": "plan", "role": "text", "label": "$12 / user / month", "protected": true, "categories": ["pricing"], "supportedOps": [], "order": 6 },
+    { "elementId": "plan.pro.note", "screen": "plan", "role": "text", "label": "14-day free trial, card required", "protected": true, "categories": ["pricing"], "supportedOps": [], "order": 7 },
+    { "elementId": "plan.pro.cta", "screen": "plan", "role": "button", "label": "Start free trial", "protected": false, "categories": [], "supportedOps": ["set_label", "set_style_token"], "styleToken": "button.primary", "order": 8 },
+
+    { "elementId": "invite.back", "screen": "invite", "role": "link", "label": "Back", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 0 },
+    { "elementId": "invite.form", "screen": "invite", "role": "group", "protected": false, "categories": [], "supportedOps": [], "order": 1 },
+    { "elementId": "invite.title", "screen": "invite", "role": "heading", "label": "Invite a teammate!", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 2 },
+    { "elementId": "invite.helper", "screen": "invite", "role": "text", "label": "They’ll get an email to join your workspace.", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 3 },
+    { "elementId": "invite.email", "screen": "invite", "role": "textbox", "label": "Teammate email", "protected": true, "categories": ["validation"], "supportedOps": [], "order": 4 },
+    { "elementId": "invite.error", "screen": "invite", "role": "alert", "label": "Enter a valid email address", "protected": true, "categories": ["validation"], "supportedOps": [], "order": 5 },
+    { "elementId": "invite.send", "screen": "invite", "role": "button", "label": "Send invite", "protected": false, "categories": [], "supportedOps": ["set_label", "set_style_token"], "styleToken": "button.primary", "order": 6 },
+
+    { "elementId": "confirm.title", "screen": "confirm", "role": "heading", "label": "You're all set", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 0 },
+    { "elementId": "confirm.helper", "screen": "confirm", "role": "text", "label": "Here's what we set up for you.", "protected": false, "categories": [], "supportedOps": ["set_label"], "order": 1 },
+    { "elementId": "confirm.summary", "screen": "confirm", "role": "group", "protected": false, "categories": [], "supportedOps": [], "order": 2 },
+    { "elementId": "confirm.done", "screen": "confirm", "role": "button", "label": "Go to dashboard", "protected": false, "categories": [], "supportedOps": ["set_label", "set_style_token"], "styleToken": "button.primary", "order": 3 }
+  ]
+}

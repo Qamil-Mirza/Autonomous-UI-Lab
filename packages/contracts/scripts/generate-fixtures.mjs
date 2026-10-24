@@ -386,7 +386,7 @@ write("evaluation.accepted.json", {
 write("evaluation.rejected.json", {
   ...evBase, id: "eval_0002", candidateVersionId: VER_CAND3, baseline: mBase, candidate: null, guardrails: guard(failChecks), deltaPp: null,
   decision: "rejected", reasons: ["guardrail protected_elements_unchanged failed; candidate batch not run"],
-  stoppingReason: "NO_MEASURED_IMPROVEMENT", at: "2026-10-23T11:55:00.000Z",
+  stoppingReason: "NO_VALID_PATCH", at: "2026-10-23T11:55:00.000Z",
 });
 write("evaluation.inconclusive.json", {
   ...evBase, id: "eval_0003", candidateVersionId: VER_CAND2, baseline: mBase, candidate: mFlat, guardrails: guard(passChecks), deltaPp: dFlat,

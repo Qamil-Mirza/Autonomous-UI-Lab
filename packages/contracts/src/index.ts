@@ -11,3 +11,4 @@ export * from "./evaluation";
 export * from "./experiment";
 export * from "./commands";
 export * from "./prototype";
+export * from "./goal";

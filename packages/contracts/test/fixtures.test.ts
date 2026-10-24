@@ -204,7 +204,7 @@ describe("other fixture content", () => {
     const inc = loadFixture("evaluation.inconclusive.json", Evaluation);
     expect(acc).toMatchObject({ decision: "accepted" });
     expect(acc.deltaPp).toBe(25);
-    expect(rej).toMatchObject({ decision: "rejected", candidate: null, deltaPp: null });
+    expect(rej).toMatchObject({ decision: "rejected", candidate: null, deltaPp: null, stoppingReason: "NO_VALID_PATCH" });
     expect(rej.guardrails.some((g) => !g.passed)).toBe(true);
     expect(inc).toMatchObject({ decision: "inconclusive" });
     expect(inc.deltaPp).toBe(8.3);

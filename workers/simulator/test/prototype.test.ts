@@ -43,7 +43,7 @@ it('uses run-scoped APIs, test IDs, trusted checks, and CSS pixels on Retina', a
     const adapter = { checkGoal: async (runId: string) => {
       const response = await fetch(`${base}/api/runs/${runId}/state`);
       const state = await response.json() as { achieved: boolean };
-      return GoalCheckResult.parse({ runId, achieved: state.achieved, checks: [{ name: 'Stub server state', passed: state.achieved }], at: new Date().toISOString() });
+      return GoalCheckResult.parse({ runId, achieved: state.achieved, checks: [{ name: 'Stub server state', passed: state.achieved, detail: 'Local test stub' }], at: new Date().toISOString() });
     } };
     const integration = prototypeIntegration(base, 'ver_baseline', adapter);
     expect(prototypeUrl(base, 'ver_baseline', 'run_example')).toBe(`${base}/v/ver_baseline/signup?run=run_example`);
@@ -76,7 +76,7 @@ it('uses run-scoped APIs, test IDs, trusted checks, and CSS pixels on Retina', a
     expect(result.events[2]!.viewport).toEqual({ width: 1280, height: 800 });
     const runDir = join(dir, (await readdir(dir))[0]!);
     expect(JSON.parse(await readFile(join(runDir, 'goal-check.json'), 'utf8')).runId).toBe(result.runId);
-    const wrongRun = prototypeIntegration(base, 'ver_baseline', { checkGoal: async () => ({ runId: 'run_wrong', achieved: true, checks: [{ name: 'check', passed: true }], at: new Date().toISOString() }) });
+    const wrongRun = prototypeIntegration(base, 'ver_baseline', { checkGoal: async () => ({ runId: 'run_wrong', achieved: true, checks: [{ name: 'check', passed: true, detail: 'Wrong run test' }], at: new Date().toISOString() }) });
     await expect(wrongRun.checkGoal('run_example')).rejects.toThrow('another run');
   } finally {
     await new Promise<void>(resolve => server.close(() => resolve()));
