@@ -13,7 +13,7 @@ npm run check -w @ghostloop/prototype     # typecheck
 npm run e2e -w @ghostloop/prototype       # Playwright end-to-end tests (see below)
 ```
 
-Both `dev` and `preview` serve the app, the design manifests (`/designs`) and the run API (`/api/runs`) on one port.
+Both `dev` and `preview` serve the app, the design manifests (`/designs`), the run API (`/api/runs`) and the Figma mapping API (`/api/figma/:versionId`) on one port.
 
 ## Runs and goal checking (for harnesses)
 
@@ -30,6 +30,10 @@ Every screen submit is sent to the run-scoped API from `@ghostloop/prototype-ada
 - **Goal check.** Call `checkGoal(runId, { baseUrl: "http://localhost:5173" })` from `@ghostloop/prototype-adapter`. It reads only the run's stored state, never the screen.
 
 `packages/prototype-adapter/README.md` documents the full harness recipe, every endpoint with curl examples, the five goal checks and `GHOSTLOOP_RUNS_DIR`.
+
+## Figma mappings
+
+`GET /api/figma/:versionId` returns the version's Figma mapping (frame URL, `verified`/`mismatch` status, manifest hash, patch IDs and per-element checks), `{ versionId, status: "pending" }` if none exists yet, or 404 for an unknown version. See `packages/prototype-adapter/README.md` for the fields and `docs/figma-variant-workflow.md` for how mappings are made.
 
 ## Routes
 

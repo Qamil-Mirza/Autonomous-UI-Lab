@@ -1,0 +1,1165 @@
+{
+  "frameUrl": "https://www.figma.com/design/hUYlyMbzUB2LnefdcudZOb/Calhacks-13.0?node-id=15-122",
+  "status": "verified",
+  "manifestHash": "sha256:38cb11e170dea53a334c7c1ce761b1203485a1181b948f14ce0de7781da2347e",
+  "patchIds": [],
+  "versionId": "ver_baseline",
+  "parentVersionId": null,
+  "fileKey": "hUYlyMbzUB2LnefdcudZOb",
+  "frames": [
+    {
+      "screen": "signup",
+      "nodeId": "20:87",
+      "name": "signup"
+    },
+    {
+      "screen": "signup",
+      "nodeId": "39:98",
+      "name": "signup--error"
+    },
+    {
+      "screen": "workspace",
+      "nodeId": "18:3",
+      "name": "workspace"
+    },
+    {
+      "screen": "workspace",
+      "nodeId": "39:143",
+      "name": "workspace--error"
+    },
+    {
+      "screen": "plan",
+      "nodeId": "22:186",
+      "name": "plan"
+    },
+    {
+      "screen": "invite",
+      "nodeId": "15:234",
+      "name": "invite"
+    },
+    {
+      "screen": "invite",
+      "nodeId": "16:91",
+      "name": "invite--error"
+    },
+    {
+      "screen": "confirm",
+      "nodeId": "24:117",
+      "name": "confirm"
+    }
+  ],
+  "checks": [
+    {
+      "elementId": "signup.title",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer signup.title",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "signup.title",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Create your account\"",
+      "actual": "[\"Create your account\"]",
+      "passed": true
+    },
+    {
+      "elementId": "signup.title",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "signup.helper",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer signup.helper",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "signup.helper",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Start organizing your team's contacts and deals.\"",
+      "actual": "[\"Start organizing your team's contacts and deals.\"]",
+      "passed": true
+    },
+    {
+      "elementId": "signup.helper",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "signup.name",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer signup.name",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "signup.name",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Full name\"",
+      "actual": "[\"Alex Kim\",\"Full name\",\"Enter your full name\"]",
+      "passed": true
+    },
+    {
+      "elementId": "signup.name",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "signup.name.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer signup.name.error",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "signup.name.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Enter your full name\"",
+      "actual": "[\"Enter your full name\"]",
+      "passed": true
+    },
+    {
+      "elementId": "signup.name.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "signup.email",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer signup.email",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "signup.email",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Work email\"",
+      "actual": "[\"alex@northwind.test\",\"Work email\",\"Enter a valid email address\"]",
+      "passed": true
+    },
+    {
+      "elementId": "signup.email",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "signup.email.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer signup.email.error",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "signup.email.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Enter a valid email address\"",
+      "actual": "[\"Enter a valid email address\"]",
+      "passed": true
+    },
+    {
+      "elementId": "signup.email.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "signup.password",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer signup.password",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "signup.password",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Password\"",
+      "actual": "[\"At least 8 characters\",\"Password\",\"Use at least 8 characters\"]",
+      "passed": true
+    },
+    {
+      "elementId": "signup.password",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "signup.password.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer signup.password.error",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "signup.password.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Use at least 8 characters\"",
+      "actual": "[\"Use at least 8 characters\"]",
+      "passed": true
+    },
+    {
+      "elementId": "signup.password.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "signup.consent",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer signup.consent",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "signup.consent",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"I agree to the Terms of Service and Privacy Policy\"",
+      "actual": "[\"I agree to the Terms of Service and Privacy Policy\"]",
+      "passed": true
+    },
+    {
+      "elementId": "signup.consent",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "signup.consent.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer signup.consent.error",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "signup.consent.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Agree to the terms to continue\"",
+      "actual": "[\"Agree to the terms to continue\"]",
+      "passed": true
+    },
+    {
+      "elementId": "signup.consent.error",
+      "screen": "signup",
+      "frame": "signup--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "signup.submit",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer signup.submit",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "signup.submit",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Create account\"",
+      "actual": "[\"Create account\"]",
+      "passed": true
+    },
+    {
+      "elementId": "signup.submit",
+      "screen": "signup",
+      "frame": "signup, signup--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.back",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer workspace.back",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.back",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Back\"",
+      "actual": "[\"←Back\"]",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.back",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.form",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer workspace.form",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.form",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.title",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer workspace.title",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.title",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Name your workspace\"",
+      "actual": "[\"Name your workspace\"]",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.title",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.helper",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer workspace.helper",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.helper",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"This is where your team will manage contacts and deals.\"",
+      "actual": "[\"This is where your team will manage contacts and deals.\"]",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.helper",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.name",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer workspace.name",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.name",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Workspace name\"",
+      "actual": "[\"Workspace name\",\"Northwind Sales\",\"Enter a workspace name\"]",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.name",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.name.error",
+      "screen": "workspace",
+      "frame": "workspace--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer workspace.name.error",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.name.error",
+      "screen": "workspace",
+      "frame": "workspace--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Enter a workspace name\"",
+      "actual": "[\"Enter a workspace name\"]",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.name.error",
+      "screen": "workspace",
+      "frame": "workspace--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.continue",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer workspace.continue",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.continue",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Continue\"",
+      "actual": "[\"Continue\"]",
+      "passed": true
+    },
+    {
+      "elementId": "workspace.continue",
+      "screen": "workspace",
+      "frame": "workspace, workspace--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "plan.back",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer plan.back",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "plan.back",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Back\"",
+      "actual": "[\"←Back\"]",
+      "passed": true
+    },
+    {
+      "elementId": "plan.back",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "plan.title",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer plan.title",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "plan.title",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Choose your plan\"",
+      "actual": "[\"Choose your plan\"]",
+      "passed": true
+    },
+    {
+      "elementId": "plan.title",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "plan.helper",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer plan.helper",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "plan.helper",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"You can change plans anytime.\"",
+      "actual": "[\"You can change plans anytime.\"]",
+      "passed": true
+    },
+    {
+      "elementId": "plan.helper",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "plan.free.price",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer plan.free.price",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "plan.free.price",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"$0 / month\"",
+      "actual": "[\"$0 / month\"]",
+      "passed": true
+    },
+    {
+      "elementId": "plan.free.price",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "plan.free.note",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer plan.free.note",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "plan.free.note",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"No card required\"",
+      "actual": "[\"No card required\"]",
+      "passed": true
+    },
+    {
+      "elementId": "plan.free.note",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "visible",
+      "expected": "false",
+      "actual": "false",
+      "passed": true
+    },
+    {
+      "elementId": "plan.free.cta",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer plan.free.cta",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "plan.free.cta",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Continue\"",
+      "actual": "[\"Continue\"]",
+      "passed": true
+    },
+    {
+      "elementId": "plan.free.cta",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "plan.pro.price",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer plan.pro.price",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "plan.pro.price",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"$12 / user / month\"",
+      "actual": "[\"$12 / user / month\"]",
+      "passed": true
+    },
+    {
+      "elementId": "plan.pro.price",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "plan.pro.note",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer plan.pro.note",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "plan.pro.note",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"14-day free trial, card required\"",
+      "actual": "[\"14-day free trial, card required\"]",
+      "passed": true
+    },
+    {
+      "elementId": "plan.pro.note",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "plan.pro.cta",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer plan.pro.cta",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "plan.pro.cta",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Start free trial\"",
+      "actual": "[\"Start free trial\"]",
+      "passed": true
+    },
+    {
+      "elementId": "plan.pro.cta",
+      "screen": "plan",
+      "frame": "plan",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "invite.back",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer invite.back",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "invite.back",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Back\"",
+      "actual": "[\"←Back\"]",
+      "passed": true
+    },
+    {
+      "elementId": "invite.back",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "invite.form",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer invite.form",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "invite.form",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "invite.title",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer invite.title",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "invite.title",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Invite a teammate!\"",
+      "actual": "[\"Invite a teammate!\"]",
+      "passed": true
+    },
+    {
+      "elementId": "invite.title",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "invite.helper",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer invite.helper",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "invite.helper",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"They’ll get an email to join your workspace.\"",
+      "actual": "[\"They’ll get an email to join your workspace.\"]",
+      "passed": true
+    },
+    {
+      "elementId": "invite.helper",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "invite.email",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer invite.email",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "invite.email",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Teammate email\"",
+      "actual": "[\"Teammate email\",\"name@company.com\",\"Enter a valid email address\",\"johndoe@startup\"]",
+      "passed": true
+    },
+    {
+      "elementId": "invite.email",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "invite.error",
+      "screen": "invite",
+      "frame": "invite--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer invite.error",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "invite.error",
+      "screen": "invite",
+      "frame": "invite--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Enter a valid email address\"",
+      "actual": "[\"Enter a valid email address\"]",
+      "passed": true
+    },
+    {
+      "elementId": "invite.error",
+      "screen": "invite",
+      "frame": "invite--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "invite.send",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer invite.send",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "invite.send",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Send invite\"",
+      "actual": "[\"Send invite\"]",
+      "passed": true
+    },
+    {
+      "elementId": "invite.send",
+      "screen": "invite",
+      "frame": "invite, invite--error",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "confirm.title",
+      "screen": "confirm",
+      "frame": "confirm",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer confirm.title",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "confirm.title",
+      "screen": "confirm",
+      "frame": "confirm",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"You're all set\"",
+      "actual": "[\"You're all set\"]",
+      "passed": true
+    },
+    {
+      "elementId": "confirm.title",
+      "screen": "confirm",
+      "frame": "confirm",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "confirm.helper",
+      "screen": "confirm",
+      "frame": "confirm",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer confirm.helper",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "confirm.helper",
+      "screen": "confirm",
+      "frame": "confirm",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Here's what we set up for you.\"",
+      "actual": "[\"Here's what we set up for you.\"]",
+      "passed": true
+    },
+    {
+      "elementId": "confirm.helper",
+      "screen": "confirm",
+      "frame": "confirm",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "confirm.summary",
+      "screen": "confirm",
+      "frame": "confirm",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer confirm.summary",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "confirm.summary",
+      "screen": "confirm",
+      "frame": "confirm",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    },
+    {
+      "elementId": "confirm.done",
+      "screen": "confirm",
+      "frame": "confirm",
+      "kind": "present",
+      "field": "layer",
+      "expected": "layer confirm.done",
+      "actual": "present",
+      "passed": true
+    },
+    {
+      "elementId": "confirm.done",
+      "screen": "confirm",
+      "frame": "confirm",
+      "kind": "present",
+      "field": "label",
+      "expected": "\"Go to dashboard\"",
+      "actual": "[\"Go to dashboard\"]",
+      "passed": true
+    },
+    {
+      "elementId": "confirm.done",
+      "screen": "confirm",
+      "frame": "confirm",
+      "kind": "present",
+      "field": "visible",
+      "expected": "true",
+      "actual": "true",
+      "passed": true
+    }
+  ],
+  "checkedAt": "2026-10-24T22:52:37.338Z",
+  "method": "Claude Code via Figma MCP, designer-triggered"
+}

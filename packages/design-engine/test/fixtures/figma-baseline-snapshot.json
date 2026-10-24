@@ -1,0 +1,1142 @@
+{
+ "fileKey": "hUYlyMbzUB2LnefdcudZOb",
+ "frames": [
+  {
+   "screen": "signup",
+   "nodeId": "20:87",
+   "name": "signup",
+   "elements": {
+    "signup.submit": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Create account"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 407,
+      "y": 551,
+      "width": 106,
+      "height": 27.27
+     },
+     "style": "signup.submit:FRAME fill=|background:RECTANGLE fill=SOLID(0.92,0.3,0.07,1)|text:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91"
+    },
+    "signup.consent": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "I agree to the Terms of Service and Privacy Policy"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 407,
+      "y": 511,
+      "width": 466,
+      "height": 18
+     },
+     "style": "signup.consent:FRAME fill=|text:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|box:RECTANGLE fill= stroke=SOLID(0.69,0.8,0.86,1)@1.7"
+    },
+    "signup.password": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "At least 8 characters",
+      "Password"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 407,
+      "y": 439,
+      "width": 466,
+      "height": 50
+     },
+     "style": "signup.password:FRAME fill=|placeholder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12|box:RECTANGLE fill= stroke=SOLID(0.69,0.8,0.86,1)@1.7|label:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12"
+    },
+    "signup.email": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "alex@northwind.test",
+      "Work email"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 407,
+      "y": 373,
+      "width": 466,
+      "height": 50
+     },
+     "style": "signup.email:FRAME fill=|placeholder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12|box:RECTANGLE fill= stroke=SOLID(0.69,0.8,0.86,1)@1.7|label:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12"
+    },
+    "signup.name": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Alex Kim",
+      "Full name"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 407,
+      "y": 307,
+      "width": 466,
+      "height": 50
+     },
+     "style": "signup.name:FRAME fill=|placeholder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12|box:RECTANGLE fill= stroke=SOLID(0.69,0.8,0.86,1)@1.7|label:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12"
+    },
+    "signup.helper": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Start organizing your team's contacts and deals."
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 259,
+      "width": 466,
+      "height": 19
+     },
+     "style": "signup.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16"
+    },
+    "signup.title": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Create your account"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 206,
+      "width": 466,
+      "height": 51
+     },
+     "style": "signup.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42"
+    }
+   }
+  },
+  {
+   "screen": "signup",
+   "nodeId": "39:98",
+   "name": "signup--error",
+   "elements": {
+    "signup.submit": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Create account"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 407,
+      "y": 591,
+      "width": 106,
+      "height": 27.27
+     },
+     "style": "signup.submit:FRAME fill=|background:RECTANGLE fill=SOLID(0.92,0.3,0.07,1)|text:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91"
+    },
+    "signup.consent": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "I agree to the Terms of Service and Privacy Policy"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 407,
+      "y": 531,
+      "width": 466,
+      "height": 18
+     },
+     "style": "signup.consent:FRAME fill=|text:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|box:RECTANGLE fill= stroke=SOLID(0.69,0.8,0.86,1)@1.7"
+    },
+    "signup.consent.error": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Agree to the terms to continue"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 552,
+      "width": 325,
+      "height": 15
+     },
+     "style": "signup.consent.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12"
+    },
+    "signup.password": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "At least 8 characters",
+      "Password",
+      "Use at least 8 characters"
+     ],
+     "contains": [
+      "signup.password.error"
+     ],
+     "bounds": {
+      "x": 407,
+      "y": 439,
+      "width": 466,
+      "height": 70
+     },
+     "style": "signup.password:FRAME fill=|placeholder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12|box:RECTANGLE fill= stroke=SOLID(0.71,0.05,0,1)@2|label:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|signup.password.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12"
+    },
+    "signup.password.error": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Use at least 8 characters"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 494,
+      "width": 325,
+      "height": 15
+     },
+     "style": "signup.password.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12"
+    },
+    "signup.email": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "alex@northwind.test",
+      "Work email",
+      "Enter a valid email address"
+     ],
+     "contains": [
+      "signup.email.error"
+     ],
+     "bounds": {
+      "x": 407,
+      "y": 353,
+      "width": 466,
+      "height": 70
+     },
+     "style": "signup.email:FRAME fill=|placeholder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12|box:RECTANGLE fill= stroke=SOLID(0.71,0.05,0,1)@2|label:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|signup.email.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12"
+    },
+    "signup.email.error": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Enter a valid email address"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 408,
+      "width": 325,
+      "height": 15
+     },
+     "style": "signup.email.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12"
+    },
+    "signup.name": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Alex Kim",
+      "Full name",
+      "Enter your full name"
+     ],
+     "contains": [
+      "signup.name.error"
+     ],
+     "bounds": {
+      "x": 407,
+      "y": 267,
+      "width": 466,
+      "height": 70
+     },
+     "style": "signup.name:FRAME fill=|placeholder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12|box:RECTANGLE fill= stroke=SOLID(0.71,0.05,0,1)@2|label:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|signup.name.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12"
+    },
+    "signup.name.error": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Enter your full name"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 322,
+      "width": 325,
+      "height": 15
+     },
+     "style": "signup.name.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12"
+    },
+    "signup.helper": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Start organizing your team's contacts and deals."
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 219,
+      "width": 466,
+      "height": 19
+     },
+     "style": "signup.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16"
+    },
+    "signup.title": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Create your account"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 166,
+      "width": 466,
+      "height": 51
+     },
+     "style": "signup.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42"
+    }
+   }
+  },
+  {
+   "screen": "workspace",
+   "nodeId": "18:3",
+   "name": "workspace",
+   "elements": {
+    "workspace.form": {
+     "type": "GROUP",
+     "visible": true,
+     "texts": [
+      "Name your workspace",
+      "This is where your team will manage contacts and deals.",
+      "Workspace name",
+      "Northwind Sales",
+      "Continue"
+     ],
+     "contains": [
+      "workspace.title",
+      "workspace.helper",
+      "workspace.name",
+      "workspace.continue"
+     ],
+     "bounds": {
+      "x": 407,
+      "y": 317,
+      "width": 466,
+      "height": 151
+     },
+     "style": "workspace.form:GROUP|workspace.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42|workspace.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16|workspace.name:FRAME fill=|name label:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|name outline:RECTANGLE fill= stroke=SOLID(0.69,0.8,0.86,1)@1.7|name place holder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12|workspace.continue:FRAME fill=|continue bg:RECTANGLE fill=SOLID(0.92,0.3,0.07,1)|continue label:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91"
+    },
+    "workspace.title": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Name your workspace"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 317,
+      "width": 458,
+      "height": 51
+     },
+     "style": "workspace.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42"
+    },
+    "workspace.helper": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "This is where your team will manage contacts and deals."
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 370,
+      "width": 427,
+      "height": 19
+     },
+     "style": "workspace.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16"
+    },
+    "workspace.name": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Workspace name",
+      "Northwind Sales"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 407,
+      "y": 418,
+      "width": 398,
+      "height": 50
+     },
+     "style": "workspace.name:FRAME fill=|name label:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|name outline:RECTANGLE fill= stroke=SOLID(0.69,0.8,0.86,1)@1.7|name place holder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12"
+    },
+    "workspace.continue": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Continue"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 767,
+      "y": 439,
+      "width": 106,
+      "height": 27.27
+     },
+     "style": "workspace.continue:FRAME fill=|continue bg:RECTANGLE fill=SOLID(0.92,0.3,0.07,1)|continue label:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91"
+    },
+    "workspace.back": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "←Back"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 360,
+      "y": 258,
+      "width": 325,
+      "height": 15
+     },
+     "style": "workspace.back:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/12"
+    },
+    "brand.coor.c": {
+     "type": "VECTOR",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 151.2,
+      "y": 23.52,
+      "width": 26.44,
+      "height": 23.57
+     },
+     "style": "brand.coor.c:VECTOR fill=SOLID(0.09,0.18,0.34,1)"
+    },
+    "brand.coor.o.first": {
+     "type": "VECTOR",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 179.3,
+      "y": 23.52,
+      "width": 27.23,
+      "height": 23.57
+     },
+     "style": "brand.coor.o.first:VECTOR fill=SOLID(0.09,0.18,0.34,1)"
+    },
+    "brand.coor.o.second": {
+     "type": "VECTOR",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 208.35,
+      "y": 23.52,
+      "width": 27.23,
+      "height": 23.57
+     },
+     "style": "brand.coor.o.second:VECTOR fill=SOLID(0.09,0.18,0.34,1)"
+    },
+    "brand.coor.r": {
+     "type": "VECTOR",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 237.51,
+      "y": 23.81,
+      "width": 24.54,
+      "height": 23
+     },
+     "style": "brand.coor.r:VECTOR fill=SOLID(0.09,0.18,0.34,1)"
+    },
+    "user.icon.head": {
+     "type": "ELLIPSE",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 1225.66,
+      "y": 26,
+      "width": 8.35,
+      "height": 8.48
+     },
+     "style": "user.icon.head:ELLIPSE fill=SOLID(0.97,0.99,1,1)"
+    },
+    "user.icon.body": {
+     "type": "VECTOR",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 1221.02,
+      "y": 35.42,
+      "width": 17.74,
+      "height": 8.95
+     },
+     "style": "user.icon.body:VECTOR fill=SOLID(0.97,0.99,1,1)"
+    }
+   }
+  },
+  {
+   "screen": "workspace",
+   "nodeId": "39:143",
+   "name": "workspace--error",
+   "elements": {
+    "workspace.form": {
+     "type": "GROUP",
+     "visible": true,
+     "texts": [
+      "Name your workspace",
+      "This is where your team will manage contacts and deals.",
+      "Workspace name",
+      "Northwind Sales",
+      "Enter a workspace name",
+      "Continue"
+     ],
+     "contains": [
+      "workspace.title",
+      "workspace.helper",
+      "workspace.name",
+      "workspace.name.error",
+      "workspace.continue"
+     ],
+     "bounds": {
+      "x": 407,
+      "y": 317,
+      "width": 466,
+      "height": 171
+     },
+     "style": "workspace.form:GROUP|workspace.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42|workspace.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16|workspace.name:FRAME fill=|name label:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|name outline:RECTANGLE fill= stroke=SOLID(0.71,0.05,0,1)@2|name place holder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12|workspace.name.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12|workspace.continue:FRAME fill=|continue bg:RECTANGLE fill=SOLID(0.92,0.3,0.07,1)|continue label:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91"
+    },
+    "workspace.title": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Name your workspace"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 317,
+      "width": 458,
+      "height": 51
+     },
+     "style": "workspace.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42"
+    },
+    "workspace.helper": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "This is where your team will manage contacts and deals."
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 370,
+      "width": 427,
+      "height": 19
+     },
+     "style": "workspace.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16"
+    },
+    "workspace.name": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Workspace name",
+      "Northwind Sales",
+      "Enter a workspace name"
+     ],
+     "contains": [
+      "workspace.name.error"
+     ],
+     "bounds": {
+      "x": 407,
+      "y": 418,
+      "width": 398,
+      "height": 70
+     },
+     "style": "workspace.name:FRAME fill=|name label:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|name outline:RECTANGLE fill= stroke=SOLID(0.71,0.05,0,1)@2|name place holder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12|workspace.name.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12"
+    },
+    "workspace.name.error": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Enter a workspace name"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 473,
+      "width": 325,
+      "height": 15
+     },
+     "style": "workspace.name.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12"
+    },
+    "workspace.continue": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Continue"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 767,
+      "y": 439,
+      "width": 106,
+      "height": 27.27
+     },
+     "style": "workspace.continue:FRAME fill=|continue bg:RECTANGLE fill=SOLID(0.92,0.3,0.07,1)|continue label:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91"
+    },
+    "workspace.back": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "←Back"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 360,
+      "y": 258,
+      "width": 325,
+      "height": 15
+     },
+     "style": "workspace.back:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/12"
+    },
+    "brand.coor.c": {
+     "type": "VECTOR",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 151.2,
+      "y": 23.52,
+      "width": 26.44,
+      "height": 23.57
+     },
+     "style": "brand.coor.c:VECTOR fill=SOLID(0.09,0.18,0.34,1)"
+    },
+    "brand.coor.o.first": {
+     "type": "VECTOR",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 179.3,
+      "y": 23.52,
+      "width": 27.23,
+      "height": 23.57
+     },
+     "style": "brand.coor.o.first:VECTOR fill=SOLID(0.09,0.18,0.34,1)"
+    },
+    "brand.coor.o.second": {
+     "type": "VECTOR",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 208.35,
+      "y": 23.52,
+      "width": 27.23,
+      "height": 23.57
+     },
+     "style": "brand.coor.o.second:VECTOR fill=SOLID(0.09,0.18,0.34,1)"
+    },
+    "brand.coor.r": {
+     "type": "VECTOR",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 237.51,
+      "y": 23.81,
+      "width": 24.54,
+      "height": 23
+     },
+     "style": "brand.coor.r:VECTOR fill=SOLID(0.09,0.18,0.34,1)"
+    },
+    "user.icon.head": {
+     "type": "ELLIPSE",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 1225.66,
+      "y": 26,
+      "width": 8.35,
+      "height": 8.48
+     },
+     "style": "user.icon.head:ELLIPSE fill=SOLID(0.97,0.99,1,1)"
+    },
+    "user.icon.body": {
+     "type": "VECTOR",
+     "visible": true,
+     "texts": [],
+     "contains": [],
+     "bounds": {
+      "x": 1221.02,
+      "y": 35.42,
+      "width": 17.74,
+      "height": 8.95
+     },
+     "style": "user.icon.body:VECTOR fill=SOLID(0.97,0.99,1,1)"
+    }
+   }
+  },
+  {
+   "screen": "plan",
+   "nodeId": "22:186",
+   "name": "plan",
+   "elements": {
+    "plan.free.cta": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Continue"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 312,
+      "y": 580,
+      "width": 101.6,
+      "height": 27.27
+     },
+     "style": "plan.free.cta:FRAME fill=SOLID(0.97,0.99,1,1) stroke=SOLID(0.69,0.8,0.86,1)@1.7|text:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/10.91"
+    },
+    "plan.free.price": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "$0 / month"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 312,
+      "y": 375,
+      "width": 284,
+      "height": 29
+     },
+     "style": "plan.free.price:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/24"
+    },
+    "plan.free.note": {
+     "type": "TEXT",
+     "visible": false,
+     "texts": [
+      "No card required"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 312,
+      "y": 411,
+      "width": 284,
+      "height": 15
+     },
+     "style": "plan.free.note:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/12"
+    },
+    "plan.pro.cta": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Start free trial"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 684,
+      "y": 580,
+      "width": 118,
+      "height": 27.27
+     },
+     "style": "plan.pro.cta:FRAME fill=SOLID(0.92,0.3,0.07,1)|text:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91"
+    },
+    "plan.pro.note": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "14-day free trial, card required"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 684,
+      "y": 411,
+      "width": 284,
+      "height": 15
+     },
+     "style": "plan.pro.note:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/12"
+    },
+    "plan.pro.price": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "$12 / user / month"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 684,
+      "y": 375,
+      "width": 284,
+      "height": 29
+     },
+     "style": "plan.pro.price:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/24"
+    },
+    "plan.helper": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "You can change plans anytime."
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 280,
+      "y": 251,
+      "width": 720,
+      "height": 19
+     },
+     "style": "plan.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16"
+    },
+    "plan.title": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Choose your plan"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 280,
+      "y": 198,
+      "width": 720,
+      "height": 51
+     },
+     "style": "plan.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42"
+    },
+    "plan.back": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "←Back"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 277,
+      "y": 276,
+      "width": 325,
+      "height": 15
+     },
+     "style": "plan.back:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/12"
+    }
+   }
+  },
+  {
+   "screen": "invite",
+   "nodeId": "15:234",
+   "name": "invite",
+   "elements": {
+    "invite.form": {
+     "type": "GROUP",
+     "visible": true,
+     "texts": [
+      "Send invite",
+      "Teammate email",
+      "name@company.com",
+      "They’ll get an email to join your workspace.",
+      "Invite a teammate!"
+     ],
+     "contains": [
+      "invite.send",
+      "invite.email",
+      "invite.helper",
+      "invite.title"
+     ],
+     "bounds": {
+      "x": 407,
+      "y": 317,
+      "width": 466,
+      "height": 151
+     },
+     "style": "invite.form:GROUP|invite.send:GROUP|send invite bg:RECTANGLE fill=SOLID(0.92,0.3,0.07,1)|send invite:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91|invite.email:GROUP|teammate email:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|box outline:RECTANGLE fill= stroke=SOLID(0.69,0.8,0.86,1)@1.7|email placeholder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12|invite.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16|invite.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42"
+    },
+    "invite.send": {
+     "type": "GROUP",
+     "visible": true,
+     "texts": [
+      "Send invite"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 767,
+      "y": 439,
+      "width": 106,
+      "height": 27.27
+     },
+     "style": "invite.send:GROUP|send invite bg:RECTANGLE fill=SOLID(0.92,0.3,0.07,1)|send invite:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91"
+    },
+    "invite.email": {
+     "type": "GROUP",
+     "visible": true,
+     "texts": [
+      "Teammate email",
+      "name@company.com"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 407,
+      "y": 418,
+      "width": 398,
+      "height": 50
+     },
+     "style": "invite.email:GROUP|teammate email:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|box outline:RECTANGLE fill= stroke=SOLID(0.69,0.8,0.86,1)@1.7|email placeholder:TEXT fill=SOLID(0.69,0.8,0.86,1) font=Inter Medium/12"
+    },
+    "invite.helper": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "They’ll get an email to join your workspace."
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 370,
+      "width": 326,
+      "height": 19
+     },
+     "style": "invite.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16"
+    },
+    "invite.title": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Invite a teammate!"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 317,
+      "width": 380,
+      "height": 51
+     },
+     "style": "invite.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42"
+    },
+    "invite.back": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "←Back"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 360,
+      "y": 258,
+      "width": 325,
+      "height": 15
+     },
+     "style": "invite.back:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/12"
+    }
+   }
+  },
+  {
+   "screen": "invite",
+   "nodeId": "16:91",
+   "name": "invite--error",
+   "elements": {
+    "invite.form": {
+     "type": "GROUP",
+     "visible": true,
+     "texts": [
+      "Send invite",
+      "Enter a valid email address",
+      "Teammate email",
+      "johndoe@startup",
+      "They’ll get an email to join your workspace.",
+      "Invite a teammate!"
+     ],
+     "contains": [
+      "invite.send",
+      "invite.email",
+      "invite.error",
+      "invite.helper",
+      "invite.title"
+     ],
+     "bounds": {
+      "x": 407,
+      "y": 319,
+      "width": 466,
+      "height": 171
+     },
+     "style": "invite.form:GROUP|invite.send:GROUP|send invite bg:RECTANGLE fill=SOLID(0.92,0.3,0.07,1)|send invite:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91|invite.email:GROUP|invite.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12|teammate email:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|box outline:RECTANGLE fill= stroke=SOLID(0.71,0.05,0,1)@2|value:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Medium/12|invite.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16|invite.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42"
+    },
+    "invite.send": {
+     "type": "GROUP",
+     "visible": true,
+     "texts": [
+      "Send invite"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 767,
+      "y": 440,
+      "width": 106,
+      "height": 27.27
+     },
+     "style": "invite.send:GROUP|send invite bg:RECTANGLE fill=SOLID(0.92,0.3,0.07,1)|send invite:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91"
+    },
+    "invite.email": {
+     "type": "GROUP",
+     "visible": true,
+     "texts": [
+      "Enter a valid email address",
+      "Teammate email",
+      "johndoe@startup"
+     ],
+     "contains": [
+      "invite.error"
+     ],
+     "bounds": {
+      "x": 407,
+      "y": 420,
+      "width": 398,
+      "height": 70
+     },
+     "style": "invite.email:GROUP|invite.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12|teammate email:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Regular/12|box outline:RECTANGLE fill= stroke=SOLID(0.71,0.05,0,1)@2|value:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Medium/12"
+    },
+    "invite.error": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Enter a valid email address"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 475,
+      "width": 325,
+      "height": 15
+     },
+     "style": "invite.error:TEXT fill=SOLID(0.71,0.05,0,1) font=Inter Regular/12"
+    },
+    "invite.helper": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "They’ll get an email to join your workspace."
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 372,
+      "width": 326,
+      "height": 19
+     },
+     "style": "invite.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16"
+    },
+    "invite.title": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Invite a teammate!"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 319,
+      "width": 380,
+      "height": 51
+     },
+     "style": "invite.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42"
+    },
+    "invite.back": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "←Back"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 360,
+      "y": 258,
+      "width": 325,
+      "height": 15
+     },
+     "style": "invite.back:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/12"
+    }
+   }
+  },
+  {
+   "screen": "confirm",
+   "nodeId": "24:117",
+   "name": "confirm",
+   "elements": {
+    "confirm.done": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Go to dashboard"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 520,
+      "width": 128,
+      "height": 27.27
+     },
+     "style": "confirm.done:FRAME fill=SOLID(0.92,0.3,0.07,1)|text:TEXT fill=SOLID(1,1,1,1) font=Inter Bold/10.91"
+    },
+    "confirm.summary": {
+     "type": "FRAME",
+     "visible": true,
+     "texts": [
+      "Workspace",
+      "Northwind Sales",
+      "Plan",
+      "Free",
+      "Invite sent to",
+      "jordan@northwind.test"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 378,
+      "width": 464,
+      "height": 114
+     },
+     "style": "confirm.summary:FRAME fill=|row:FRAME fill=|label:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/14|value:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Medium/14|row:FRAME fill=|label:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/14|value:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Medium/14|row:FRAME fill=|label:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/14|value:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Medium/14"
+    },
+    "confirm.helper": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "Here's what we set up for you."
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 333,
+      "width": 466,
+      "height": 19
+     },
+     "style": "confirm.helper:TEXT fill=SOLID(0.19,0.37,0.55,1) font=Inter Regular/16"
+    },
+    "confirm.title": {
+     "type": "TEXT",
+     "visible": true,
+     "texts": [
+      "You're all set"
+     ],
+     "contains": [],
+     "bounds": {
+      "x": 408,
+      "y": 280,
+      "width": 466,
+      "height": 51
+     },
+     "style": "confirm.title:TEXT fill=SOLID(0.01,0.18,0.34,1) font=Inter Bold/42"
+    }
+   }
+  }
+ ]
+}
