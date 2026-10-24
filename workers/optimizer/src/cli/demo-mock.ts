@@ -3,13 +3,9 @@ import { DesignManifest, ExperimentProtocol, type Experiment, type Hypothesis, t
 import { loadFixture } from "@ghostloop/contracts/fixtures";
 import { createCommands } from "../commands";
 import { ExperimentRuntime } from "../controller";
-import { createMockAnalysis } from "../mocks/analysis";
-import { createMockCandidates } from "../mocks/candidates";
-import { createMockSimulation } from "../mocks/simulation";
+import { createMockAdapters, MOCK_CANDIDATES, type MockCandidateName } from "../mocks";
 import { InMemoryStore } from "../store";
 
-const CANDIDATES = { improved: "batch.candidate-improved.json", flat: "batch.candidate-flat.json", "zero-valid": "batch.zero-valid.json" } as const;
-type CandidateName = keyof typeof CANDIDATES;
 
 export interface DemoSummary {
   state: string;
@@ -31,11 +27,11 @@ const metricsLine = (label: string, m: RunMetrics) =>
   `  ${label}: ${m.successes}/${m.validRuns} valid runs succeeded (rate ${rate(m)}), planned ${m.plannedRuns}; ` +
   `infra errors ${m.infraErrors}, cancelled ${m.cancelled} (excluded from rate)`;
 
-function parseCandidate(argv: string[]): CandidateName {
+function parseCandidate(argv: string[]): MockCandidateName {
   const i = argv.indexOf("--candidate");
   const v = i < 0 ? "improved" : argv[i + 1];
-  if (v === undefined || !(v in CANDIDATES)) throw new Error(`--candidate must be one of: ${Object.keys(CANDIDATES).join(", ")}`);
-  return v as CandidateName;
+  if (v === undefined || !(v in MOCK_CANDIDATES)) throw new Error(`--candidate must be one of: ${Object.keys(MOCK_CANDIDATES).join(", ")}`);
+  return v as MockCandidateName;
 }
 
 export async function main(argv: string[], log: (line: string) => void = console.log): Promise<DemoSummary> {
@@ -44,9 +40,7 @@ export async function main(argv: string[], log: (line: string) => void = console
   const store = new DemoStore();
   const runtime = new ExperimentRuntime({
     store,
-    simulation: createMockSimulation({ baseline: "batch.baseline.json", candidate: CANDIDATES[candidate] }),
-    analysis: createMockAnalysis([], 0.05),
-    candidates: createMockCandidates(),
+    ...createMockAdapters(candidate),
     clock: NOW,
     now: Date.now,
   });

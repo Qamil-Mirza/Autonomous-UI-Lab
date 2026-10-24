@@ -16,6 +16,8 @@ export interface MockSimulationPlan {
   /** Delay before each run; abortable. */
   delayMs?: number;
   throwOn?: "baseline" | "candidate";
+  /** Decides the phase of a request; when absent or undefined, the first version seen is the baseline. */
+  phaseOf?: (req: BatchRequest) => Promise<"baseline" | "candidate" | undefined>;
 }
 
 export type MockSimulation = SimulationAdapter & { calls: BatchRequest[]; duplicatesEmitted: number };
@@ -46,7 +48,7 @@ export function createMockSimulation(plan: MockSimulationPlan): MockSimulation {
     async runBatch(req, onEvent, signal) {
       mock.calls.push(structuredClone(req));
       baselineVersion ??= req.versionId;
-      const phase = req.versionId === baselineVersion ? "baseline" : "candidate";
+      const phase = (await plan.phaseOf?.(req)) ?? (req.versionId === baselineVersion ? "baseline" : "candidate");
       if (plan.throwOn === phase) throw new Error(`mock simulation failure (${phase})`);
       const fixture = loadFixture(phase === "baseline" ? plan.baseline : plan.candidate, BatchResult);
 

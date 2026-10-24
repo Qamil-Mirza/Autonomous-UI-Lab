@@ -14,6 +14,7 @@
   "scripts": {
     "check": "npm run check --workspaces --if-present",
     "demo:mock": "npm run demo:mock -w @ghostloop/optimizer --",
+    "worker": "npm run worker -w @ghostloop/optimizer --",
     "test": "npm run test --workspaces --if-present",
     "stdb:start": "spacetime start",
     "stdb:publish": "spacetime publish --server local --module-path spacetimedb --yes ghostloop",
