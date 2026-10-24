@@ -3,13 +3,11 @@ import { DesignManifest, ExperimentProtocol, type Experiment, type Hypothesis, t
 import { loadFixture } from "@ghostloop/contracts/fixtures";
 import { createCommands } from "../commands";
 import { ExperimentRuntime } from "../controller";
-import { createMockAnalysis } from "../mocks/analysis";
-import { createMockCandidates } from "../mocks/candidates";
-import { createMockSimulation } from "../mocks/simulation";
-import { InMemoryStore } from "../store";
+import { DEFAULT_TOKEN_PATH, openWriterStore, resolveTarget } from "../spacetime-env";
+import { createMockAdapters, MOCK_CANDIDATES, type MockCandidateName } from "../mocks";
+import { InMemoryStore, type ExperimentStore } from "../store";
+import { recoverInterruptedApprovals } from "../recovery";
 
-const CANDIDATES = { improved: "batch.candidate-improved.json", flat: "batch.candidate-flat.json", "zero-valid": "batch.zero-valid.json" } as const;
-type CandidateName = keyof typeof CANDIDATES;
 
 export interface DemoSummary {
   state: string;
@@ -17,36 +15,66 @@ export interface DemoSummary {
   stoppingReason?: string;
 }
 
-/** Keeps the hypotheses the controller writes, since the store has no reader for them. */
-class DemoStore extends InMemoryStore {
-  seenHypotheses: Hypothesis[] = [];
-  override async putHypotheses(h: Hypothesis[]) {
-    this.seenHypotheses.push(...h);
-    return super.putHypotheses(h);
-  }
-}
-
 const rate = (m: RunMetrics) => (m.completionRate === null ? "n/a" : `${(m.completionRate * 100).toFixed(1)}%`);
 const metricsLine = (label: string, m: RunMetrics) =>
   `  ${label}: ${m.successes}/${m.validRuns} valid runs succeeded (rate ${rate(m)}), planned ${m.plannedRuns}; ` +
   `infra errors ${m.infraErrors}, cancelled ${m.cancelled} (excluded from rate)`;
 
-function parseCandidate(argv: string[]): CandidateName {
+function parseCandidate(argv: string[]): MockCandidateName {
   const i = argv.indexOf("--candidate");
   const v = i < 0 ? "improved" : argv[i + 1];
-  if (v === undefined || !(v in CANDIDATES)) throw new Error(`--candidate must be one of: ${Object.keys(CANDIDATES).join(", ")}`);
-  return v as CandidateName;
+  if (v === undefined || !(v in MOCK_CANDIDATES)) throw new Error(`--candidate must be one of: ${Object.keys(MOCK_CANDIDATES).join(", ")}`);
+  return v as MockCandidateName;
 }
 
-export async function main(argv: string[], log: (line: string) => void = console.log): Promise<DemoSummary> {
+function parseStore(argv: string[]): "memory" | "spacetime" {
+  const i = argv.indexOf("--store");
+  const v = i < 0 ? "memory" : argv[i + 1];
+  if (v !== "memory" && v !== "spacetime") throw new Error("--store must be one of: memory, spacetime");
+  return v;
+}
+
+export interface DemoOptions {
+  /** Where `--store spacetime` keeps the writer token; defaults to the worker's `<repo>/.ghostloop/worker-token`. */
+  tokenPath?: string;
+}
+
+export async function main(argv: string[], log: (line: string) => void = console.log, opts: DemoOptions = {}): Promise<DemoSummary> {
   const candidate = parseCandidate(argv);
+  const which = parseStore(argv);
   const NOW = () => new Date().toISOString();
-  const store = new DemoStore();
+  // A lost connection logs `disconnected: <reason>` and rejects the run (no reconnect); the CLI then exits 1.
+  let onLost!: (err: Error) => void;
+  const lost = new Promise<never>((_, reject) => {
+    onLost = (err) => {
+      log(`disconnected: ${err.message}`);
+      reject(new Error(`DISCONNECTED: ${err.message}`));
+    };
+  });
+  lost.catch(() => {});
+  const spacetime =
+    which === "spacetime"
+      ? await openWriterStore({ ...resolveTarget(), tokenPath: opts.tokenPath ?? DEFAULT_TOKEN_PATH, onDisconnect: onLost })
+      : undefined;
+  try {
+    return await Promise.race([drive(spacetime ?? new InMemoryStore(), candidate, NOW, log, spacetime !== undefined), lost]);
+  } finally {
+    await spacetime?.close();
+  }
+}
+
+async function drive(store: ExperimentStore, candidate: MockCandidateName, NOW: () => string, log: (line: string) => void, recover: boolean): Promise<DemoSummary> {
+  // The store has no reader for hypotheses, so keep what the controller writes.
+  const seenHypotheses: Hypothesis[] = [];
+  const putHypotheses = store.putHypotheses.bind(store);
+  store.putHypotheses = async (h) => {
+    seenHypotheses.push(...h);
+    return putHypotheses(h);
+  };
+  if (recover) await recoverInterruptedApprovals(store);
   const runtime = new ExperimentRuntime({
     store,
-    simulation: createMockSimulation({ baseline: "batch.baseline.json", candidate: CANDIDATES[candidate] }),
-    analysis: createMockAnalysis([], 0.05),
-    candidates: createMockCandidates(),
+    ...createMockAdapters(candidate),
     clock: NOW,
     now: Date.now,
   });
@@ -80,7 +108,7 @@ export async function main(argv: string[], log: (line: string) => void = console
   log("\nObservations");
   for (const o of await store.listObservations(id)) log(`  - ${o.statement} (${o.numerator}/${o.denominator})`);
   log("Hypotheses (model-labeled, unproven)");
-  for (const h of store.seenHypotheses) log(`  - [${h.label}] ${h.statement}`);
+  for (const h of seenHypotheses) log(`  - [${h.label}] ${h.statement}`);
   const patches = await store.listPatches(id, 1);
   log("Patches");
   for (const p of patches) log(`  - ${p.id} ${p.op} ${p.targetElementId} = ${JSON.stringify(p.value)} risk=${p.risk} state=${p.state}${p.blockReason ? ` (${p.blockReason})` : ""}`);

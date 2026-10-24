@@ -44,6 +44,8 @@ export type ChangeListener = (table: StoreTable, key: string) => void;
 export interface ExperimentStore {
   getExperiment(id: string): Promise<Experiment | undefined>;
   putExperiment(e: Experiment): Promise<void>;
+  /** Every stored experiment (copies). Used by startup recovery and hydration. */
+  listExperiments(): Promise<Experiment[]>;
   /**
    * Addition for Task 10: atomic read-modify-write of one experiment (a reducer in SpacetimeDB). The controller and
    * the commands both write experiments while the other may be mid-await; separate get + put would lose updates
@@ -154,6 +156,9 @@ export class InMemoryStore implements ExperimentStore {
 
   async getExperiment(id: string) {
     return clone(this.experiments.get(id));
+  }
+  async listExperiments() {
+    return [...this.experiments.values()].map(clone);
   }
   async putExperiment(e: Experiment) {
     this.experiments.set(e.id, clone(e));

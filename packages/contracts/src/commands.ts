@@ -40,8 +40,15 @@ export const RecordFinalReview = z.object({
 });
 export type RecordFinalReview = z.infer<typeof RecordFinalReview>;
 
+/** The `kind` a designer command is submitted under; each names the payload schema above. */
+export const CommandKind = z.enum([
+  "createExperiment", "startExperiment", "cancelExperiment", "setObservationDisposition", "approvePatches", "recordFinalReview",
+]);
+export type CommandKind = z.infer<typeof CommandKind>;
+
 export const CommandErrorCode = z.enum([
   "NOT_FOUND", "INVALID_STATE", "STALE_SOURCE_VERSION", "ALREADY_APPROVED", "UNKNOWN_PATCH", "PATCH_BLOCKED", "VALIDATION_FAILED",
+  "INTERNAL",
 ]);
 export type CommandErrorCode = z.infer<typeof CommandErrorCode>;
 

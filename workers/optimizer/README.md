@@ -20,7 +20,40 @@ auto-approves the first non-blocked patch through `approvePatches`, then prints 
 (infra errors and cancels shown separately, `n/a` for a null rate), the decision, reasons and the stopping record.
 It exits non-zero if the drive fails or parks somewhere unexpected.
 
-Env vars: none yet. `ANTHROPIC_API_KEY` is reserved for the Claude analysis slice.
+Env vars: `GHOSTLOOP_STDB_URI` and `GHOSTLOOP_STDB_DB` (SpacetimeDB section below). `ANTHROPIC_API_KEY` is reserved for the Claude analysis slice.
+
+## SpacetimeDB
+
+Experiment state can live in a SpacetimeDB module (`spacetimedb/`, client in `packages/db`) instead of memory.
+
+Setup: install the CLI with `curl -sSf https://install.spacetimedb.com | sh`, then `npm install` at the repo root.
+
+Runbook (three terminals, from the repo root):
+
+```sh
+npm run stdb:start                           # 1: local server on 127.0.0.1:3000
+npm run stdb:publish && npm run stdb:watch   # 2: publish the module, then print every row change live
+npm run demo:mock -- --store spacetime       # 3: run the demo round against the database
+```
+
+The watcher prints `[<table>] <insert|update|delete> <key>` per change (`state=... rev=...` for experiments,
+`<kind> <status>` for commands) until Ctrl+C. `npm run worker` is the long-running service the dashboard talks to
+through `submit_command`.
+
+- Run `demo:mock --store spacetime` or `worker`, never both: both claim the writer with the same identity and two
+  drivers would duplicate adapter work.
+- No automatic reconnect: if the server goes away (restart, network drop), `worker`, `demo:mock --store spacetime`
+  and `stdb:watch` print `disconnected: <reason>` and exit non-zero. Rerun `npm run worker` once the server is back
+  and it resumes: commands left `running` are failed and unfinished experiments continue.
+- The writer token is saved at `<repo>/.ghostloop/worker-token` (git-ignored, owner-only); keep it to stay the
+  writer across runs.
+- Reset with `npm run stdb:publish:fresh`: it deletes all data, including the writer claim. If a run fails with
+  `NOT_WRITER`, the token no longer matches the claim; reset the same way. If it fails with `CONNECT_FAILED` and
+  says the saved token may be rejected (e.g. the server was reinstalled), delete `.ghostloop/worker-token` to get a
+  fresh identity (then reset, since the old identity still holds the writer claim).
+- Env vars: `GHOSTLOOP_STDB_URI` (default `ws://127.0.0.1:3000`), `GHOSTLOOP_STDB_DB` (default `ghostloop`).
+- `npm run test:live` runs every test including the ones that need a server (`GHOSTLOOP_STDB_TEST=1`); they publish
+  their own `ghostloop-test-*` databases. Plain `npm run check` needs no server.
 
 ## Module map
 
@@ -33,7 +66,9 @@ Env vars: none yet. `ANTHROPIC_API_KEY` is reserved for the Claude analysis slic
 | `src/commands.ts` | Designer commands: create, start, cancel, approve patches, set disposition, final review |
 | `src/controller.ts`, `src/controller/*` | Resumable step machine and `ExperimentRuntime` driver |
 | `src/mocks/*` | Mock B (simulation), mock model (analysis), mock C (candidates) |
-| `src/cli/demo-mock.ts` | The demo CLI |
+| `src/spacetime-store.ts`, `src/worker.ts`, `src/recovery.ts` | SpacetimeDB store, long-running worker, startup repair |
+| `src/cli/demo-mock.ts` | The demo CLI (`--store memory|spacetime`) |
+| `src/cli/worker.ts`, `src/cli/watch.ts` | Worker service and live row watcher |
 
 ## State machine
 
