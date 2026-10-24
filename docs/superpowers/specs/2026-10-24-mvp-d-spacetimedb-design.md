@@ -21,7 +21,7 @@ needed; switching to it later is a URI/database-name change only.
 Goals
 - `spacetimedb/` TypeScript module with one table per stored record kind (§4) and the reducers that write them.
 - `SpacetimeStore` in the optimizer implementing the existing `ExperimentStore` interface. Evaluator and policy code
-  do not change; controller and commands change only for crash recovery (§5.1).
+  do not change; controller and commands do not change either (crash recovery is a separate startup pass, §5.1).
 - The existing store test suite runs against both `InMemoryStore` and `SpacetimeStore`.
 - `npm run demo:mock -- --store spacetime` runs a full mock round against the live database.
 - A watcher script that subscribes and prints every change: the "write reaches a subscribed client" proof.
@@ -121,9 +121,12 @@ issue names explicitly.
 `approvePatches` writes in order: claim the round (`round.approvalId`) → patch states → Approval record (commit
 marker). A crash after the claim but before the Approval used to be unreachable in memory; with a real database it
 leaves the round claimed with no Approval, so it would park forever and every retry would get `ALREADY_APPROVED`.
-Fix: when the controller steps an experiment in `awaiting_approval` whose round has `approvalId` set but no
-Approval record exists, it clears the claim and restores the round's patches to their pre-approval states, then stays
-in `awaiting_approval`. The designer's resubmitted approval then succeeds. Cover this with a test on both stores.
+Fix: a startup recovery pass, `recoverInterruptedApprovals(store)`, runs in the worker (and in
+`demo:mock --store spacetime`) after hydration and before any command or drive. For every experiment in
+`awaiting_approval` whose round has `approvalId` set but no Approval record, it clears the claim and sets the round's
+`approved`/`declined` patches back to `proposed`. The designer's resubmitted approval then succeeds. It must not run
+inside `step()`: within a live process a drive can observe the window between the claim and the Approval write of an
+approval that is still in progress, and repairing there would undo it. Cover this with a test on both stores.
 
 ## 6. Writer identity
 
@@ -192,7 +195,7 @@ Exact reducer argument shapes, how hydration waits for `onApplied`, how `onChang
 - C8: 256 KiB `json` cap as the blob guard.
 - C9: live tests gated by `GHOSTLOOP_STDB_TEST=1`.
 - C10: command delivery at most once (`running` status; restart fails in-flight rows as `INTERNAL`).
-- C11: controller repairs a claimed-but-unapproved round (§5.1); this is the only controller/commands change.
+- C11: a startup recovery pass repairs a claimed-but-unapproved round (§5.1); controller and commands are unchanged.
 - C12: restart proof via dropping and rebuilding the store connection in a test, at two named points.
 - C13: `demo:mock --store spacetime` writes in-process; `worker.ts` serves A; never run both.
 - C14: `@ghostloop/db` is browser-safe; token file handling lives in the worker only.
