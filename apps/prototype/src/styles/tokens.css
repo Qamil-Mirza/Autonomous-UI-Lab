@@ -1,0 +1,30 @@
+/* Values taken from the Figma "01 Baseline A" frames. */
+:root {
+  --color-navy: #022e57;
+  --color-ink: #162f56;
+  --color-muted: #305f8b;
+  --color-border: #afcbdc;
+  --color-card: #f7fdff;
+  --color-accent: #ea4c12;
+  --color-error: #b40c01;
+  --color-white: #ffffff;
+
+  --shadow-card: 0 2px 4px 0 #162f56;
+  --shadow-button: 0 1.36px 2.73px 0 rgba(0, 0, 0, 0.25);
+
+  --radius-card: 16px;
+  --radius-field: 16px;
+  --radius-button: 6.82px;
+  --radius-avatar: 10px;
+
+  --border-field: 1.7px;
+
+  --bg-gradient: linear-gradient(
+    209.98deg,
+    rgba(244, 252, 255, 0.7) 15.784%,
+    rgba(217, 234, 245, 0.7) 56.439%,
+    rgba(159, 201, 229, 0.456) 84.216%
+  );
+
+  --font-family: "Inter", system-ui, sans-serif;
+}

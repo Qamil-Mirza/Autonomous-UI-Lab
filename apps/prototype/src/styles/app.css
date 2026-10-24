@@ -1,0 +1,503 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--color-white);
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--color-navy);
+  line-height: normal;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+/* ---------- Stage: full viewport, never smaller than the 1280×800 design ---------- */
+
+.stage {
+  position: relative;
+  width: 100%;
+  min-width: 1280px;
+  height: 100vh;
+  min-height: 800px;
+  overflow: hidden;
+  background: var(--color-white);
+}
+
+.stage-bg {
+  position: absolute;
+  inset: 64px 0 0 0;
+  background-image: var(--bg-gradient);
+}
+
+/* Centers the screen below the 72px nav. Equal 72px top/bottom padding keeps the center
+   at 50% of the viewport, which is where the Figma frames place it at 1280×800. */
+.content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  padding: 72px 0;
+}
+
+.decor {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+}
+
+.decor-sparkle {
+  left: -136px;
+  bottom: -190px;
+  width: 630px;
+  height: 783px;
+}
+
+/* ---------- Nav bar ---------- */
+
+.nav {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 72px;
+  background: var(--color-border);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.brand {
+  position: absolute;
+  left: 31px;
+  top: 17px;
+  width: 232px;
+  height: 38.62px;
+}
+
+.brand-matrix {
+  position: absolute;
+  left: 0;
+  top: 0.31px;
+  font-size: 30.09px;
+  font-weight: 800;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+
+.brand-underline {
+  position: absolute;
+  left: 1.76px;
+  top: 28.84px;
+}
+
+.brand-coor {
+  position: absolute;
+  left: 120.2px;
+  top: 6.52px;
+}
+
+.brand-sparkle {
+  position: absolute;
+  left: 161.8px;
+  top: 0;
+}
+
+/* Progress + avatar stay pinned to the right edge (Figma x 1119–1248 at 1280 wide). */
+.nav-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 161px;
+  height: 72px;
+}
+
+.nav-progress {
+  position: absolute;
+  left: 0;
+  top: 27px;
+  font-size: 14px;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.avatar {
+  position: absolute;
+  left: 93px;
+  top: 17px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-avatar);
+  background: var(--color-navy);
+  pointer-events: none;
+}
+
+.avatar img {
+  position: absolute;
+  left: 9px;
+  top: 9px;
+}
+
+/* ---------- Card + shared type ---------- */
+
+.card {
+  position: relative;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 560px;
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.title {
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.helper {
+  margin-top: 2px;
+  font-size: 16px;
+  color: var(--color-muted);
+}
+
+.tok-emphasis-strong {
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+/* ---------- Fields ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 16px;
+}
+
+.helper + .field,
+.helper + .field-row {
+  margin-top: 29px;
+}
+
+.field-label {
+  font-size: 12px;
+  color: var(--color-navy);
+}
+
+.field-input {
+  height: 30px;
+  padding: 0 16.3px;
+  border: var(--border-field) solid var(--color-border);
+  border-radius: var(--radius-field);
+  background: transparent;
+  font: 500 12px var(--font-family);
+  color: var(--color-navy);
+  outline: none;
+}
+
+.field-input::placeholder {
+  color: var(--color-border);
+  opacity: 1;
+}
+
+.field-input:focus-visible {
+  border-color: var(--color-muted);
+}
+
+.field-input[aria-invalid="true"] {
+  border: 2px solid var(--color-error);
+}
+
+.field-error {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--color-error);
+}
+
+/* Inside a field the column gap already provides the 5px under the input. */
+.field .field-error {
+  margin-top: 0;
+}
+
+.back-link {
+  position: absolute;
+  left: 47px;
+  top: 12px;
+  font-size: 12px;
+  color: var(--color-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.back-link:hover {
+  color: var(--color-navy);
+}
+
+.back-link:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.field-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.field-row .field {
+  margin-top: 0;
+}
+
+.field-row .btn {
+  margin-top: 21px;
+}
+
+/* ---------- Checkbox ---------- */
+
+.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 22px;
+  font-size: 12px;
+  color: var(--color-navy);
+  cursor: pointer;
+}
+
+.checkbox input {
+  appearance: none;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: var(--border-field) solid var(--color-border);
+  border-radius: 2px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.checkbox input:checked {
+  border-color: var(--color-navy);
+  background: var(--color-navy)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='%23f7fdff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 12px no-repeat;
+}
+
+.checkbox input:focus-visible {
+  outline: 2px solid var(--color-muted);
+  outline-offset: 2px;
+}
+
+.checkbox span {
+  padding-top: 1px;
+}
+
+/* ---------- Buttons (style tokens) ---------- */
+
+.btn {
+  flex: none;
+  min-width: 101.6px;
+  height: 27.27px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-button);
+  font: 700 10.91px var(--font-family);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.tok-button-primary {
+  background: var(--color-accent);
+  color: var(--color-white);
+  box-shadow: var(--shadow-button);
+}
+
+.tok-button-secondary {
+  background: var(--color-card);
+  color: var(--color-navy);
+  border: var(--border-field) solid var(--color-border);
+}
+
+.btn.tok-emphasis-strong {
+  background: var(--color-accent);
+  color: var(--color-white);
+  box-shadow: var(--shadow-button);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.card > .btn {
+  margin-top: 22px;
+}
+
+/* ---------- Plan ---------- */
+
+/* Figma places the plan block 18px below center; `top` shifts it after centering. */
+.plan {
+  position: relative;
+  top: 18px;
+  margin: auto;
+  width: 720px;
+  height: 440px;
+  text-align: center;
+}
+
+.plan .back-link {
+  left: 0;
+  top: -32px;
+}
+
+.plan .helper {
+  margin-top: 2px;
+}
+
+.plan-cards {
+  display: flex;
+  gap: 24px;
+  margin-top: 28px;
+  text-align: left;
+}
+
+.plan-card {
+  position: relative;
+  width: 348px;
+  height: 340px;
+  padding: 30px 32px 0;
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.plan-name,
+.plan-price {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.plan-price {
+  margin-top: 18px;
+}
+
+.plan-note {
+  margin-top: 7px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.plan-badge {
+  position: absolute;
+  left: 198px;
+  top: 33px;
+  padding: 5px 10px;
+  border-radius: var(--radius-button);
+  background: var(--color-border);
+  font-size: 10.91px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.plan-bullets {
+  position: absolute;
+  left: 32px;
+  top: 158px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--color-navy);
+}
+
+.plan-bullets li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-cta {
+  position: absolute;
+  left: 32px;
+  top: 282px;
+}
+
+/* ---------- Confirm ---------- */
+
+.confirm-icon {
+  margin-bottom: 16px;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  width: 464px;
+  margin: 26px 0 0;
+  font-size: 14px;
+}
+
+.helper + .summary {
+  margin-top: 26px;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+}
+
+.summary-row dt {
+  color: var(--color-muted);
+}
+
+.summary-row dd {
+  margin: 0;
+  font-weight: 500;
+  color: var(--color-navy);
+}
+
+.summary + .btn {
+  margin-top: 28px;
+}
+
+/* ---------- Manifest load states ---------- */
+
+.panel {
+  margin: auto;
+  width: 560px;
+  padding: 36px 47px;
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.panel h1 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.panel p {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}

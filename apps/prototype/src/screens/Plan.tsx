@@ -1,0 +1,70 @@
+import { Stage } from "../components/Stage";
+import { BackLink, Button, Ordered, Text } from "../components/controls";
+import { useFlow, useGo, type Plan as PlanId } from "../state/flow";
+import bullet from "../assets/bullet.svg";
+
+const BULLETS: Record<PlanId, string[]> = {
+  free: ["Up to 3 teammates", "500 contacts", "Basic pipeline"],
+  pro: ["Unlimited teammates", "Unlimited contacts", "Automations"],
+};
+
+function Bullets({ plan }: { plan: PlanId }) {
+  return (
+    <ul className="plan-bullets">
+      {BULLETS[plan].map((text) => (
+        <li key={text}>
+          <img src={bullet} width={4} height={4} alt="" />
+          {text}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function Plan() {
+  const go = useGo();
+  const { update } = useFlow();
+  const choose = (plan: PlanId) => {
+    update({ plan });
+    go("invite");
+  };
+
+  return (
+    <Stage step={3}>
+      <section className="plan">
+        <BackLink id="plan.back" to="workspace" />
+        <Ordered>
+          {{
+            "plan.title": <Text id="plan.title" as="h1" className="title" />,
+            "plan.helper": <Text id="plan.helper" className="helper" />,
+          }}
+        </Ordered>
+        <div className="plan-cards">
+          <article className="plan-card">
+            <p className="plan-name">Free</p>
+            <Ordered>
+              {{
+                "plan.free.price": <Text id="plan.free.price" className="plan-price" />,
+                "plan.free.note": <Text id="plan.free.note" className="plan-note" />,
+              }}
+            </Ordered>
+            <Bullets plan="free" />
+            <Button id="plan.free.cta" className="plan-cta" onClick={() => choose("free")} />
+          </article>
+          <article className="plan-card">
+            <p className="plan-name">Pro</p>
+            <span className="plan-badge">Recommended</span>
+            <Ordered>
+              {{
+                "plan.pro.price": <Text id="plan.pro.price" className="plan-price" />,
+                "plan.pro.note": <Text id="plan.pro.note" className="plan-note" />,
+              }}
+            </Ordered>
+            <Bullets plan="pro" />
+            <Button id="plan.pro.cta" className="plan-cta" minWidth={118} onClick={() => choose("pro")} />
+          </article>
+        </div>
+      </section>
+    </Stage>
+  );
+}
