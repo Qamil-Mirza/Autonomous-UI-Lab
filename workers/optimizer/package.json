@@ -7,7 +7,8 @@
     "check": "tsc -p . && vitest run",
     "test": "vitest run",
     "demo:mock": "tsx src/cli/demo-mock.ts",
-    "worker": "tsx src/cli/worker.ts"
+    "worker": "tsx src/cli/worker.ts",
+    "watch": "tsx src/cli/watch.ts"
   },
   "dependencies": { "@ghostloop/contracts": "*", "@ghostloop/db": "*", "zod": "^3.25.0" },
   "devDependencies": {

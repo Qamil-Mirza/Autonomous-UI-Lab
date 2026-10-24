@@ -1,11 +1,9 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
 import { createCommandProcessor } from "./command-processor";
 import { createCommands } from "./commands";
 import { ExperimentRuntime, type ControllerDeps } from "./controller";
 import { createMockAdapters } from "./mocks";
 import { recoverInterruptedApprovals } from "./recovery";
-import { SpacetimeStore } from "./spacetime-store";
+import { openWriterStore } from "./spacetime-env";
 
 export interface WorkerOptions {
   uri: string;
@@ -24,10 +22,7 @@ export interface WorkerOptions {
  */
 export async function startWorker(opts: WorkerOptions) {
   const log = opts.log ?? (() => {});
-  const saved = existsSync(opts.tokenPath) ? readFileSync(opts.tokenPath, "utf8").trim() : "";
-  const store = await SpacetimeStore.open({ uri: opts.uri, database: opts.database, token: saved || undefined });
-  mkdirSync(dirname(opts.tokenPath), { recursive: true });
-  writeFileSync(opts.tokenPath, store.token);
+  const store = await openWriterStore(opts);
   log(`connected to ${opts.database} at ${opts.uri} as the writer`);
 
   const clock = () => new Date().toISOString();

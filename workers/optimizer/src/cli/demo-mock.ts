@@ -3,23 +3,16 @@ import { DesignManifest, ExperimentProtocol, type Experiment, type Hypothesis, t
 import { loadFixture } from "@ghostloop/contracts/fixtures";
 import { createCommands } from "../commands";
 import { ExperimentRuntime } from "../controller";
+import { DEFAULT_TOKEN_PATH, openWriterStore, resolveTarget } from "../spacetime-env";
 import { createMockAdapters, MOCK_CANDIDATES, type MockCandidateName } from "../mocks";
-import { InMemoryStore } from "../store";
+import { InMemoryStore, type ExperimentStore } from "../store";
+import { recoverInterruptedApprovals } from "../recovery";
 
 
 export interface DemoSummary {
   state: string;
   decision?: string;
   stoppingReason?: string;
-}
-
-/** Keeps the hypotheses the controller writes, since the store has no reader for them. */
-class DemoStore extends InMemoryStore {
-  seenHypotheses: Hypothesis[] = [];
-  override async putHypotheses(h: Hypothesis[]) {
-    this.seenHypotheses.push(...h);
-    return super.putHypotheses(h);
-  }
 }
 
 const rate = (m: RunMetrics) => (m.completionRate === null ? "n/a" : `${(m.completionRate * 100).toFixed(1)}%`);
@@ -34,10 +27,39 @@ function parseCandidate(argv: string[]): MockCandidateName {
   return v as MockCandidateName;
 }
 
-export async function main(argv: string[], log: (line: string) => void = console.log): Promise<DemoSummary> {
+function parseStore(argv: string[]): "memory" | "spacetime" {
+  const i = argv.indexOf("--store");
+  const v = i < 0 ? "memory" : argv[i + 1];
+  if (v !== "memory" && v !== "spacetime") throw new Error("--store must be one of: memory, spacetime");
+  return v;
+}
+
+export interface DemoOptions {
+  /** Where `--store spacetime` keeps the writer token; defaults to the worker's `<repo>/.ghostloop/worker-token`. */
+  tokenPath?: string;
+}
+
+export async function main(argv: string[], log: (line: string) => void = console.log, opts: DemoOptions = {}): Promise<DemoSummary> {
   const candidate = parseCandidate(argv);
+  const which = parseStore(argv);
   const NOW = () => new Date().toISOString();
-  const store = new DemoStore();
+  const spacetime = which === "spacetime" ? await openWriterStore({ ...resolveTarget(), tokenPath: opts.tokenPath ?? DEFAULT_TOKEN_PATH }) : undefined;
+  try {
+    return await drive(spacetime ?? new InMemoryStore(), candidate, NOW, log, spacetime !== undefined);
+  } finally {
+    await spacetime?.close();
+  }
+}
+
+async function drive(store: ExperimentStore, candidate: MockCandidateName, NOW: () => string, log: (line: string) => void, recover: boolean): Promise<DemoSummary> {
+  // The store has no reader for hypotheses, so keep what the controller writes.
+  const seenHypotheses: Hypothesis[] = [];
+  const putHypotheses = store.putHypotheses.bind(store);
+  store.putHypotheses = async (h) => {
+    seenHypotheses.push(...h);
+    return putHypotheses(h);
+  };
+  if (recover) await recoverInterruptedApprovals(store);
   const runtime = new ExperimentRuntime({
     store,
     ...createMockAdapters(candidate),
@@ -74,7 +96,7 @@ export async function main(argv: string[], log: (line: string) => void = console
   log("\nObservations");
   for (const o of await store.listObservations(id)) log(`  - ${o.statement} (${o.numerator}/${o.denominator})`);
   log("Hypotheses (model-labeled, unproven)");
-  for (const h of store.seenHypotheses) log(`  - [${h.label}] ${h.statement}`);
+  for (const h of seenHypotheses) log(`  - [${h.label}] ${h.statement}`);
   const patches = await store.listPatches(id, 1);
   log("Patches");
   for (const p of patches) log(`  - ${p.id} ${p.op} ${p.targetElementId} = ${JSON.stringify(p.value)} risk=${p.risk} state=${p.state}${p.blockReason ? ` (${p.blockReason})` : ""}`);
