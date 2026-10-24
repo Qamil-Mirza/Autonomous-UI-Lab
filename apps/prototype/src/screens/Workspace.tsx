@@ -1,23 +1,28 @@
 import { useState, type FormEvent } from "react";
 import { Stage } from "../components/Stage";
-import { BackLink, Button, Ordered, Text, TextField } from "../components/controls";
+import { ApiError, BackLink, Button, Ordered, Text, TextField } from "../components/controls";
 import { useEl } from "../manifest/context";
 import { useFlow, useGo } from "../state/flow";
-import { isFilled } from "../state/validation";
+import { useStep } from "../state/run";
+import { isFilled } from "@ghostloop/prototype-adapter/validation";
 
 export function Workspace() {
   const go = useGo();
   const { flow, update } = useFlow();
   const form = useEl("workspace.form");
   const [nameError, setNameError] = useState(false);
+  const { send, failed } = useStep<"name">("workspace");
 
-  const submit = (e: FormEvent) => {
+  // The server upserts the run's single workspace, so Back + resubmit renames rather than adding one.
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!isFilled(flow.workspace)) {
       setNameError(true);
       return;
     }
-    go("plan");
+    const result = await send({ name: flow.workspace });
+    if (result?.kind === "invalid") setNameError(true);
+    if (result?.kind === "ok") go("plan");
   };
 
   return (
@@ -51,6 +56,7 @@ export function Workspace() {
             }}
           </Ordered>
         </div>
+        <ApiError show={failed} />
       </form>
     </Stage>
   );

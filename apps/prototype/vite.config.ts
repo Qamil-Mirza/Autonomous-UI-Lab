@@ -4,6 +4,10 @@ import path from "node:path";
 import type { Connect, Plugin } from "vite";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+// Relative imports (not "@ghostloop/prototype-adapter"): Vite bundles relative files into the config but leaves
+// bare package imports to Node, which can't load the package's extensionless TypeScript source.
+import { createRunsApi } from "../../packages/prototype-adapter/src/http";
+import { defaultRunsDir } from "../../packages/prototype-adapter/src/store";
 
 const designsDir = fileURLToPath(new URL("../../designs", import.meta.url));
 
@@ -36,7 +40,18 @@ function serveDesigns(): Plugin {
   };
 }
 
+// Run-scoped app state API (/api/runs/...) on the same port as the app, in dev and preview.
+// State is persisted per run under GHOSTLOOP_RUNS_DIR (default <repo>/.runs).
+function serveRunsApi(): Plugin {
+  const handler = createRunsApi({ dir: defaultRunsDir() });
+  return {
+    name: "ghostloop-runs-api",
+    configureServer: (server) => void server.middlewares.use(handler),
+    configurePreviewServer: (server) => void server.middlewares.use(handler),
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), serveDesigns()],
+  plugins: [react(), serveDesigns(), serveRunsApi()],
   server: { port: 5173 },
 });

@@ -127,6 +127,17 @@ export function Checkbox({ id, checked, onChange }: { id: ElementId; checked: bo
   );
 }
 
+// Generic alert for a submit the server didn't accept for a non-validation reason (network, unknown run, 5xx).
+// Not a manifest control: no dotted id, like manifest-error.
+export function ApiError({ show }: { show: boolean }) {
+  if (!show) return null;
+  return (
+    <p className="field-error api-error" role="alert" data-testid="api-error">
+      Something went wrong. Try again.
+    </p>
+  );
+}
+
 export function FieldError({ id }: { id: ElementId }) {
   const el = useEl(id);
   if (!el.visible) return null;

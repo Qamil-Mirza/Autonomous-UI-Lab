@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useRunId } from "./run";
 
 export type Plan = "free" | "pro";
 
@@ -32,10 +33,11 @@ export function useFlow() {
 
 export type Screen = "signup" | "workspace" | "plan" | "invite" | "confirm";
 
-// Path of another screen within the current design version.
+// Path of another screen within the current design version, keeping the run in ?run=.
 export function useScreenPath(): (screen: Screen) => string {
   const { versionId = "" } = useParams();
-  return useCallback((screen: Screen) => `/v/${versionId}/${screen}`, [versionId]);
+  const runId = useRunId();
+  return useCallback((screen: Screen) => `/v/${versionId}/${screen}?run=${encodeURIComponent(runId)}`, [versionId, runId]);
 }
 
 // Navigates to another screen within the current design version.
