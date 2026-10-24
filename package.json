@@ -1,0 +1,11 @@
+{
+  "name": "ghostloop",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "workers/*", "apps/*"],
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "check": "npm run check --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  }
+}
