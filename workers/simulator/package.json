@@ -1,0 +1,23 @@
+{
+  "name": "@ghostloop/simulator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "demo": "tsx src/cli.ts",
+    "check": "tsc -p .",
+    "test": "vitest run --maxWorkers=1 --minWorkers=1"
+  },
+  "dependencies": {
+    "@ghostloop/contracts": "1.0.0",
+    "dotenv": "^16.4.5",
+    "playwright": "^1.56.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

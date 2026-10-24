@@ -8,6 +8,7 @@ export const ManifestElement = z.object({
   screen: z.string().min(1),
   role: z.string().min(1),
   label: z.string().optional(),
+  visible: z.boolean().optional(),
   protected: z.boolean(),
   categories: z.array(ProtectedCategory),
   supportedOps: z.array(MutationOp),

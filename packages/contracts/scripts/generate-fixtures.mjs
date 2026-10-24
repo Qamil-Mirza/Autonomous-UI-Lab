@@ -71,7 +71,23 @@ const manifest = {
     el("done.heading", "done", "heading", "You're all set", false, [], ["set_label"]),
   ],
 };
-write("manifest.base.json", manifest);
+// Preserve the historical synthetic metric dataset under its original version.
+// Its compare-screen/optional-invite trajectories must not be relabeled as real baseline runs.
+write("manifest.legacy.json", manifest);
+const renames = { "workspace.submit": "workspace.continue", "invite.submit": "invite.send", "done.heading": "confirm.title", "plan.compare.link": "plan.free.note" };
+const baselineElements = manifest.elements.map(e => {
+  const elementId = renames[e.elementId] ?? e.elementId;
+  const labels = { "plan.free.cta": "Continue", "plan.pro.cta": "Start free trial", "plan.pro.price": "$12 / user / month", "invite.send": "Send invite", "plan.free.note": "No card required" };
+  return { ...e, elementId, screen: e.screen === "done" ? "confirm" : e.screen,
+    label: labels[elementId] ?? e.label,
+    ...(elementId === "plan.free.note" ? { role: "text", visible: false, supportedOps: ["set_visibility", "set_label"] } : {}) };
+});
+baselineElements.push(
+  el("signup.name", "signup", "textbox", "Full name", true, ["signup"], []),
+  el("invite.error", "invite", "alert", "", true, ["validation"], []),
+  el("confirm.done", "confirm", "button", "Go to dashboard", false, [], ["set_label", "set_style_token"]),
+);
+write("manifest.base.json", { ...manifest, versionId: "ver_baseline", manifestHash: "sha256:fixture-baseline-handoff", elements: baselineElements });
 const ptr = Object.fromEntries(manifest.elements.map((e, i) => [e.elementId, { x: 640 + ((i * 37) % 200) - 100, y: 180 + i * 38 }]));
 
 // ---------- step templates ----------

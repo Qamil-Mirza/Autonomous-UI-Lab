@@ -15,6 +15,7 @@ export const FIXTURE_PROVENANCE = "synthetic-fixture" as const;
 export const FIXTURE_SCHEMAS: Record<string, z.ZodTypeAny> = {
   "protocol.default.json": ExperimentProtocol,
   "manifest.base.json": DesignManifest,
+  "manifest.legacy.json": DesignManifest,
   "runs/goal.json": AgentRunResult,
   "runs/agent-stop.json": AgentRunResult,
   "runs/step-limit.json": AgentRunResult,

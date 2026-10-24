@@ -10,3 +10,4 @@ export * from "./candidate";
 export * from "./evaluation";
 export * from "./experiment";
 export * from "./commands";
+export * from "./prototype";

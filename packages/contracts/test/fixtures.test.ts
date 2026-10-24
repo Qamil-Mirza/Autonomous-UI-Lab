@@ -166,17 +166,23 @@ describe("other fixture content", () => {
     expect(protocol.protectedElements).toEqual(expect.arrayContaining(["plan.free.price", "plan.pro.price", "invite.email"]));
   });
 
-  it("manifest.base has exactly the placeholder element ids", () => {
+  it("manifest.base matches the current prototype handoff", () => {
     const m = loadFixture("manifest.base.json", DesignManifest);
     expect(m.elements.map((e) => e.elementId).sort()).toEqual([
-      "done.heading", "invite.email", "invite.submit", "plan.compare.link", "plan.free.cta", "plan.free.price",
-      "plan.pro.cta", "plan.pro.price", "signup.consent", "signup.email", "signup.password", "signup.submit",
-      "workspace.name", "workspace.submit",
+      "confirm.done", "confirm.title", "invite.email", "invite.error", "invite.send", "plan.free.cta", "plan.free.note", "plan.free.price",
+      "plan.pro.cta", "plan.pro.price", "signup.consent", "signup.email", "signup.name", "signup.password", "signup.submit",
+      "workspace.continue", "workspace.name",
     ]);
     const el = (id: string) => m.elements.find((e) => e.elementId === id)!;
     expect(el("plan.free.cta").supportedOps).toEqual(["set_label", "set_style_token"]);
-    expect(el("plan.compare.link").supportedOps).toEqual(["set_visibility", "set_label"]);
+    expect(el("plan.free.note").supportedOps).toEqual(["set_visibility", "set_label"]);
     expect(el("plan.pro.price")).toMatchObject({ protected: true, categories: ["pricing"] });
+    expect(m.versionId).toBe("ver_baseline");
+    expect(el("plan.free.note")).toMatchObject({ label: "No card required", role: "text", visible: false });
+    expect(el("plan.free.cta").label).toBe("Continue");
+    expect(el("plan.pro.cta").label).toBe("Start free trial");
+    expect(el("plan.pro.price").label).toBe("$12 / user / month");
+    expect(el("invite.send").label).toBe("Send invite");
     expect(el("invite.email")).toMatchObject({ protected: true, categories: ["validation"] });
   });
 

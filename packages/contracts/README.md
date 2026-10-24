@@ -95,3 +95,16 @@ candidate changes the incumbent version.
 1. Raise the change with D. D edits `src/*.ts` **and** the fixtures in the same PR: update `scripts/generate-fixtures.mjs`, run `npm run fixtures:generate -w @ghostloop/contracts`, and commit the regenerated JSON (see [`fixtures/README.md`](fixtures/README.md)). `npm run check -w @ghostloop/contracts` must pass.
 2. A breaking change bumps `SCHEMA_VERSION`.
 3. Teammates rebase onto `main` and update their adapters. Do not fork or patch contract types locally.
+
+## Prototype handoff (B/C)
+
+`ControlRegistryEntry`, `ControlRegistry`, `GoalCheckResult`, and
+`PrototypeGoalAdapter` are exported from the public entry point. C owns the
+`checkGoal(runId)` implementation in `packages/prototype-adapter`; B owns calling
+it and recording its evidence. Public registry parsing strips protected flags and
+mutation-policy fields. The goal result is never a model input.
+
+`ManifestElement.visible` is an optional additive field for baseline visibility.
+`manifest.base.json` describes `ver_baseline`; historical metric fixtures retain
+`ver_base0001` and pair with `manifest.legacy.json`. See the fixture README before
+using the old metrics dataset with a current prototype.
