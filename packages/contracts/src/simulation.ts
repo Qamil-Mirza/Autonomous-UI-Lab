@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { SchemaVersion } from "./version";
-import { BatchId, ProtocolId, VersionId } from "./ids";
+import { BatchId, ExperimentId, ProtocolId, VersionId } from "./ids";
 import { Scenario } from "./protocol";
 import { AgentActionEvent, AgentRunResult } from "./agent";
 
@@ -13,6 +13,7 @@ export type UsageReport = z.infer<typeof UsageReport>;
 
 export const BatchRequest = z.object({
   batchId: BatchId,
+  experimentId: ExperimentId,
   protocolId: ProtocolId,
   versionId: VersionId,
   versionUrl: z.string().min(1),

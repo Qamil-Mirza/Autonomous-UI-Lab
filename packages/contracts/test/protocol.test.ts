@@ -12,6 +12,12 @@ describe("protocol schemas", () => {
     expect(EvaluationPolicy.safeParse({ targetCompletionRate: 1.5 }).success).toBe(false);
     expect(EvaluationPolicy.safeParse({}).success).toBe(false);
   });
+  it("rejects negative margins and regression limits", () => {
+    for (const k of ["minImprovementPp", "maxMedianActionsIncrease", "maxValidationErrorRateIncreasePp"]) {
+      expect(EvaluationPolicy.safeParse({ targetCompletionRate: 0.8, [k]: -1 }).success).toBe(false);
+      expect(EvaluationPolicy.safeParse({ targetCompletionRate: 0.8, [k]: 0 }).success).toBe(true);
+    }
+  });
   it("protocol does not carry hidden goal description", () => {
     expect(Object.keys(ExperimentProtocol.shape)).not.toContain("hiddenGoal");
     expect(ExperimentProtocol.shape).toHaveProperty("hiddenGoalRef");
@@ -45,5 +51,16 @@ describe("protocol schemas", () => {
   });
   it("design manifest parses", () => {
     expect(DesignManifest.safeParse({ schemaVersion: "1.0.0", versionId: "ver_a", manifestHash: "h", elements: [] }).success).toBe(true);
+  });
+  it("design manifest rejects duplicate elementIds", () => {
+    const el = { elementId: "plan.free.cta", screen: "plan", role: "button", protected: false, categories: [], supportedOps: ["set_label"] };
+    const base = { schemaVersion: "1.0.0", versionId: "ver_a", manifestHash: "h" };
+    expect(DesignManifest.safeParse({ ...base, elements: [el, { ...el, elementId: "plan.pro.cta" }] }).success).toBe(true);
+    const dup = DesignManifest.safeParse({ ...base, elements: [el, { ...el, protected: true }] });
+    expect(dup.success).toBe(false);
+    if (!dup.success) {
+      expect(dup.error.issues[0]?.message).toMatch(/duplicate elementId "plan.free.cta"/);
+      expect(dup.error.issues[0]?.path).toEqual(["elements", 1, "elementId"]);
+    }
   });
 });

@@ -124,6 +124,6 @@
   "reasons": [
     "guardrail protected_elements_unchanged failed; candidate batch not run"
   ],
-  "stoppingReason": "NO_MEASURED_IMPROVEMENT",
+  "stoppingReason": "NO_VALID_PATCH",
   "at": "2026-10-23T11:55:00.000Z"
 }

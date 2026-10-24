@@ -20,5 +20,17 @@ export const DesignManifest = z.object({
   parentVersionId: VersionId.optional(),
   manifestHash: z.string().min(1),
   elements: z.array(ManifestElement),
+}).superRefine((m, ctx) => {
+  const seen = new Set<string>();
+  m.elements.forEach((el, i) => {
+    if (seen.has(el.elementId)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["elements", i, "elementId"],
+        message: `duplicate elementId "${el.elementId}": manifest elementIds must be unique`,
+      });
+    }
+    seen.add(el.elementId);
+  });
 });
 export type DesignManifest = z.infer<typeof DesignManifest>;
