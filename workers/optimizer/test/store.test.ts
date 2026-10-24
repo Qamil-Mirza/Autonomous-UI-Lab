@@ -166,6 +166,21 @@ describe("InMemoryStore", () => {
     ]);
   });
 
+  it("a throwing or rejecting onChange listener never fails a store write", async () => {
+    const seen: string[] = [];
+    s.onChange(() => {
+      throw new Error("sync listener failure");
+    });
+    s.onChange((async () => {
+      throw new Error("async listener failure");
+    }) as unknown as (t: string, k: string) => void);
+    s.onChange((t, k) => seen.push(`${t}:${k}`));
+    await expect(s.insertVersion(v)).resolves.toBeUndefined();
+    await expect(s.insertAction(e(0))).resolves.toBe(true);
+    expect(await s.getVersion(v.id)).toEqual(v);
+    expect(seen).toEqual(["design_versions:ver_base0001", "agent_actions:run_a:0"]);
+  });
+
   it("updateExperiment applies a change to the latest copy atomically", async () => {
     const protocol = loadFixture("protocol.default.json", ExperimentProtocol);
     const exp: Experiment = {

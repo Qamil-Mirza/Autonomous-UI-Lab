@@ -220,7 +220,12 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
     await store.putCandidate(experimentId, { ...candidate, reviewStatus: status });
     if (status === "promoted_measured") {
       // The only path that moves the incumbent.
-      await store.updateExperiment(experimentId, (x) => ({ ...x, incumbentVersionId: candidate.versionId }));
+      // A stopped experiment's record names the best version; promotion keeps it in step with the new incumbent.
+      await store.updateExperiment(experimentId, (x) => ({
+        ...x,
+        incumbentVersionId: candidate.versionId,
+        ...(x.stopping && { stopping: { ...x.stopping, bestVersionId: candidate.versionId } }),
+      }));
     }
     return done<{ candidateId: string; status: Exclude<CandidateReviewStatus, "pending"> }>({ candidateId, status });
   });

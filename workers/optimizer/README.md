@@ -69,11 +69,14 @@ winner happens only through `recordFinalReview`.
 ## Integration checklist
 
 - **B (simulation):** implement `runBatch(BatchRequest)`. The controller uses the incumbent version URL for the
-  baseline and the candidate URL for the retest. `BatchRequest` has no `experimentId`; the controller stamps runs
-  with it after the batch returns.
+  baseline and the candidate URL for the retest. B receives `experimentId` in the `BatchRequest` and must put it on
+  every returned run (the controller still overrides it on the runs it stores, defensively). Streamed events that
+  fail `AgentActionEvent` or name another `versionId` are skipped; the validated `BatchResult` copy is stored instead.
 - **C (candidates):** implement `createCandidate`, `validateCandidate`, `getManifest` (see
-  `packages/contracts/fixtures/README.md` for fixtures and placeholder element IDs).
+  `packages/contracts/fixtures/README.md` for fixtures and placeholder element IDs). `getManifest(v)` must return a
+  manifest whose `versionId` is `v`; a failure or mismatch is `INTEGRATION_FAILURE` (there is no Figma-hash fallback).
 - **A (app):** call the commands in `src/commands.ts` and subscribe to `store.onChange(table, key)` for live state.
+  A throwing or rejecting listener is ignored and never fails the store write.
   Root scripts are owned by A: the root `package.json` `demo:mock` script was added by D for convenience; A should
   keep or adjust it. It ends with `--` so extra flags reach the CLI.
 

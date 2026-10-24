@@ -160,6 +160,8 @@ export interface Comparison {
 }
 
 const round1 = (x: number): number => Math.round(x * 10) / 10;
+/** Float tolerance for margin comparisons on the raw delta, in percentage points. */
+const EPS_PP = 1e-9;
 const fmtPp = (x: number): string => `${x >= 0 ? "+" : ""}${x.toFixed(1)}pp`;
 
 /** Spec 5.2 compare, steps 1-7 in order. */
@@ -194,8 +196,10 @@ export function compare(
     return { decision: "inconclusive", deltaPp: null, reasons };
   }
 
-  // 3. Delta.
-  const deltaPp = round1((candRate - baseRate) * 100);
+  // 3. Delta. Decisions use the raw delta; only the reported `deltaPp` is rounded (so +9.95pp is not "≥ 10").
+  // EPS_PP absorbs float error only ((0.6 - 0.5) * 100 is 9.999…98), far below any real rate difference.
+  const rawDeltaPp = (candRate - baseRate) * 100;
+  const deltaPp = round1(rawDeltaPp);
 
   // 4. Secondary regressions.
   const regressions: string[] = [];
@@ -216,10 +220,10 @@ export function compare(
   }
 
   // 5-7. Rate thresholds.
-  if (deltaPp >= policy.minImprovementPp) {
+  if (rawDeltaPp >= policy.minImprovementPp - EPS_PP) {
     return { decision: "accepted", deltaPp, reasons: [`completion rate ${fmtPp(deltaPp)} \u2265 ${policy.minImprovementPp}pp margin`] };
   }
-  if (deltaPp <= -policy.minImprovementPp) {
+  if (rawDeltaPp <= -policy.minImprovementPp + EPS_PP) {
     return { decision: "rejected", deltaPp, reasons: [`completion rate ${fmtPp(deltaPp)} \u2264 -${policy.minImprovementPp}pp margin`] };
   }
   return {

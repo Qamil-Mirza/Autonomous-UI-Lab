@@ -1,4 +1,4 @@
-import { BatchResult, newId, type BatchRecord, type BatchRequest, type Experiment } from "@ghostloop/contracts";
+import { AgentActionEvent, BatchResult, newId, type BatchRecord, type BatchRequest, type Experiment } from "@ghostloop/contracts";
 import { adapter, addUsage, IntegrationError, parsed, transition, update, type StepContext } from "./context";
 
 const ZERO_USAGE = { inferenceCalls: 0, inferenceUsd: 0, wallClockMs: 0 };
@@ -42,6 +42,7 @@ export async function runBatchPhase(ctx: StepContext, e: Experiment, phase: "bas
 
   const req: BatchRequest = {
     batchId: record.batchId,
+    experimentId: e.id,
     protocolId: protocol.id,
     versionId: version.id,
     versionUrl: version.url,
@@ -53,7 +54,14 @@ export async function runBatchPhase(ctx: StepContext, e: Experiment, phase: "bas
     hiddenGoalRef: protocol.hiddenGoalRef,
   };
   const streamed: Promise<boolean>[] = [];
-  const raw = await adapter(ctx, "runBatch", () => ctx.deps.simulation.runBatch(req, (ev) => streamed.push(store.insertAction(ev)), ctx.signal));
+  // Streamed events are untrusted: store only schema-valid events for the requested version. Run IDs are unknown until
+  // the result returns, so a skipped event is restored from the validated `BatchResult` copy that `putRun` inserts.
+  const onEvent = (ev: unknown): void => {
+    const p = AgentActionEvent.safeParse(ev);
+    if (!p.success || p.data.versionId !== req.versionId) return;
+    streamed.push(store.insertAction(p.data));
+  };
+  const raw = await adapter(ctx, "runBatch", () => ctx.deps.simulation.runBatch(req, onEvent, ctx.signal));
   await Promise.all(streamed);
   const result = parsed(BatchResult, raw, "runBatch");
   const foreign = result.runs.filter((r) => r.batchId !== req.batchId || r.versionId !== req.versionId);
@@ -61,7 +69,7 @@ export async function runBatchPhase(ctx: StepContext, e: Experiment, phase: "bas
     throw new IntegrationError(`runBatch returned runs for a different batch or version than ${req.batchId}/${req.versionId}`);
   }
 
-  // BatchRequest carries no experimentId, so the controller stamps the owner on the runs it stores.
+  // B receives `experimentId` in the request; the controller still stamps the owner on stored runs as a defensive override.
   for (const run of result.runs) await store.putRun({ ...run, experimentId: e.id });
   await store.putBatch({ ...record, cancelled: result.cancelled, usage: result.usage });
   await update(ctx, (x) => ({ ...x, usage: addUsage(x.usage, result.usage) }));

@@ -100,6 +100,19 @@ describe("classifyPatch", () => {
     // category only protected if the protocol lists it
     expect(classifyPatch(p, { ...protocol, protectedCategories: [] }, m({ categories: ["checker"] })).risk).toBe("review_required");
   });
+
+  it("duplicate elementIds (schema bypassed): any protected match blocks, otherwise unknown", () => {
+    const open = { elementId: "x.el", screen: "x", role: "button", protected: false, categories: [], supportedOps: ["set_label" as const] };
+    // Built in-test without DesignManifest.parse, which now rejects duplicates.
+    const dup = (...els: object[]) => ({ ...manifest, elements: els.map((el) => ({ ...open, ...el })) }) as DesignManifest;
+    const p = { targetElementId: "x.el", op: "set_label" as const, value: "y" };
+    expect(DesignManifest.safeParse(dup({}, {})).success).toBe(false);
+    expect(classifyPatch(p, protocol, dup({}, {})).risk).toBe("unknown");
+    const prot = classifyPatch(p, protocol, dup({}, { protected: true }));
+    expect(prot.risk).toBe("blocked");
+    expect(prot.blockReason).toMatch(/x\.el is protected/);
+    expect(classifyPatch(p, protocol, dup({}, { categories: ["checker"] })).risk).toBe("blocked");
+  });
 });
 
 describe("validatePacket", () => {

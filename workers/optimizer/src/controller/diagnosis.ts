@@ -1,7 +1,7 @@
 import { DesignManifest, UsageReport, type Experiment } from "@ghostloop/contracts";
 import { aggregateObservations, isSuppressed } from "../observations";
 import { protectedConstraintsFor, validatePacket } from "../policy";
-import { adapter, addUsage, metricsFor, parsed, stop, transition, update, type StepContext } from "./context";
+import { adapter, addUsage, IntegrationError, metricsFor, parsed, stop, transition, update, type StepContext } from "./context";
 
 const MAX_ANALYSIS_ATTEMPTS = 2;
 
@@ -42,6 +42,10 @@ export async function proposing(ctx: StepContext, e: Experiment): Promise<boolea
   const { protocol } = e;
   const observations = (await store.listObservations(e.id)).filter((o) => o.batchId === e.round.baselineBatchId);
   const manifest = parsed(DesignManifest, await adapter(ctx, "getManifest", () => ctx.deps.candidates.getManifest(e.incumbentVersionId)), "getManifest");
+  if (manifest.versionId !== e.incumbentVersionId) {
+    // C's fault, not the model's: fail the integration instead of burning an analysis attempt on a packet error.
+    throw new IntegrationError(`getManifest answered for ${manifest.versionId}, not the incumbent ${e.incumbentVersionId}`);
+  }
   const editableElements = manifest.elements.filter(
     (el) => !el.protected && !protocol.protectedElements.includes(el.elementId) && !el.categories.some((c) => protocol.protectedCategories.includes(c)),
   );

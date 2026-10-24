@@ -62,13 +62,13 @@ export async function patching(ctx: StepContext, e: Experiment): Promise<boolean
   if (cand.parentVersionId !== source) throw new IntegrationError(`createCandidate built on ${cand.parentVersionId}, not the incumbent ${source}`);
   if (await store.getVersion(cand.versionId)) throw new IntegrationError(`createCandidate reused existing version ${cand.versionId}`);
 
-  let manifestHash: string;
-  try {
-    manifestHash = parsed(DesignManifest, await adapter(ctx, "getManifest", () => candidates.getManifest(cand.versionId)), "getManifest").manifestHash;
-  } catch (err) {
-    if (!(err instanceof IntegrationError) || !cand.figma) throw err; // CancelledError is not an IntegrationError
-    manifestHash = cand.figma.manifestHash;
+  // The candidate's own manifest is required: a failed or mismatched getManifest is an integration failure (no
+  // fallback to the Figma hash, which describes a frame, not the built version).
+  const manifest = parsed(DesignManifest, await adapter(ctx, "getManifest", () => candidates.getManifest(cand.versionId)), "getManifest");
+  if (manifest.versionId !== cand.versionId) {
+    throw new IntegrationError(`getManifest answered for ${manifest.versionId}, not the candidate version ${cand.versionId}`);
   }
+  const { manifestHash } = manifest;
 
   const { evaluationId: _ignored, ...fromC } = cand;
   await store.putCandidate(e.id, { ...fromC, patchIds, reviewStatus: "pending" });

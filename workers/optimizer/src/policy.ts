@@ -23,7 +23,7 @@ export interface Classification {
 
 /**
  * Code-assigned risk (spec 5.4), rules applied in this exact order:
- * unknown element → protected (flag, protectedElements, or category) → unsupported op → style token allowlist → review_required.
+ * unknown element → protected (flag, protectedElements, or category; any duplicate match) → duplicate id (unknown) → unsupported op → style token allowlist → review_required.
  * Never consults `modelRisk`.
  */
 export function classifyPatch(
@@ -31,14 +31,20 @@ export function classifyPatch(
   protocol: ExperimentProtocol,
   manifest: DesignManifest,
 ): Classification {
-  const el = manifest.elements.find((e) => e.elementId === p.targetElementId);
-  if (!el) return { risk: "unknown" };
+  // Defense in depth: the contract rejects duplicate elementIds, but a manifest that bypassed it must not let an
+  // unprotected duplicate mask a protected one. Every match is checked for protection; an ambiguous target is unknown.
+  const matches = manifest.elements.filter((e) => e.elementId === p.targetElementId);
+  if (matches.length === 0) return { risk: "unknown" };
 
-  const cats = el.categories.filter((c) => protocol.protectedCategories.includes(c));
-  if (el.protected || protocol.protectedElements.includes(el.elementId) || cats.length > 0) {
-    const why = cats.length > 0 ? ` (category ${cats.join(", ")})` : "";
-    return { risk: "blocked", blockReason: `${el.elementId} is protected${why}` };
+  for (const m of matches) {
+    const cats = m.categories.filter((c) => protocol.protectedCategories.includes(c));
+    if (m.protected || protocol.protectedElements.includes(m.elementId) || cats.length > 0) {
+      const why = cats.length > 0 ? ` (category ${cats.join(", ")})` : "";
+      return { risk: "blocked", blockReason: `${m.elementId} is protected${why}` };
+    }
   }
+  if (matches.length > 1) return { risk: "unknown" };
+  const el = matches[0]!;
 
   if (!el.supportedOps.includes(p.op)) {
     return { risk: "blocked", blockReason: `${p.op} is not a supported op for ${el.elementId}` };

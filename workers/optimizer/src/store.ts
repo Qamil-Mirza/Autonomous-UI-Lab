@@ -141,7 +141,15 @@ export class InMemoryStore implements ExperimentStore {
   private listeners = new Set<ChangeListener>();
 
   private emit(table: StoreTable, key: string): void {
-    for (const fn of [...this.listeners]) fn(table, key);
+    // A listener must never fail a store write: sync throws and async rejections are swallowed.
+    for (const fn of [...this.listeners]) {
+      try {
+        const r: unknown = fn(table, key);
+        if (r instanceof Promise) r.catch(() => {});
+      } catch {
+        // ignored
+      }
+    }
   }
 
   async getExperiment(id: string) {

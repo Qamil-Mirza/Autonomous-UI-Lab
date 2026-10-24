@@ -212,6 +212,111 @@ describe("controller round on mocks", () => {
     expect(e.incumbentVersionId).toBe(t.base);
   });
 
+  it("candidate getManifest throw → INTEGRATION_FAILURE (no Figma-hash fallback), incumbent preserved", async () => {
+    const t = await setup();
+    await t.runtime.idle(t.id);
+    const orig = t.candidates.getManifest.bind(t.candidates);
+    t.candidates.getManifest = async (v) => {
+      if (v !== BASE) throw new Error("manifest service down");
+      return orig(v);
+    };
+    // The candidate carries a Figma block, so the removed fallback to figma.manifestHash would have applied.
+    const create = t.candidates.createCandidate.bind(t.candidates);
+    t.candidates.createCandidate = async (src, patches) => ({
+      ...(await create(src, patches)),
+      figma: { frameUrl: "http://figma.test/frame", status: "verified", manifestHash: "sha256:figma", patchIds: patches.map((p) => p.id) },
+    });
+    await t.approveAll();
+    const e = await t.exp();
+    expect(e.stopping!.reason).toBe("INTEGRATION_FAILURE");
+    expect(states(e).slice(-2)).toEqual(["patching", "stopped"]);
+    expect(e.incumbentVersionId).toBe(t.base);
+    expect(await t.store.listCandidates(t.id)).toHaveLength(0);
+  });
+
+  it("candidate getManifest for another version → INTEGRATION_FAILURE", async () => {
+    const t = await setup();
+    await t.runtime.idle(t.id);
+    const orig = t.candidates.getManifest.bind(t.candidates);
+    t.candidates.getManifest = async () => orig(BASE); // always answers with the base manifest
+    await t.approveAll();
+    const e = await t.exp();
+    expect(e.stopping!.reason).toBe("INTEGRATION_FAILURE");
+    expect(states(e).slice(-2)).toEqual(["patching", "stopped"]);
+    expect(e.incumbentVersionId).toBe(t.base);
+  });
+
+  it("incumbent getManifest for another version → INTEGRATION_FAILURE without spending an analysis attempt", async () => {
+    const t = await setup({ start: false });
+    const orig = t.candidates.getManifest.bind(t.candidates);
+    t.candidates.getManifest = async () => ({ ...(await orig(BASE)), versionId: "ver_other0001" as const });
+    await t.cmd.startExperiment({ experimentId: t.id });
+    await t.runtime.idle(t.id);
+    const e = await t.exp();
+    expect(e.stopping!.reason).toBe("INTEGRATION_FAILURE");
+    expect(states(e).slice(-2)).toEqual(["proposing", "stopped"]);
+    expect(e.round.analysisAttempts).toBe(0);
+    expect(t.analysis.calls).toHaveLength(0);
+  });
+
+  it("batch request carries experimentId; stored runs are owned by the experiment", async () => {
+    const t = await setup({ start: false });
+    const orig = t.simulation.runBatch.bind(t.simulation);
+    // B echoes the requested experimentId, except one run carries a foreign one: the controller overrides it.
+    t.simulation.runBatch = async (req, onEvent, signal) => {
+      const res = await orig(req, onEvent, signal);
+      expect(res.runs.every((r) => r.experimentId === req.experimentId)).toBe(true);
+      return { ...res, runs: res.runs.map((r, i) => (i === 0 ? { ...r, experimentId: "exp_foreign01" as const } : r)) };
+    };
+    await t.cmd.startExperiment({ experimentId: t.id });
+    await t.runtime.idle(t.id);
+    const e = await t.exp();
+    expect(e.state).toBe("awaiting_approval");
+    expect(t.simulation.calls[0]!.experimentId).toBe(t.id);
+    const runs = await t.store.listRuns(e.round.baselineBatchId!);
+    expect(runs).toHaveLength(12);
+    expect(runs.every((r) => r.experimentId === t.id)).toBe(true);
+  });
+
+  it("malformed or wrong-version streamed events are skipped; the validated BatchResult copy is stored", async () => {
+    const t = await setup({ start: false });
+    const orig = t.simulation.runBatch.bind(t.simulation);
+    let replaced = 0;
+    t.simulation.runBatch = async (req, onEvent, signal) =>
+      orig(
+        req,
+        (ev) => {
+          if (ev.seq === 0 && replaced === 0) {
+            replaced += 1;
+            onEvent({ ...ev, seq: -1, screenAfter: "" } as typeof ev); // malformed: fails AgentActionEvent
+            return; // the valid event for (runId, 0) is never streamed
+          }
+          if (ev.seq === 1 && replaced === 1) {
+            replaced += 1;
+            onEvent({ ...ev, versionId: "ver_other0001", screenAfter: "bogus" }); // schema-valid, wrong version
+            return;
+          }
+          onEvent(ev);
+        },
+        signal,
+      );
+    await t.cmd.startExperiment({ experimentId: t.id });
+    await t.runtime.idle(t.id);
+    const e = await t.exp();
+    expect(e.state).toBe("awaiting_approval");
+    expect(replaced).toBe(2);
+    const runs = await t.store.listRuns(e.round.baselineBatchId!);
+    const fixture = loadFixture("batch.baseline.json", BatchResult);
+    let stored = 0;
+    for (const r of runs) {
+      const actions = await t.store.listActions(r.runId);
+      expect(actions.map((a) => a.seq)).toEqual(r.events.map((x) => x.seq));
+      expect(actions.every((a) => a.versionId === BASE && a.seq >= 0 && a.screenAfter !== "bogus" && a.screenAfter !== "")).toBe(true);
+      stored += actions.length;
+    }
+    expect(stored).toBe(fixture.runs.reduce((n, r) => n + r.events.length, 0));
+  });
+
   it("simulation throw on baseline → INTEGRATION_FAILURE, no analysis", async () => {
     const t = await setup({ throwOn: "baseline" });
     await t.runtime.idle(t.id);
@@ -262,6 +367,14 @@ describe("controller round on mocks", () => {
     expect(e.state).toBe("stopped");
     expect(e.stopping!.reason).toBe("USER_STOP");
     expect(e.incumbentVersionId).toBe(t.base);
+    expect(e.stopping!.bestVersionId).toBe(t.base);
+    // Promotion after the stop keeps the stopping record's best version in step with the incumbent.
+    const [cand] = await t.store.listCandidates(t.id);
+    const r = await t.cmd.recordFinalReview({ experimentId: t.id, candidateId: cand!.id, status: "promoted_measured" });
+    expect(r.ok).toBe(true);
+    const after = await t.exp();
+    expect(after.incumbentVersionId).toBe(cand!.versionId);
+    expect(after.stopping!.bestVersionId).toBe(cand!.versionId);
   });
 
   it("cost budget stops before proposing", async () => {

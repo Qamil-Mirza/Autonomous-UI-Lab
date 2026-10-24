@@ -44,6 +44,18 @@ describe("compare", () => {
     expect(r.decision).toBe("inconclusive");
     expect(r.deltaPp).toBe(8.3);
   });
+  it("decides on the raw delta: +9.97pp (reported 10.0) is inconclusive at a 10pp margin", () => {
+    expect(base.completionRate).toBe(0.5);
+    const up = compare(base, { ...flat, completionRate: 0.5997 }, [], policy);
+    expect(up.deltaPp).toBe(10);
+    expect(up.decision).toBe("inconclusive");
+    const down = compare(base, { ...flat, completionRate: 0.4003 }, [], policy);
+    expect(down.deltaPp).toBe(-10);
+    expect(down.decision).toBe("inconclusive");
+    // Exactly +/-10pp still meets the margin despite float error ((0.6 - 0.5) * 100 is 9.999…98).
+    expect(compare(base, { ...flat, completionRate: 0.6 }, [], policy).decision).toBe("accepted");
+    expect(compare(base, { ...flat, completionRate: 0.4 }, [], policy).decision).toBe("rejected");
+  });
   it("zero-valid or underfilled candidate is inconclusive", () => {
     expect(compare(base, zeroValid, [], policy).decision).toBe("inconclusive");
     expect(compare(base, underfilled, [], policy).decision).toBe("inconclusive");

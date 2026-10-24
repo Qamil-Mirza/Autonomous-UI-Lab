@@ -61,7 +61,7 @@ export function createMockSimulation(plan: MockSimulationPlan): MockSimulation {
           onEvent(structuredClone(events[0]!)); // deliberate duplicate
           mock.duplicatesEmitted += 1;
         }
-        runs.push({ ...src, runId, batchId: req.batchId, versionId: req.versionId, protocolId: req.protocolId, events });
+        runs.push({ ...src, runId, experimentId: req.experimentId, batchId: req.batchId, versionId: req.versionId, protocolId: req.protocolId, events });
       }
       return {
         schemaVersion: fixture.schemaVersion,

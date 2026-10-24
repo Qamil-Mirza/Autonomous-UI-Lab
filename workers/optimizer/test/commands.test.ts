@@ -235,6 +235,23 @@ describe("recordFinalReview", () => {
     expect((await store.getCandidate(acceptedCand))!.reviewStatus).toBe("promoted_measured");
   });
 
+  it("promotion after a stop moves stopping.bestVersionId to the promoted candidate", async () => {
+    expect((await cmd.cancelExperiment({ experimentId })).ok).toBe(true);
+    const exp = (await store.getExperiment(experimentId))!;
+    // What the driver records for the cancel: a USER_STOP naming the (old) incumbent as best.
+    await store.putExperiment({
+      ...exp,
+      state: "stopped",
+      stopping: { reason: "USER_STOP", at: NOW, bestVersionId: base, attemptedCandidateIds: [], evaluationIds: [], rejectedPatchIds: [], remainingObservationIds: [] },
+    });
+    const r = await cmd.recordFinalReview({ experimentId, candidateId: acceptedCand, status: "promoted_measured" });
+    expect(r.ok).toBe(true);
+    const after = (await store.getExperiment(experimentId))!;
+    expect(after.incumbentVersionId).toBe(acceptedCandVersion);
+    expect(after.stopping!.bestVersionId).toBe(acceptedCandVersion);
+    expect(after.stopping!.reason).toBe("USER_STOP");
+  });
+
   it("aesthetic retention leaves incumbent", async () => {
     const r = await cmd.recordFinalReview({ experimentId, candidateId: inconclusiveCand, status: "retained_aesthetic" });
     expect(r.ok).toBe(true);
