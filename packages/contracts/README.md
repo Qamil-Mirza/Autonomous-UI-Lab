@@ -69,6 +69,16 @@ Error codes: `NOT_FOUND`, `INVALID_STATE`, `STALE_SOURCE_VERSION`, `ALREADY_APPR
 `PATCH_BLOCKED`, `VALIDATION_FAILED`. Only `RecordFinalReview { status: "promoted_measured" }` on an `accepted`
 candidate changes the incumbent version.
 
+Current behaviour A must know about:
+
+- After `ApprovePatches` returns `ok: true`, **re-read the experiment**. The approval is recorded, but the round
+  may then stop on a budget (for example `ITERATION_BUDGET`, `COST_BUDGET` or `TIME_BUDGET`) instead of building a
+  candidate, so do not assume the experiment is running.
+- `CancelExperiment.reason` and `RecordFinalReview.note` are accepted and validated but **not persisted yet**. Do not
+  expect to read them back.
+- `reviewMode: "auto"` is not built. An `auto` experiment behaves like `manual` for approval: it still waits for
+  `ApprovePatches`.
+
 ## Integration checklist
 
 **A (dashboard)**
@@ -78,7 +88,7 @@ candidate changes the incumbent version.
 - [ ] Never import `@ghostloop/contracts/hidden`.
 
 **B (simulation)**
-- [ ] Implement `SimulationAdapter.runBatch`. Stream `AgentActionEvent`s through `onEvent` with 0-based contiguous `seq` per run. `(runId, seq)` is the dedupe key.
+- [ ] Implement `SimulationAdapter.runBatch`. `BatchRequest` carries `batchId`, `experimentId`, `protocolId`, `versionId`, `versionUrl`, `task`, `scenarios`, `runsPerBatch`, `maxActionsPerRun`, `maxConcurrency` and `hiddenGoalRef`. Every returned run must carry `req.experimentId`, `req.batchId` and `req.versionId`; every streamed event must carry `req.versionId` (D skips streamed events that fail `AgentActionEvent` or name another version). Stream `AgentActionEvent`s through `onEvent` with 0-based contiguous `seq` per run. `(runId, seq)` is the dedupe key.
 - [ ] Give the agent `PublicAgentInput` only. It is a strict schema: it contains no hidden goal and no outcome.
 - [ ] Set `outcome`, `goalVerified` (only from the trusted checker), `behaviorallyValid` and `stepCount`. Steps count every event except `stop` actions. `AgentRunResult.parse` enforces the outcome and validity rules.
 - [ ] Respect `signal`. Report cancelled runs as `user_cancelled` and environment failures as `model_error` or `browser_error`.

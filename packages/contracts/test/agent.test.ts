@@ -54,11 +54,13 @@ describe("agent schemas", () => {
   });
   it("batch request/result parse", () => {
     const req = {
-      batchId: "batch_1", protocolId: "proto_1", versionId: "ver_1", versionUrl: "http://localhost:1", task: "t",
+      batchId: "batch_1", experimentId: "exp_1", protocolId: "proto_1", versionId: "ver_1", versionUrl: "http://localhost:1", task: "t",
       scenarios: [{ id: "scn_1", name: "n", description: "d", inputs: {}, runs: 2 }],
       runsPerBatch: 2, maxActionsPerRun: 10, maxConcurrency: 2, hiddenGoalRef: "goal",
     };
     expect(BatchRequest.safeParse(req).success).toBe(true);
+    const { experimentId: _omit, ...noExp } = req;
+    expect(BatchRequest.safeParse(noExp).success).toBe(false);
     const res = { schemaVersion: "1.0.0", batchId: "batch_1", versionId: "ver_1", runs: [makeRun()], usage: { inferenceCalls: 1, inferenceUsd: 0.1, wallClockMs: 10 }, cancelled: false, plannedRuns: 2 };
     expect(BatchResult.safeParse(res).success).toBe(true);
     expect(BatchResult.safeParse({ ...res, plannedRuns: 0 }).success).toBe(false);

@@ -14,9 +14,9 @@ export type Scenario = z.infer<typeof Scenario>;
 
 export const EvaluationPolicy = z.object({
   targetCompletionRate: z.number().min(0).max(1),
-  minImprovementPp: z.number().default(10),
-  maxMedianActionsIncrease: z.number().default(2),
-  maxValidationErrorRateIncreasePp: z.number().default(15),
+  minImprovementPp: z.number().nonnegative().default(10),
+  maxMedianActionsIncrease: z.number().nonnegative().default(2),
+  maxValidationErrorRateIncreasePp: z.number().nonnegative().default(15),
   minValidFraction: z.number().min(0).max(1).default(0.75),
   minValidPerScenario: z.number().int().nonnegative().default(1),
 });

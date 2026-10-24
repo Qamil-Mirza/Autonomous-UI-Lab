@@ -6,6 +6,7 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "check": "npm run check --workspaces --if-present",
+    "demo:mock": "npm run demo:mock -w @ghostloop/optimizer --",
     "test": "npm run test --workspaces --if-present"
   }
 }

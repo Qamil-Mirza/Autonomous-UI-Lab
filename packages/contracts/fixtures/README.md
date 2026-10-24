@@ -66,7 +66,7 @@ Shared IDs: experiment `exp_demo0001`, protocol `proto_demo0001`, base version `
 | `validation.pass.json` | `ValidationResult` | All runnable and guardrail checks pass for `cand_0001` |
 | `validation.fail.json` | `ValidationResult` | `cand_0003` fails the `protected_elements_unchanged` guardrail |
 | `evaluation.accepted.json` | `Evaluation` | Baseline vs improved: `deltaPp` 25, `accepted`. 0.75 is below the 0.8 target, so there is no stopping reason |
-| `evaluation.rejected.json` | `Evaluation` | Guardrail failure: `candidate: null`, `deltaPp: null`, `rejected`, `NO_MEASURED_IMPROVEMENT` |
+| `evaluation.rejected.json` | `Evaluation` | Guardrail failure: `candidate: null`, `deltaPp: null`, `rejected`, `NO_VALID_PATCH` (spec §5.6: a guardrail failure stops with `NO_VALID_PATCH`) |
 | `evaluation.inconclusive.json` | `Evaluation` | Baseline vs flat: `deltaPp` 8.3 ((7/12 − 0.5) × 100 rounded to 1 decimal, as `compare()` does), `inconclusive`, `INCONCLUSIVE` |
 
 ### Batch outcome table
