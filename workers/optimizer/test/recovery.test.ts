@@ -78,12 +78,37 @@ describe("recoverInterruptedApprovals", () => {
     expect((await store.getExperiment(id))!.state).not.toBe("awaiting_approval");
   });
 
+  it("leaves an awaiting_approval round untouched when its Approval record exists", async () => {
+    const store = new InMemoryStore();
+    const { id } = await parkedExperiment(store);
+    const proposed = (await store.listPatches(id, 1)).filter((p) => p.state === "proposed");
+    const approval = {
+      schemaVersion: "1.0.0" as const,
+      id: "appr_done" as const,
+      experimentId: id as never,
+      round: 1,
+      sourceVersionId: BASE as never,
+      patchIds: proposed.map((p) => p.id),
+      approvedBy: "d",
+      at: NOW,
+    };
+    // Claim, patch states and Approval all written, but the drive has not moved on yet.
+    await store.updateExperiment(id, (x) => ({ ...x, round: { ...x.round, approvalId: approval.id } }));
+    for (const p of proposed) await store.updatePatch(p.id, { state: "approved" });
+    await store.putApproval(approval);
+
+    const before = [await store.getExperiment(id), await store.listPatches(id, 1)];
+    expect(before[0]).toMatchObject({ state: "awaiting_approval", round: { approvalId: "appr_done" } });
+    expect(await recoverInterruptedApprovals(store)).toEqual([]);
+    expect([await store.getExperiment(id), await store.listPatches(id, 1)]).toEqual(before);
+  });
+
   it("leaves a completed approval and experiments in other states untouched", async () => {
     const store = new InMemoryStore();
-    const done = await parkedExperiment(store);
-    const patches = (await store.listPatches(done.id, 1)).filter((p) => p.state === "proposed");
-    const r = await done.cmd.approvePatches({
-      experimentId: done.id,
+    const approved = await parkedExperiment(store);
+    const patches = (await store.listPatches(approved.id, 1)).filter((p) => p.state === "proposed");
+    const r = await approved.cmd.approvePatches({
+      experimentId: approved.id,
       sourceVersionId: BASE,
       round: 1,
       patchIds: patches.map((p) => p.id),
@@ -93,9 +118,9 @@ describe("recoverInterruptedApprovals", () => {
     // Another experiment that is mid-flight (not awaiting approval) but carries a stray claim.
     const other = await parkedExperiment(store);
     await store.updateExperiment(other.id, (x) => ({ ...x, state: "observing", round: { ...x.round, approvalId: "appr_y" as never } }));
-    await done.runtime.idle(done.id);
+    await approved.runtime.idle(approved.id);
 
-    const snapshot = async () => [await store.getExperiment(done.id), await store.getExperiment(other.id), await store.listPatches(done.id, 1)];
+    const snapshot = async () => [await store.getExperiment(approved.id), await store.getExperiment(other.id), await store.listPatches(approved.id, 1)];
     const before = await snapshot();
     expect(await recoverInterruptedApprovals(store)).toEqual([]);
     expect(await snapshot()).toEqual(before);
