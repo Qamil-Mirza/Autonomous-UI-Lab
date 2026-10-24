@@ -1,5 +1,6 @@
 import { Fragment, type ChangeEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { RENDER_GROUPS, type RenderGroup } from "@ghostloop/design-engine";
 import { tokenClass, useEl, useOrdered } from "../manifest/context";
 import type { ElementId } from "../manifest/ids";
 import { useScreenPath, type Screen } from "../state/flow";
@@ -8,9 +9,15 @@ function cx(...names: (string | false | undefined)[]): string {
   return names.filter(Boolean).join(" ");
 }
 
-// Renders a group's children in manifest order, dropping elements the manifest hides.
-export function Ordered({ children }: { children: Partial<Record<ElementId, ReactNode>> }) {
-  const ids = useOrdered(Object.keys(children) as ElementId[]);
+// Renders a render group's children in manifest order, dropping elements the manifest hides. The children must be
+// exactly the group's members in RENDER_GROUPS, which is what bounds set_order patches.
+export function Ordered({ group, children }: { group: RenderGroup; children: Partial<Record<ElementId, ReactNode>> }) {
+  const keys = Object.keys(children);
+  const members: readonly string[] = RENDER_GROUPS[group];
+  if (keys.length !== members.length || keys.some((k) => !members.includes(k))) {
+    throw new Error(`<Ordered group="${group}"> renders ${keys.join(", ")} but RENDER_GROUPS lists ${members.join(", ")}`);
+  }
+  const ids = useOrdered(keys as ElementId[]);
   return (
     <>
       {ids.map((id) => (

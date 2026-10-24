@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DesignManifest, ManifestElement, SchemaVersion, VersionId } from "@ghostloop/contracts";
+import { DesignManifest, ManifestElement, PatchId, SchemaVersion, VersionId } from "@ghostloop/contracts";
 
 // Approved style tokens a set_style_token patch may assign.
 export const StyleToken = z.enum(["button.primary", "button.secondary", "emphasis.strong"]);
@@ -18,6 +18,8 @@ export const PresentedManifest = z.object({
   versionId: VersionId,
   parentVersionId: VersionId.optional(),
   manifestHash: z.string().min(1),
+  // IDs of the patches applied to parentVersionId to produce this version (absent on an original design).
+  patchIds: z.array(PatchId).optional(),
   elements: z.array(PresentedElement),
 });
 export type PresentedManifest = z.infer<typeof PresentedManifest>;

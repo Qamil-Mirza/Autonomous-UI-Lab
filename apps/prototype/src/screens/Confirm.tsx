@@ -31,7 +31,7 @@ export function Confirm() {
     <Stage step={5}>
       <section className="card" style={{ minHeight: 400, padding: "36px 48px 51px" }}>
         <img className="confirm-icon" src={checkIcon} width={28} height={28} alt="" />
-        <Ordered>
+        <Ordered group="confirm.content">
           {{
             "confirm.title": <Text id="confirm.title" as="h1" className="title" />,
             "confirm.helper": <Text id="confirm.helper" className="helper" />,

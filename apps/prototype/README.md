@@ -37,7 +37,13 @@ Every screen submit is sent to the run-scoped API from `@ghostloop/prototype-ada
 
 ## Manifests are served, not bundled
 
-The Vite config serves the repo-root `designs/` directory at `/designs` with `Cache-Control: no-store`, in both `vite` (dev) and `vite preview`. A new candidate file such as `designs/versions/ver_abc.json` loads at `/v/ver_abc/signup` without a rebuild. Any other host for `dist/` must also serve `designs/` at `/designs`.
+The Vite config serves the designs directory (`GHOSTLOOP_DESIGNS_DIR`, default the repo-root `designs/`) at `/designs` with `Cache-Control: no-store`, in both `vite` (dev) and `vite preview`. A new candidate file such as `designs/versions/ver_abc.json` loads at `/v/ver_abc/signup` without a rebuild. Any other host for `dist/` must also serve `designs/` at `/designs`.
+
+Candidate versions written there by the `CandidateAdapter` (`@ghostloop/prototype-adapter`) are gitignored. Only `ver_baseline.json` is committed.
+
+## Render groups
+
+Each `<Ordered group="…">` block renders the elements of one render group from `@ghostloop/design-engine`'s `RENDER_GROUPS` in manifest order. `set_order` patches can only move an element within its group. If a block's children don't match its group exactly, the block throws.
 
 ## Control IDs
 
@@ -63,11 +69,18 @@ npx playwright install chromium            # once, if the browsers aren't instal
 npm run e2e -w @ghostloop/prototype
 ```
 
-`playwright.config.ts` starts its own Vite server on port 5174, with `GHOSTLOOP_RUNS_DIR` set to `$TMPDIR/ghostloop-e2e-runs`, so it never touches `.runs/`. It runs at 1280×800. The specs in `e2e/onboarding.spec.ts` cover:
+`playwright.config.ts` starts its own Vite server on port 5174. It sets `GHOSTLOOP_RUNS_DIR` to `$TMPDIR/ghostloop-e2e-runs` and `GHOSTLOOP_DESIGNS_DIR` to a fresh `$TMPDIR/ghostloop-e2e-designs` holding only the baseline, so it never touches `.runs/` or `designs/`. It runs at 1280×800. The specs in `e2e/onboarding.spec.ts` cover:
 - The Free happy path, where `checkGoal` reports `achieved: true`.
 - Choosing Pro, where `free_plan_selected` and `no_paid_trial` fail.
 - Back + resubmit, which keeps one workspace and keeps `?run=`.
 - Auto-creating a `run_manual_*` run.
 - The `api-error` alert for an uninitialized run.
+
+`e2e/candidates.spec.ts` drives the real `CandidateAdapter`:
+- A valid candidate passes every check, and its patch is live in the app.
+- Tampered candidates fail exactly the matching check:
+  - a protected price fails `protected_elements_unchanged`
+  - an empty button label fails `accessible_labels`
+  - a hidden Free button fails `onboarding_smoke`
 
 The e2e tests are not part of `check` because they need browsers and a server.

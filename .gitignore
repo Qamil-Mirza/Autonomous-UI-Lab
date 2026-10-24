@@ -8,3 +8,6 @@ coverage/
 .runs/
 test-results/
 playwright-report/
+designs/versions/*
+!designs/versions/ver_baseline.json
+designs/candidates/
