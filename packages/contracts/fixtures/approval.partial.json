@@ -1,0 +1,14 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "id": "appr_0001",
+  "experimentId": "exp_demo0001",
+  "round": 1,
+  "sourceVersionId": "ver_base0001",
+  "patchIds": [
+    "pat_0001",
+    "pat_0002"
+  ],
+  "approvedBy": "designer@example.com",
+  "at": "2026-10-23T09:40:00.000Z"
+}

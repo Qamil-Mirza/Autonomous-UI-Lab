@@ -1,0 +1,2094 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "batchId": "batch_metrics01",
+  "versionId": "ver_base0001",
+  "runs": [
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_met_01",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_baseline",
+      "batchId": "batch_metrics01",
+      "events": [
+        {
+          "runId": "run_met_01",
+          "seq": 0,
+          "at": "2026-10-23T09:05:04.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "ada@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_01/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_01",
+          "seq": 1,
+          "at": "2026-10-23T09:05:08.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_01/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_01",
+          "seq": 2,
+          "at": "2026-10-23T09:05:12.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Acme Research"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_01/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_01",
+          "seq": 3,
+          "at": "2026-10-23T09:05:16.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_01/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_01",
+          "seq": 4,
+          "at": "2026-10-23T09:05:20.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_01/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_01",
+          "seq": 5,
+          "at": "2026-10-23T09:05:24.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "done",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_01/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": true,
+      "goalEvidence": "checker: workspace exists on the free plan and the done screen was reached",
+      "stepCount": 6,
+      "outcome": "goal",
+      "terminalScreen": "done",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_met_01/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_01/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_01/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_01/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_01/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_01/5.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:05:00.000Z",
+      "endedAt": "2026-10-23T09:05:28.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_met_02",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_baseline",
+      "batchId": "batch_metrics01",
+      "events": [
+        {
+          "runId": "run_met_02",
+          "seq": 0,
+          "at": "2026-10-23T09:05:49.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "ada@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_02/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_02",
+          "seq": 1,
+          "at": "2026-10-23T09:05:53.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-1"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_02/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_02",
+          "seq": 2,
+          "at": "2026-10-23T09:05:57.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_02/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_02",
+          "seq": 3,
+          "at": "2026-10-23T09:06:01.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Acme Research"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_02/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_02",
+          "seq": 4,
+          "at": "2026-10-23T09:06:05.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_02/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_02",
+          "seq": 5,
+          "at": "2026-10-23T09:06:09.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "plan",
+          "action": {
+            "type": "stop",
+            "reason": "Not sure which plan fits; stopping here."
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_02/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 5,
+      "outcome": "agent_stop",
+      "terminalScreen": "plan",
+      "lastPointer": {
+        "x": 725,
+        "y": 370
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_met_02/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_02/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_02/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_02/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_02/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_02/5.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:05:45.000Z",
+      "endedAt": "2026-10-23T09:06:13.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_met_03",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_baseline",
+      "batchId": "batch_metrics01",
+      "events": [
+        {
+          "runId": "run_met_03",
+          "seq": 0,
+          "at": "2026-10-23T09:06:34.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "ada@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_03/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_03",
+          "seq": 1,
+          "at": "2026-10-23T09:06:38.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-1"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_03/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_03",
+          "seq": 2,
+          "at": "2026-10-23T09:06:42.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_03/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 3,
+      "outcome": "model_error",
+      "terminalScreen": "workspace",
+      "lastPointer": {
+        "x": 651,
+        "y": 294
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_met_03/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_03/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_03/2.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T09:06:30.000Z",
+      "endedAt": "2026-10-23T09:06:46.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_met_04",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_invalid_email",
+      "batchId": "batch_metrics01",
+      "events": [
+        {
+          "runId": "run_met_04",
+          "seq": 0,
+          "at": "2026-10-23T09:07:19.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "lin@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_04/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_04",
+          "seq": 1,
+          "at": "2026-10-23T09:07:23.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-2"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_04/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_04",
+          "seq": 2,
+          "at": "2026-10-23T09:07:27.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "click",
+            "elementId": "signup.consent"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 614,
+            "y": 256
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_04/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_04",
+          "seq": 3,
+          "at": "2026-10-23T09:07:31.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_04/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_04",
+          "seq": 4,
+          "at": "2026-10-23T09:07:35.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Lin Labs"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_04/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_04",
+          "seq": 5,
+          "at": "2026-10-23T09:07:39.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_04/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_04",
+          "seq": 6,
+          "at": "2026-10-23T09:07:43.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_04/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_04",
+          "seq": 7,
+          "at": "2026-10-23T09:07:47.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "done",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_04/7.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": true,
+      "goalEvidence": "checker: workspace exists on the free plan and the done screen was reached",
+      "stepCount": 8,
+      "outcome": "goal",
+      "terminalScreen": "done",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_met_04/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_04/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_04/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_04/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_04/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_04/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_04/6.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_04/7.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:07:15.000Z",
+      "endedAt": "2026-10-23T09:07:51.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_met_05",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_invalid_email",
+      "batchId": "batch_metrics01",
+      "events": [
+        {
+          "runId": "run_met_05",
+          "seq": 0,
+          "at": "2026-10-23T09:08:04.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "lin@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_05/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_05",
+          "seq": 1,
+          "at": "2026-10-23T09:08:08.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_05/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_05",
+          "seq": 2,
+          "at": "2026-10-23T09:08:12.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Lin Labs"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_05/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_05",
+          "seq": 3,
+          "at": "2026-10-23T09:08:16.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_05/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_05",
+          "seq": 4,
+          "at": "2026-10-23T09:08:20.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_05/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_05",
+          "seq": 5,
+          "at": "2026-10-23T09:08:24.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "invite",
+          "action": {
+            "type": "type",
+            "elementId": "invite.email",
+            "value": "teammate@example"
+          },
+          "result": "validation_error",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_05/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_05",
+          "seq": 6,
+          "at": "2026-10-23T09:08:28.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "no_effect",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_05/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 7,
+      "outcome": "flow_blocked",
+      "terminalScreen": "invite",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_met_05/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_05/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_05/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_05/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_05/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_05/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_05/6.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:08:00.000Z",
+      "endedAt": "2026-10-23T09:08:32.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_met_06",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_invalid_email",
+      "batchId": "batch_metrics01",
+      "events": [],
+      "goalVerified": false,
+      "stepCount": 0,
+      "outcome": "browser_error",
+      "terminalScreen": "signup",
+      "screenshots": [],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T09:08:45.000Z",
+      "endedAt": "2026-10-23T09:08:49.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_met_07",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_hesitant",
+      "batchId": "batch_metrics01",
+      "events": [
+        {
+          "runId": "run_met_07",
+          "seq": 0,
+          "at": "2026-10-23T09:09:34.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "sam@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_07/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_07",
+          "seq": 1,
+          "at": "2026-10-23T09:09:38.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_07/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_07",
+          "seq": 2,
+          "at": "2026-10-23T09:09:42.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Sam & Co"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_07/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_07",
+          "seq": 3,
+          "at": "2026-10-23T09:09:46.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_07/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_07",
+          "seq": 4,
+          "at": "2026-10-23T09:09:50.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_07/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_07",
+          "seq": 5,
+          "at": "2026-10-23T09:09:54.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "invite",
+          "action": {
+            "type": "type",
+            "elementId": "invite.email",
+            "value": "kim@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_07/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_07",
+          "seq": 6,
+          "at": "2026-10-23T09:09:58.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "done",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_07/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": true,
+      "goalEvidence": "checker: workspace exists on the free plan and the done screen was reached",
+      "stepCount": 7,
+      "outcome": "goal",
+      "terminalScreen": "done",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_met_07/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_07/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_07/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_07/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_07/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_07/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_07/6.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:09:30.000Z",
+      "endedAt": "2026-10-23T09:10:02.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_met_08",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_hesitant",
+      "batchId": "batch_metrics01",
+      "events": [
+        {
+          "runId": "run_met_08",
+          "seq": 0,
+          "at": "2026-10-23T09:10:19.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "sam@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_08/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_08",
+          "seq": 1,
+          "at": "2026-10-23T09:10:23.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_08/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_08",
+          "seq": 2,
+          "at": "2026-10-23T09:10:27.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Sam & Co"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_08/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_08",
+          "seq": 3,
+          "at": "2026-10-23T09:10:31.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_08/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_08",
+          "seq": 4,
+          "at": "2026-10-23T09:10:35.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "compare",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_08/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_08",
+          "seq": 5,
+          "at": "2026-10-23T09:10:39.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "compare",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_08/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_08",
+          "seq": 6,
+          "at": "2026-10-23T09:10:43.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "compare",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_08/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_08",
+          "seq": 7,
+          "at": "2026-10-23T09:10:47.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "compare",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_08/7.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 8,
+      "outcome": "step_limit",
+      "terminalScreen": "plan",
+      "lastPointer": {
+        "x": 710,
+        "y": 560
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_met_08/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_08/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_08/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_08/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_08/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_08/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_08/6.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_08/7.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:10:15.000Z",
+      "endedAt": "2026-10-23T09:10:51.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_met_09",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_hesitant",
+      "batchId": "batch_metrics01",
+      "events": [
+        {
+          "runId": "run_met_09",
+          "seq": 0,
+          "at": "2026-10-23T09:11:04.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "sam@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_09/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_09",
+          "seq": 1,
+          "at": "2026-10-23T09:11:08.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_09/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 2,
+      "outcome": "user_cancelled",
+      "terminalScreen": "workspace",
+      "lastPointer": {
+        "x": 651,
+        "y": 294
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_met_09/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_09/1.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": false,
+      "startedAt": "2026-10-23T09:11:00.000Z",
+      "endedAt": "2026-10-23T09:11:12.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_met_10",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_fast",
+      "batchId": "batch_metrics01",
+      "events": [
+        {
+          "runId": "run_met_10",
+          "seq": 0,
+          "at": "2026-10-23T09:11:49.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "jo@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_10/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_10",
+          "seq": 1,
+          "at": "2026-10-23T09:11:53.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.password",
+            "value": "correct-horse-4"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_10/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_10",
+          "seq": 2,
+          "at": "2026-10-23T09:11:57.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_10/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_10",
+          "seq": 3,
+          "at": "2026-10-23T09:12:01.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Jo Ventures"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_10/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_10",
+          "seq": 4,
+          "at": "2026-10-23T09:12:05.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_10/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_10",
+          "seq": 5,
+          "at": "2026-10-23T09:12:09.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "invite",
+          "action": {
+            "type": "click",
+            "elementId": "plan.free.cta"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 562,
+            "y": 408
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_10/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_10",
+          "seq": 6,
+          "at": "2026-10-23T09:12:13.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "invite",
+          "screenAfter": "done",
+          "action": {
+            "type": "click",
+            "elementId": "invite.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 584,
+            "y": 636
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_10/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": true,
+      "goalEvidence": "checker: workspace exists on the free plan and the done screen was reached",
+      "stepCount": 7,
+      "outcome": "goal",
+      "terminalScreen": "done",
+      "lastPointer": {
+        "x": 584,
+        "y": 636
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_met_10/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_10/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_10/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_10/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_10/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_10/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_10/6.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:11:45.000Z",
+      "endedAt": "2026-10-23T09:12:17.000Z"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "run_met_11",
+      "experimentId": "exp_demo0001",
+      "protocolId": "proto_demo0001",
+      "versionId": "ver_base0001",
+      "scenarioId": "scn_fast",
+      "batchId": "batch_metrics01",
+      "events": [
+        {
+          "runId": "run_met_11",
+          "seq": 0,
+          "at": "2026-10-23T09:12:34.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "signup",
+          "action": {
+            "type": "type",
+            "elementId": "signup.email",
+            "value": "jo@example.com"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_11/0.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_11",
+          "seq": 1,
+          "at": "2026-10-23T09:12:38.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "signup",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "click",
+            "elementId": "signup.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 651,
+            "y": 294
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_11/1.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_11",
+          "seq": 2,
+          "at": "2026-10-23T09:12:42.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "workspace",
+          "action": {
+            "type": "type",
+            "elementId": "workspace.name",
+            "value": "Jo Ventures"
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_11/2.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_11",
+          "seq": 3,
+          "at": "2026-10-23T09:12:46.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "workspace",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "workspace.submit"
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 725,
+            "y": 370
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_11/3.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_11",
+          "seq": 4,
+          "at": "2026-10-23T09:12:50.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "compare",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_11/4.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_11",
+          "seq": 5,
+          "at": "2026-10-23T09:12:54.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "compare",
+          "screenAfter": "plan",
+          "action": {
+            "type": "click",
+            "elementId": "plan.compare.link",
+            "reason": "Want to understand the plan differences first."
+          },
+          "result": "ok",
+          "pointer": {
+            "x": 710,
+            "y": 560
+          },
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_11/5.png",
+            "width": 1280,
+            "height": 800
+          }
+        },
+        {
+          "runId": "run_met_11",
+          "seq": 6,
+          "at": "2026-10-23T09:12:58.000Z",
+          "versionId": "ver_base0001",
+          "screenBefore": "plan",
+          "screenAfter": "plan",
+          "action": {
+            "type": "stop",
+            "reason": "Not sure which plan fits; stopping here."
+          },
+          "result": "ok",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "screenshot": {
+            "uri": "artifacts/run_met_11/6.png",
+            "width": 1280,
+            "height": 800
+          }
+        }
+      ],
+      "goalVerified": false,
+      "stepCount": 6,
+      "outcome": "agent_stop",
+      "terminalScreen": "plan",
+      "lastPointer": {
+        "x": 710,
+        "y": 560
+      },
+      "screenshots": [
+        {
+          "uri": "artifacts/run_met_11/0.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_11/1.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_11/2.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_11/3.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_11/4.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_11/5.png",
+          "width": 1280,
+          "height": 800
+        },
+        {
+          "uri": "artifacts/run_met_11/6.png",
+          "width": 1280,
+          "height": 800
+        }
+      ],
+      "behaviorallyValid": true,
+      "startedAt": "2026-10-23T09:12:30.000Z",
+      "endedAt": "2026-10-23T09:13:02.000Z"
+    }
+  ],
+  "usage": {
+    "inferenceCalls": 61,
+    "inferenceUsd": 0.244,
+    "wallClockMs": 495000
+  },
+  "cancelled": false,
+  "plannedRuns": 12
+}

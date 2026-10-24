@@ -1,0 +1,192 @@
+{
+  "provenance": "synthetic-fixture",
+  "items": [
+    {
+      "schemaVersion": "1.0.0",
+      "experimentId": "exp_demo0001",
+      "versionId": "ver_base0001",
+      "batchId": "batch_base0001",
+      "disposition": "unreviewed",
+      "id": "obs_0001",
+      "kind": "outcome_count",
+      "statement": "6 of 12 valid runs reached the goal",
+      "numerator": 6,
+      "denominator": 12,
+      "traceRefs": [
+        {
+          "runId": "run_base_01"
+        },
+        {
+          "runId": "run_base_02"
+        },
+        {
+          "runId": "run_base_04"
+        },
+        {
+          "runId": "run_base_07"
+        },
+        {
+          "runId": "run_base_10"
+        },
+        {
+          "runId": "run_base_11"
+        }
+      ],
+      "screens": [
+        "done"
+      ],
+      "elementIds": [],
+      "fingerprint": "outcome_count:goal"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "experimentId": "exp_demo0001",
+      "versionId": "ver_base0001",
+      "batchId": "batch_base0001",
+      "disposition": "unreviewed",
+      "id": "obs_0002",
+      "kind": "screen_revisit",
+      "statement": "5 of 12 runs revisited plan selection",
+      "numerator": 5,
+      "denominator": 12,
+      "traceRefs": [
+        {
+          "runId": "run_base_07",
+          "seq": 5
+        },
+        {
+          "runId": "run_base_08",
+          "seq": 5
+        },
+        {
+          "runId": "run_base_09",
+          "seq": 5
+        },
+        {
+          "runId": "run_base_11",
+          "seq": 5
+        },
+        {
+          "runId": "run_base_12",
+          "seq": 6
+        }
+      ],
+      "screens": [
+        "plan"
+      ],
+      "elementIds": [
+        "plan.compare.link"
+      ],
+      "fingerprint": "screen_revisit:plan"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "experimentId": "exp_demo0001",
+      "versionId": "ver_base0001",
+      "batchId": "batch_base0001",
+      "disposition": "unreviewed",
+      "id": "obs_0003",
+      "kind": "outcome_count",
+      "statement": "3 of 12 runs stopped on plan selection without choosing a plan",
+      "numerator": 3,
+      "denominator": 12,
+      "traceRefs": [
+        {
+          "runId": "run_base_03",
+          "seq": 5
+        },
+        {
+          "runId": "run_base_08",
+          "seq": 6
+        },
+        {
+          "runId": "run_base_12",
+          "seq": 7
+        }
+      ],
+      "screens": [
+        "plan"
+      ],
+      "elementIds": [
+        "plan.free.cta",
+        "plan.pro.cta"
+      ],
+      "fingerprint": "outcome_count:agent_stop:plan"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "experimentId": "exp_demo0001",
+      "versionId": "ver_base0001",
+      "batchId": "batch_base0001",
+      "disposition": "unreviewed",
+      "id": "obs_0004",
+      "kind": "validation_error",
+      "statement": "1 of 12 runs hit a validation error on invite.email",
+      "numerator": 1,
+      "denominator": 12,
+      "traceRefs": [
+        {
+          "runId": "run_base_05",
+          "seq": 5
+        }
+      ],
+      "screens": [
+        "invite"
+      ],
+      "elementIds": [
+        "invite.email"
+      ],
+      "fingerprint": "validation_error:invite.email"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "experimentId": "exp_demo0001",
+      "versionId": "ver_base0001",
+      "batchId": "batch_base0001",
+      "disposition": "unreviewed",
+      "id": "obs_0005",
+      "kind": "step_limit",
+      "statement": "1 of 12 runs used all 8 actions without finishing",
+      "numerator": 1,
+      "denominator": 12,
+      "traceRefs": [
+        {
+          "runId": "run_base_09"
+        }
+      ],
+      "screens": [
+        "plan"
+      ],
+      "elementIds": [
+        "plan.compare.link"
+      ],
+      "fingerprint": "step_limit"
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "experimentId": "exp_demo0001",
+      "versionId": "ver_base0001",
+      "batchId": "batch_base0001",
+      "disposition": "unreviewed",
+      "id": "obs_0006",
+      "kind": "repeated_failed_action",
+      "statement": "1 of 12 runs repeated a no-effect click on signup.submit",
+      "numerator": 1,
+      "denominator": 12,
+      "traceRefs": [
+        {
+          "runId": "run_base_06",
+          "seq": 1
+        }
+      ],
+      "screens": [
+        "signup"
+      ],
+      "elementIds": [
+        "signup.submit"
+      ],
+      "interpretation": "Signup is protected; the designer may mark this intentional.",
+      "fingerprint": "repeated_failed_action:signup.submit"
+    }
+  ]
+}

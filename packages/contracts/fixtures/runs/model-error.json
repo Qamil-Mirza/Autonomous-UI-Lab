@@ -1,0 +1,112 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "runId": "run_met_03",
+  "experimentId": "exp_demo0001",
+  "protocolId": "proto_demo0001",
+  "versionId": "ver_base0001",
+  "scenarioId": "scn_baseline",
+  "batchId": "batch_metrics01",
+  "events": [
+    {
+      "runId": "run_met_03",
+      "seq": 0,
+      "at": "2026-10-23T09:06:34.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "signup",
+      "screenAfter": "signup",
+      "action": {
+        "type": "type",
+        "elementId": "signup.email",
+        "value": "ada@example.com"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_03/0.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_03",
+      "seq": 1,
+      "at": "2026-10-23T09:06:38.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "signup",
+      "screenAfter": "signup",
+      "action": {
+        "type": "type",
+        "elementId": "signup.password",
+        "value": "correct-horse-1"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_03/1.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_met_03",
+      "seq": 2,
+      "at": "2026-10-23T09:06:42.000Z",
+      "versionId": "ver_base0001",
+      "screenBefore": "signup",
+      "screenAfter": "workspace",
+      "action": {
+        "type": "click",
+        "elementId": "signup.submit"
+      },
+      "result": "ok",
+      "pointer": {
+        "x": 651,
+        "y": 294
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "artifacts/run_met_03/2.png",
+        "width": 1280,
+        "height": 800
+      }
+    }
+  ],
+  "goalVerified": false,
+  "stepCount": 3,
+  "outcome": "model_error",
+  "terminalScreen": "workspace",
+  "lastPointer": {
+    "x": 651,
+    "y": 294
+  },
+  "screenshots": [
+    {
+      "uri": "artifacts/run_met_03/0.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_03/1.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "artifacts/run_met_03/2.png",
+      "width": 1280,
+      "height": 800
+    }
+  ],
+  "behaviorallyValid": false,
+  "startedAt": "2026-10-23T09:06:30.000Z",
+  "endedAt": "2026-10-23T09:06:46.000Z"
+}

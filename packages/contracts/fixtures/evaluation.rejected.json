@@ -1,0 +1,129 @@
+{
+  "provenance": "synthetic-fixture",
+  "schemaVersion": "1.0.0",
+  "experimentId": "exp_demo0001",
+  "protocolId": "proto_demo0001",
+  "baselineVersionId": "ver_base0001",
+  "id": "eval_0002",
+  "candidateVersionId": "ver_cand0003",
+  "baseline": {
+    "versionId": "ver_base0001",
+    "batchId": "batch_base0001",
+    "plannedRuns": 12,
+    "validRuns": 12,
+    "successes": 6,
+    "completionRate": 0.5,
+    "outcomeCounts": {
+      "goal": 6,
+      "agent_stop": 3,
+      "step_limit": 1,
+      "flow_blocked": 2,
+      "model_error": 0,
+      "browser_error": 0,
+      "user_cancelled": 0
+    },
+    "infraErrors": 0,
+    "cancelled": 0,
+    "medianActionsToSuccess": 7.5,
+    "backtrackRuns": 5,
+    "validationErrorRuns": 1,
+    "perScenario": [
+      {
+        "scenarioId": "scn_baseline",
+        "plannedRuns": 3,
+        "validRuns": 3,
+        "successes": 2,
+        "completionRate": 0.6666666666666666,
+        "outcomeCounts": {
+          "goal": 2,
+          "agent_stop": 1,
+          "step_limit": 0,
+          "flow_blocked": 0,
+          "model_error": 0,
+          "browser_error": 0,
+          "user_cancelled": 0
+        },
+        "medianActionsToSuccess": 6.5,
+        "complete": true
+      },
+      {
+        "scenarioId": "scn_invalid_email",
+        "plannedRuns": 3,
+        "validRuns": 3,
+        "successes": 1,
+        "completionRate": 0.3333333333333333,
+        "outcomeCounts": {
+          "goal": 1,
+          "agent_stop": 0,
+          "step_limit": 0,
+          "flow_blocked": 2,
+          "model_error": 0,
+          "browser_error": 0,
+          "user_cancelled": 0
+        },
+        "medianActionsToSuccess": 8,
+        "complete": true
+      },
+      {
+        "scenarioId": "scn_hesitant",
+        "plannedRuns": 3,
+        "validRuns": 3,
+        "successes": 1,
+        "completionRate": 0.3333333333333333,
+        "outcomeCounts": {
+          "goal": 1,
+          "agent_stop": 1,
+          "step_limit": 1,
+          "flow_blocked": 0,
+          "model_error": 0,
+          "browser_error": 0,
+          "user_cancelled": 0
+        },
+        "medianActionsToSuccess": 8,
+        "complete": true
+      },
+      {
+        "scenarioId": "scn_fast",
+        "plannedRuns": 3,
+        "validRuns": 3,
+        "successes": 2,
+        "completionRate": 0.6666666666666666,
+        "outcomeCounts": {
+          "goal": 2,
+          "agent_stop": 1,
+          "step_limit": 0,
+          "flow_blocked": 0,
+          "model_error": 0,
+          "browser_error": 0,
+          "user_cancelled": 0
+        },
+        "medianActionsToSuccess": 7.5,
+        "complete": true
+      }
+    ],
+    "complete": true
+  },
+  "candidate": null,
+  "guardrails": [
+    {
+      "name": "protected_elements_unchanged",
+      "passed": false,
+      "detail": "plan.pro.price label changed from \"$12 / month\" to \"Free forever\""
+    },
+    {
+      "name": "manifest_ids_stable",
+      "passed": true
+    },
+    {
+      "name": "checker_unchanged",
+      "passed": true
+    }
+  ],
+  "deltaPp": null,
+  "decision": "rejected",
+  "reasons": [
+    "guardrail protected_elements_unchanged failed; candidate batch not run"
+  ],
+  "stoppingReason": "NO_MEASURED_IMPROVEMENT",
+  "at": "2026-10-23T11:55:00.000Z"
+}
