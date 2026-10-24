@@ -42,7 +42,7 @@ export function Signup() {
   return (
     <Stage step={1}>
       <form className="card" style={{ minHeight: 460, padding: "36px 47px 52px" }} noValidate onSubmit={submit}>
-        <Ordered>
+        <Ordered group="signup.form">
           {{
             "signup.title": <Text id="signup.title" as="h1" className="title" />,
             "signup.helper": <Text id="signup.helper" className="helper" />,

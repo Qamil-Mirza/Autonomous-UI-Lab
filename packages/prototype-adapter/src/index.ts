@@ -4,3 +4,5 @@ export * from "./actions";
 export * from "./check-goal";
 export * from "./http";
 export * from "./validation";
+export * from "./designs";
+export * from "./candidates";

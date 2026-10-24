@@ -1,5 +1,4 @@
 import { createReadStream, statSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import path from "node:path";
 import type { Connect, Plugin } from "vite";
 import { defineConfig } from "vite";
@@ -8,12 +7,13 @@ import react from "@vitejs/plugin-react";
 // bare package imports to Node, which can't load the package's extensionless TypeScript source.
 import { createRunsApi } from "../../packages/prototype-adapter/src/http";
 import { defaultRunsDir } from "../../packages/prototype-adapter/src/store";
+import { defaultDesignsDir } from "../../packages/prototype-adapter/src/designs";
 
-const designsDir = fileURLToPath(new URL("../../designs", import.meta.url));
 
-// Serves repo-root designs/ at /designs from disk on every request, in dev and preview,
-// so candidate manifests written after startup (or after a build) load without a rebuild.
+// Serves designs/ (GHOSTLOOP_DESIGNS_DIR, default <repo>/designs, the same directory the CandidateAdapter writes to) at
+// /designs from disk on every request, in dev and preview, so candidate manifests written after startup load without a rebuild.
 function serveDesigns(): Plugin {
+  const designsDir = path.resolve(defaultDesignsDir());
   const handler: Connect.NextHandleFunction = (req, res, next) => {
     const rel = decodeURIComponent((req.url ?? "").split("?")[0] ?? "");
     const file = path.resolve(designsDir, `.${rel}`);

@@ -30,14 +30,14 @@ export function Invite() {
     <Stage step={4}>
       <form className="card" style={{ minHeight: 238, padding: "36px 47px 30px" }} noValidate onSubmit={submit} data-testid={form.testId}>
         <BackLink id="invite.back" to="plan" />
-        <Ordered>
+        <Ordered group="invite.heading">
           {{
             "invite.title": <Text id="invite.title" as="h1" className="title" />,
             "invite.helper": <Text id="invite.helper" className="helper" />,
           }}
         </Ordered>
         <div className="field-row">
-          <Ordered>
+          <Ordered group="invite.fields">
             {{
               "invite.email": (
                 <TextField
