@@ -20,7 +20,8 @@ auto-approves the first non-blocked patch through `approvePatches`, then prints 
 (infra errors and cancels shown separately, `n/a` for a null rate), the decision, reasons and the stopping record.
 It exits non-zero if the drive fails or parks somewhere unexpected.
 
-Env vars: `GHOSTLOOP_STDB_URI` and `GHOSTLOOP_STDB_DB` (SpacetimeDB section below). `ANTHROPIC_API_KEY` is reserved for the Claude analysis slice.
+Env vars: `GHOSTLOOP_STDB_URI` and `GHOSTLOOP_STDB_DB` (SpacetimeDB section below); `ANTHROPIC_API_KEY` for
+`--analysis claude` (Claude analysis section below).
 
 ## SpacetimeDB
 
@@ -55,6 +56,28 @@ through `submit_command`.
 - `npm run test:live` runs every test including the ones that need a server (`GHOSTLOOP_STDB_TEST=1`); they publish
   their own `ghostloop-test-*` databases. Plain `npm run check` needs no server.
 
+## Claude analysis
+
+`--analysis claude` replaces the mock model with one structured-output call to `claude-opus-5-5` per proposing
+step (`src/claude/`). Mocks stay the default.
+
+```sh
+export ANTHROPIC_API_KEY=sk-ant-...           # or install the `ant` CLI and run `ant auth login`
+npm run demo:mock -- --analysis claude        # add --store spacetime to persist it
+npm run worker -- --analysis claude           # the long-running worker, same flag
+npm run test:claude                           # one real API call against the fixtures; spends real money (about cents)
+```
+
+- Never commit a key; `.env*` is git-ignored. The key stays in this worker and is never logged.
+- Without credentials the CLIs warn at startup and the round stops with `INTEGRATION_FAILURE` carrying the SDK error.
+- Claude's output is untrusted: `validatePacket` checks every cited observation and element, code assigns risk,
+  and protected elements are blocked. An invalid proposal gets one retry, then `NO_VALID_PATCH`.
+- A refusal or a truncated answer stops the round with `INTEGRATION_FAILURE`. Refusals first fall back server-side
+  to another model (`fallbacks: "default"`); the cost of every attempt (declined and fallback) is included in the
+  round's `inferenceUsd`.
+- Only editable (non-protected) elements are offered to the model; observations may still mention protected ones
+  as evidence.
+
 ## Module map
 
 | Path | Role |
@@ -67,8 +90,9 @@ through `submit_command`.
 | `src/controller.ts`, `src/controller/*` | Resumable step machine and `ExperimentRuntime` driver |
 | `src/mocks/*` | Mock B (simulation), mock model (analysis), mock C (candidates) |
 | `src/spacetime-store.ts`, `src/worker.ts`, `src/recovery.ts` | SpacetimeDB store, long-running worker, startup repair |
-| `src/cli/demo-mock.ts` | The demo CLI (`--store memory|spacetime`) |
-| `src/cli/worker.ts`, `src/cli/watch.ts` | Worker service and live row watcher |
+| `src/claude/*` | Claude analysis adapter, prompt + output schema, pricing, `--analysis` selection |
+| `src/cli/demo-mock.ts` | The demo CLI (`--store memory|spacetime`, `--analysis mock|claude`) |
+| `src/cli/worker.ts`, `src/cli/watch.ts` | Worker service (`--analysis mock|claude`) and live row watcher |
 
 ## State machine
 
@@ -97,7 +121,7 @@ winner happens only through `recordFinalReview`.
 ## What is mocked
 
 - **B (simulation):** replays a synthetic batch fixture under the request's batch/version IDs with fresh run IDs.
-- **Model (analysis):** deterministic observations-to-patches response, fixed cost.
+- **Model (analysis):** deterministic observations-to-patches response, fixed cost (default; `--analysis claude` uses the real model).
 - **C (candidates):** every version shares the base manifest; candidates get fresh IDs; validation outcome is selectable.
 - **Store:** in-process maps. No persistence.
 
@@ -127,6 +151,4 @@ winner happens only through `recordFinalReview`.
 
 ## Next slices
 
-1. SpacetimeDB store behind `ExperimentStore`.
-2. Claude analysis adapter (`ANTHROPIC_API_KEY`).
-3. Real B and C adapters replacing the mocks.
+1. Real B and C adapters replacing the mocks.
