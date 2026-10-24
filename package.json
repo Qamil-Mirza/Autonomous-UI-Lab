@@ -21,6 +21,7 @@
     "stdb:start": "spacetime start",
     "stdb:publish": "spacetime publish --server local --module-path spacetimedb --yes ghostloop",
     "stdb:publish:fresh": "spacetime publish --server local --module-path spacetimedb --delete-data --yes ghostloop",
-    "stdb:generate": "spacetime generate --lang typescript --out-dir packages/db/src/bindings --module-path spacetimedb --yes"
+    "stdb:generate": "spacetime generate --lang typescript --out-dir packages/db/src/bindings --module-path spacetimedb --yes",
+    "test:claude": "ANTHROPIC_LIVE_TEST=1 npm test -w @ghostloop/optimizer -- claude-analysis.live"
   }
 }

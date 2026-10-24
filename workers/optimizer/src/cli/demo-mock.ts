@@ -1,5 +1,6 @@
 import { pathToFileURL } from "node:url";
-import { DesignManifest, ExperimentProtocol, type Experiment, type Hypothesis, type RunMetrics } from "@ghostloop/contracts";
+import type Anthropic from "@anthropic-ai/sdk";
+import { DesignManifest, ExperimentProtocol, type AnalysisAdapter, type Experiment, type Hypothesis, type RunMetrics } from "@ghostloop/contracts";
 import { loadFixture } from "@ghostloop/contracts/fixtures";
 import { createCommands } from "../commands";
 import { ExperimentRuntime } from "../controller";
@@ -7,6 +8,7 @@ import { DEFAULT_TOKEN_PATH, openWriterStore, resolveTarget } from "../spacetime
 import { createMockAdapters, MOCK_CANDIDATES, type MockCandidateName } from "../mocks";
 import { InMemoryStore, type ExperimentStore } from "../store";
 import { recoverInterruptedApprovals } from "../recovery";
+import { analysisLabel, parseAnalysisFlag, selectAnalysis, type AnalysisChoice } from "../claude/select";
 
 
 export interface DemoSummary {
@@ -37,11 +39,15 @@ function parseStore(argv: string[]): "memory" | "spacetime" {
 export interface DemoOptions {
   /** Where `--store spacetime` keeps the writer token; defaults to the worker's `<repo>/.ghostloop/worker-token`. */
   tokenPath?: string;
+  /** Client for `--analysis claude` (tests inject a stub); defaults to a real client from env credentials. */
+  analysisClient?: Anthropic;
 }
 
 export async function main(argv: string[], log: (line: string) => void = console.log, opts: DemoOptions = {}): Promise<DemoSummary> {
   const candidate = parseCandidate(argv);
   const which = parseStore(argv);
+  const analysisChoice = parseAnalysisFlag(argv);
+  const analysis = selectAnalysis(analysisChoice, { client: opts.analysisClient, warn: log });
   const NOW = () => new Date().toISOString();
   // A lost connection logs `disconnected: <reason>` and rejects the run (no reconnect); the CLI then exits 1.
   let onLost!: (err: Error) => void;
@@ -57,13 +63,20 @@ export async function main(argv: string[], log: (line: string) => void = console
       ? await openWriterStore({ ...resolveTarget(), tokenPath: opts.tokenPath ?? DEFAULT_TOKEN_PATH, onDisconnect: onLost })
       : undefined;
   try {
-    return await Promise.race([drive(spacetime ?? new InMemoryStore(), candidate, NOW, log, spacetime !== undefined), lost]);
+    return await Promise.race([drive(spacetime ?? new InMemoryStore(), candidate, { choice: analysisChoice, adapter: analysis }, NOW, log, spacetime !== undefined), lost]);
   } finally {
     await spacetime?.close();
   }
 }
 
-async function drive(store: ExperimentStore, candidate: MockCandidateName, NOW: () => string, log: (line: string) => void, recover: boolean): Promise<DemoSummary> {
+async function drive(
+  store: ExperimentStore,
+  candidate: MockCandidateName,
+  analysis: { choice: AnalysisChoice; adapter: AnalysisAdapter },
+  NOW: () => string,
+  log: (line: string) => void,
+  recover: boolean,
+): Promise<DemoSummary> {
   // The store has no reader for hypotheses, so keep what the controller writes.
   const seenHypotheses: Hypothesis[] = [];
   const putHypotheses = store.putHypotheses.bind(store);
@@ -74,7 +87,7 @@ async function drive(store: ExperimentStore, candidate: MockCandidateName, NOW: 
   if (recover) await recoverInterruptedApprovals(store);
   const runtime = new ExperimentRuntime({
     store,
-    ...createMockAdapters(candidate),
+    ...createMockAdapters(candidate, { analysis: analysis.adapter }),
     clock: NOW,
     now: Date.now,
   });
@@ -82,6 +95,7 @@ async function drive(store: ExperimentStore, candidate: MockCandidateName, NOW: 
 
   log("MOCK MODE — synthetic fixtures, not real evidence");
   log(`candidate fixture: ${candidate}`);
+  log(`analysis: ${analysisLabel(analysis.choice)}`);
 
   const fixture = loadFixture("protocol.default.json", ExperimentProtocol);
   const { id: _id, frozenAt: _f, experimentId: _e, ...protocol } = fixture;
@@ -145,7 +159,9 @@ async function drive(store: ExperimentStore, candidate: MockCandidateName, NOW: 
 }
 
 function expectState(e: Experiment, want: string): void {
-  if (e.state !== want) throw new Error(`expected state ${want}, got ${e.state}${e.stopping ? ` (stopping: ${e.stopping.reason})` : ""}`);
+  if (e.state === want) return;
+  const note = e.transitions.at(-1)?.note;
+  throw new Error(`expected state ${want}, got ${e.state}${e.stopping ? ` (stopping: ${e.stopping.reason}${note ? `: ${note}` : ""})` : ""}`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
