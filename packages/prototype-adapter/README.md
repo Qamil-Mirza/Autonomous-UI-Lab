@@ -255,11 +255,32 @@ A subset of patches always produces its own distinct candidate and version.
 
 ### What throws, and how D handles it today
 
-- **`createCandidate`:**
-  - **Invalid patch:** throws a `PatchError`, whose `code` is one of `stale_source`, `not_applicable`, `unknown_element`, `protected_element`, `unsupported_op`, `invalid_value`, `conflict` or `invalid_patch`. Nothing is written.
-  - **Other failures:** it also throws for an unknown or malformed `sourceVersionId` and for exclusive-create collisions. If the record can't be written, the just-written version file is removed.
-- **`getManifest`:** throws for an unknown or malformed `versionId`.
-- **`validateCandidate`:** throws only for an unknown or malformed `candidateId`. Every other problem comes back as failed checks.
+Every error the adapter can throw is listed below:
+- **`PatchError`:** has a stable `code`, plus `patchId` and `name === "PatchError"`. It is thrown only by `createCandidate`, before anything is written.
+- **Other adapter errors:** plain `Error`s with no `code` field. Each is identified by its message. The exceptions are Node's file-system errors, which carry their usual `err.code` (for example `EEXIST`), and zod's `ZodError`.
+
+`validateCandidate` never throws for a bad candidate. Build, render, smoke and guardrail problems all come back as failed checks.
+
+| Thrown by | Identify by | Meaning |
+|---|---|---|
+| `createCandidate` | `PatchError` `code: "invalid_patch"` | A patch doesn't match the contract's `MutationPatch` schema, e.g. a missing field or a bad `pat_` id. |
+| `createCandidate` | `PatchError` `code: "invalid_value"` | The value is wrong for its op. Examples: a non-boolean visibility, a blank label or one over 120 characters, an unapproved style token, an order outside the render group's slots, or a reorder that moves a protected element or changes the workflow order. |
+| `createCandidate` | `PatchError` `code: "stale_source"` | `patch.sourceVersionId` isn't the version being patched. |
+| `createCandidate` | `PatchError` `code: "not_applicable"` | The patch has `risk: "blocked"` or `state: "blocked"`/`"declined"`. |
+| `createCandidate` | `PatchError` `code: "unknown_element"` | The source manifest has no element with `targetElementId`. |
+| `createCandidate` | `PatchError` `code: "protected_element"` | The target is protected. The message names its categories, e.g. `(pricing)`. |
+| `createCandidate` | `PatchError` `code: "unsupported_op"` | The op isn't in the target's `supportedOps`. |
+| `createCandidate` | `PatchError` `code: "conflict"` | Two patches apply the same op to the same element, or two patches share an ID. |
+| all three | `Error`, message `invalid versionId "…"` / `invalid candidateId "…"` | The ID doesn't match `^ver_[A-Za-z0-9_-]+$` / `^cand_[A-Za-z0-9_-]+$`. It is never used as a path. |
+| `createCandidate`, `getManifest` | `Error`, message `design version <id> not found (…)` | There is no `versions/<id>.json` in the designs dir. |
+| `validateCandidate` | `Error`, message `candidate <id> not found (…)` | There is no `candidates/<id>.json` in the designs dir. |
+| `createCandidate`, `getManifest` | `Error`, message `versions/<id>.json declares versionId <other>` | The version file's `versionId` doesn't match its file name. |
+| `createCandidate`, `getManifest`, `validateCandidate` | `SyntaxError` | The version or candidate file isn't valid JSON. |
+| `createCandidate`, `getManifest` | `ZodError` | The version file fails the contract or presented-manifest schema. |
+| `validateCandidate` | `ZodError` | The candidate record fails the `CandidateRecord` schema. |
+| `createCandidate` | `ZodError` | The candidate fails `CandidateDesign`. In practice this only happens when `baseUrl` isn't a valid URL. |
+| `createCandidate` | Node error `code: "EEXIST"` | The new version or candidate file already exists. Exclusive create means nothing was overwritten. If the record collides, the new version file is removed. |
+| any | Node error `code: "EACCES"`, `"ENOSPC"`, etc. | Some other file-system failure reading or writing the designs dir. |
 
 **Current behavior in D's controller** (`workers/optimizer/src/controller/context.ts`, `adapter()`):
 - **Throws:** any throw from these methods is wrapped as an `IntegrationError`. The experiment stops with **`INTEGRATION_FAILURE`**, or `USER_STOP` if a cancel is pending. The incumbent version is preserved, and the error message is recorded in the transition note but never interpreted.
