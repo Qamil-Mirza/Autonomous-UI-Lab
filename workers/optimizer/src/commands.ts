@@ -90,7 +90,7 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
     if (exp.state !== "created" || exp.cancelRequested) {
       return fail("INVALID_STATE", `experiment ${experimentId} can only be started from created (state ${exp.state})`);
     }
-    await store.putExperiment({ ...exp, startedAt: clock() });
+    await store.updateExperiment(experimentId, (x) => ({ ...x, startedAt: clock() }));
     runtime.launch(experimentId);
     return done({ experimentId });
   });
@@ -99,7 +99,7 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
     const exp = await store.getExperiment(experimentId);
     if (!exp) return fail("NOT_FOUND", `experiment ${experimentId} not found`);
     if (isTerminal(exp)) return fail("INVALID_STATE", `experiment ${experimentId} has already stopped`);
-    await store.putExperiment({ ...exp, cancelRequested: true });
+    await store.updateExperiment(experimentId, (x) => ({ ...x, cancelRequested: true }));
     runtime.cancel(experimentId);
     // The driver records the USER_STOP; relaunching it is how a parked experiment gets its stop written.
     runtime.launch(experimentId);
@@ -161,7 +161,7 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
       if (p.state === "blocked") continue;
       await store.updatePatch(p.id, { state: chosen.has(p.id) ? "approved" : "declined" });
     }
-    await store.putExperiment({ ...exp, round: { ...exp.round, approvalId: approval.id } });
+    await store.updateExperiment(experimentId, (x) => ({ ...x, round: { ...x.round, approvalId: approval.id } }));
     runtime.launch(experimentId);
     return done({ approvalId: approval.id });
   });
@@ -199,7 +199,7 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
     await store.putCandidate(experimentId, { ...candidate, reviewStatus: status });
     if (status === "promoted_measured") {
       // The only path that moves the incumbent.
-      await store.putExperiment({ ...exp, incumbentVersionId: candidate.versionId });
+      await store.updateExperiment(experimentId, (x) => ({ ...x, incumbentVersionId: candidate.versionId }));
     }
     return done<{ candidateId: string; status: Exclude<CandidateReviewStatus, "pending"> }>({ candidateId, status });
   });

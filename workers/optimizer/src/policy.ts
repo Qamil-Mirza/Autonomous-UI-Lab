@@ -66,6 +66,14 @@ export type ValidatePacketResult =
   | { ok: true; packet: DesignFeedbackPacket; patches: MutationPatch[]; hypotheses: Hypothesis[] }
   | { ok: false; errors: string[] };
 
+/** Model-facing constraint text: intent constraints plus one line per protected category. */
+export function protectedConstraintsFor(protocol: ExperimentProtocol): string[] {
+  return [
+    ...protocol.intentConstraints,
+    ...protocol.protectedCategories.map((c) => `Elements in the protected category "${c}" must not change.`),
+  ];
+}
+
 const reviewPolicyFor = (mode: ExperimentProtocol["mode"]): ReviewPolicy => (mode === "manual" ? "manual_required" : "auto_low_risk");
 
 /**
@@ -159,10 +167,7 @@ export function validatePacket(raw: unknown, ctx: ValidatePacketContext): Valida
     traceEvidence,
     hypotheses,
     patches,
-    protectedConstraints: [
-      ...protocol.intentConstraints,
-      ...protocol.protectedCategories.map((c) => `Elements in the protected category "${c}" must not change.`),
-    ],
+    protectedConstraints: protectedConstraintsFor(protocol),
     reviewPolicy: reviewPolicyFor(protocol.mode),
     createdAt: ctx.clock(),
   };

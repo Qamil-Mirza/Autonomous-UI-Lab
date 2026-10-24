@@ -4,9 +4,11 @@ import {
   CandidateDesign,
   DesignFeedbackPacket,
   Evaluation,
+  ExperimentProtocol,
   ObservationTrend,
   type AgentActionEvent,
   type DesignVersion,
+  type Experiment,
 } from "@ghostloop/contracts";
 import { loadFixture } from "@ghostloop/contracts/fixtures";
 import { z } from "zod";
@@ -160,5 +162,31 @@ describe("InMemoryStore", () => {
       `packets:${packet.id}`,
       "dispositions:fp|a",
     ]);
+  });
+
+  it("updateExperiment applies a change to the latest copy atomically", async () => {
+    const protocol = loadFixture("protocol.default.json", ExperimentProtocol);
+    const exp: Experiment = {
+      schemaVersion: "1.0.0",
+      id: "exp_demo0001",
+      protocol,
+      state: "baseline_running",
+      incumbentVersionId: "ver_base0001",
+      round: { index: 1, analysisAttempts: 0 },
+      transitions: [],
+      usage: { inferenceCalls: 0, inferenceUsd: 0, wallClockMs: 0 },
+      cancelRequested: false,
+    };
+    await s.putExperiment(exp);
+    const seen: string[] = [];
+    s.onChange((t, k) => seen.push(`${t}:${k}`));
+    // Two writers that each change one field: neither loses the other's write.
+    await Promise.all([
+      s.updateExperiment(exp.id, (x) => ({ ...x, cancelRequested: true })),
+      s.updateExperiment(exp.id, (x) => ({ ...x, state: "observing" })),
+    ]);
+    expect(await s.getExperiment(exp.id)).toMatchObject({ cancelRequested: true, state: "observing" });
+    expect(seen).toEqual(["experiments:exp_demo0001", "experiments:exp_demo0001"]);
+    await expect(s.updateExperiment("exp_missing", (x) => x)).rejects.toThrow(/not found/);
   });
 });

@@ -10,6 +10,7 @@ import type {
   Experiment,
   Hypothesis,
   MutationPatch,
+  ValidationResult,
   ObservationDisposition,
   ObservationTrend,
 } from "@ghostloop/contracts";
@@ -31,7 +32,8 @@ export type StoreTable =
   | "batches"
   | "approvals"
   | "packets"
-  | "dispositions";
+  | "dispositions"
+  | "validations";
 
 export type ChangeListener = (table: StoreTable, key: string) => void;
 
@@ -42,6 +44,12 @@ export type ChangeListener = (table: StoreTable, key: string) => void;
 export interface ExperimentStore {
   getExperiment(id: string): Promise<Experiment | undefined>;
   putExperiment(e: Experiment): Promise<void>;
+  /**
+   * Addition for Task 10: atomic read-modify-write of one experiment (a reducer in SpacetimeDB). The controller and
+   * the commands both write experiments while the other may be mid-await; separate get + put would lose updates
+   * (e.g. a cancel flag overwritten by a stale controller write). Throws if the experiment does not exist.
+   */
+  updateExperiment(id: string, change: (e: Experiment) => Experiment): Promise<Experiment>;
 
   /** Design versions are insert-only (immutable lineage). Throws if the id already exists. */
   insertVersion(v: DesignVersion): Promise<void>;
@@ -95,6 +103,10 @@ export interface ExperimentStore {
   /** Candidates whose recorded owner (from `putCandidate`) is `experimentId`. */
   listCandidates(experimentId: string): Promise<CandidateDesign[]>;
 
+  /** Addition for Task 10: C's validation result per candidate, so `comparing` can resume with its guardrails. */
+  putValidation(v: ValidationResult): Promise<void>;
+  getValidation(candidateId: string): Promise<ValidationResult | undefined>;
+
   putEvaluation(e: Evaluation): Promise<void>;
   getEvaluation(id: string): Promise<Evaluation | undefined>;
   listEvaluations(experimentId: string): Promise<Evaluation[]>;
@@ -124,6 +136,7 @@ export class InMemoryStore implements ExperimentStore {
   private candidates = new Map<string, CandidateDesign>();
   private candidateOwners = new Map<string, string>();
   private evaluations = new Map<string, Evaluation>();
+  private validations = new Map<string, ValidationResult>();
   private listeners = new Set<ChangeListener>();
 
   private emit(table: StoreTable, key: string): void {
@@ -136,6 +149,15 @@ export class InMemoryStore implements ExperimentStore {
   async putExperiment(e: Experiment) {
     this.experiments.set(e.id, clone(e));
     this.emit("experiments", e.id);
+  }
+  async updateExperiment(id: string, change: (e: Experiment) => Experiment) {
+    const current = this.experiments.get(id);
+    if (!current) throw new Error(`experiment ${id} not found`);
+    const next = change(clone(current));
+    if (next.id !== id) throw new Error(`updateExperiment cannot change the id (${id} -> ${next.id})`);
+    this.experiments.set(id, clone(next));
+    this.emit("experiments", id);
+    return clone(next);
   }
 
   async insertVersion(v: DesignVersion) {
@@ -261,6 +283,14 @@ export class InMemoryStore implements ExperimentStore {
   }
   async listCandidates(experimentId: string) {
     return [...this.candidates.values()].filter((c) => this.candidateOwners.get(c.id) === experimentId).map(clone);
+  }
+
+  async putValidation(v: ValidationResult) {
+    this.validations.set(v.candidateId, clone(v));
+    this.emit("validations", v.candidateId);
+  }
+  async getValidation(candidateId: string) {
+    return clone(this.validations.get(candidateId));
   }
 
   async putEvaluation(e: Evaluation) {
