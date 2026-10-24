@@ -294,6 +294,8 @@ designs/
   versions/ver_baseline.json        # committed original design
   versions/ver_<id>.json            # generated candidates (gitignored)
   candidates/cand_<id>.json         # candidate records (gitignored)
+  figma/ver_baseline.json           # committed Figma mapping of the baseline
+  figma/ver_<id>.json               # candidate Figma mappings (gitignored)
 ```
 
 - **Default location:** `GHOSTLOOP_DESIGNS_DIR`, default `<repo>/designs`.
@@ -316,6 +318,45 @@ The demo works like this:
 
 It exits non-zero if either validation fails or the baseline changed.
 
+## Figma mappings
+
+Each design version can have a Figma mapping, `designs/figma/<versionId>.json`, written by the Figma variant workflow (`docs/figma-variant-workflow.md`). `FigmaMapping` is the contract's `FigmaReference` (`frameUrl`, `status`, `manifestHash`, `patchIds`) extended with:
+
+| Field | Contents |
+|---|---|
+| `versionId`, `parentVersionId` | The version and its parent (`null` for the baseline). |
+| `fileKey`, `frames` | The Figma file and the `{ screen, nodeId, name }` frames that were checked. |
+| `checks` | Every per-element check: `{ elementId, screen, frame, kind, field, expected, actual, passed, note? }`. |
+| `checkedAt`, `method` | When the frames were read back, and `"Claude Code via Figma MCP, designer-triggered"`. |
+
+`status` is `verified` when every check passed, and `mismatch` otherwise. For `ver_baseline`, `frameUrl` is the "01 Baseline A" page; for a candidate, it's the variant frame. Only `designs/figma/ver_baseline.json` is committed.
+
+### `GET /api/figma/:versionId`
+
+Served by the prototype's Vite server (dev and preview), from `createFigmaApi({ designsDir })`. Every response is `no-store`.
+
+| Request | Response |
+|---|---|
+| A mapping exists | 200 with the mapping |
+| A known version with no mapping | 200 `{ "versionId": "...", "status": "pending" }` |
+| No `designs/versions/<versionId>.json` | 404 `{ "error": "version_not_found" }` |
+| An ID not matching `^ver_[A-Za-z0-9_-]+$` | 400 |
+| A corrupt mapping file | 500 with an `error` message |
+
+```sh
+curl http://localhost:5173/api/figma/ver_baseline
+# → {"frameUrl":"https://www.figma.com/design/hUYlyMbzUB2LnefdcudZOb/Calhacks-13.0?node-id=15-122","status":"verified",...}
+```
+
+### Writing a mapping
+
+```sh
+npm run figma:mapping -w @ghostloop/prototype-adapter -- --version <versionId> --snapshot <variant.json> \
+  --baseline-snapshot <baseline.json> --frame-url <variant frame URL>
+```
+
+The snapshots are `figma/snapshot.js` read-backs (see `@ghostloop/design-engine`). `--baseline-snapshot` is required for a candidate and omitted for an original design. The script prints the status and every failed check, and overwrites any earlier mapping.
+
 ## Library API
 
 These exports are mostly for tests and in-process use. The HTTP API is the normal integration point.
@@ -324,6 +365,7 @@ These exports are mostly for tests and in-process use. The HTTP API is the norma
 - `createRunsApi({ dir })`: Connect-style middleware.
 - `evaluateGoal(state)` and `GOAL_CHECKS`.
 - `createCandidateAdapter`, `CandidateRecord`, `defaultDesignsDir()`.
+- `FigmaMapping`, `buildFigmaMapping`, `writeFigmaMapping`, `createFigmaApi({ designsDir })`.
 - `@ghostloop/prototype-adapter/validation`: browser-safe validation rules that the app shares, so client and server agree.
 
 ```sh

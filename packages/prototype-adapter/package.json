@@ -10,7 +10,8 @@
   "scripts": {
     "check": "tsc -p . && vitest run",
     "test": "vitest run",
-    "candidate:demo": "tsx scripts/candidate-demo.ts"
+    "candidate:demo": "tsx scripts/candidate-demo.ts",
+    "figma:mapping": "tsx scripts/figma-mapping.ts"
   },
   "dependencies": {
     "@ghostloop/contracts": "*",

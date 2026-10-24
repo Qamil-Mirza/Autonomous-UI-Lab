@@ -84,3 +84,16 @@ In practice, only heading/helper pairs can be reordered on the baseline. No base
 | `manifestHash` | `computeManifestHash(elements)`, the same rule as above. |
 
 The result is a valid contract `DesignManifest`.
+
+## Manifest diff
+
+`diffManifests(parent, child)` returns one `{ elementId, screen, changes }` entry per element whose presentation changed, in the child's element order. Each change is `{ field: "label" | "visible" | "styleToken" | "order", from, to }`. An absent `visible` counts as `true`, and other absent fields count as `null`. It throws if the two manifests don't have the same element IDs.
+
+## Figma correspondence
+
+Used by the Figma variant workflow (`docs/figma-variant-workflow.md`):
+- **`figma/snapshot.js`:** a read-only `use_figma` script that snapshots every layer named by an element ID in the given frames. Save its result as a `FigmaSnapshot` (`{ fileKey, frames }`).
+- **`checkVariant({ parent, child, baselineFrames, variantFrames })`:** checks that changed fields show the candidate's values, and that protected and unchanged elements are identical to the baseline frame. `styleToken` and `order` changes can't be represented in Figma, so they fail with a note (`UNSUPPORTED_IN_FIGMA`) instead of being faked.
+- **`checkBaseline({ manifest, frames })`:** checks that every element has a layer, a matching label and matching visibility on its screen's frames.
+
+Both return `{ status: "verified" | "mismatch", checks: FigmaCheck[] }`.

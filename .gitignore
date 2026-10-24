@@ -11,3 +11,5 @@ playwright-report/
 designs/versions/*
 !designs/versions/ver_baseline.json
 designs/candidates/
+designs/figma/*
+!designs/figma/ver_baseline.json

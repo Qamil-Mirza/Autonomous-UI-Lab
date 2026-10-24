@@ -6,3 +6,5 @@ export * from "./http";
 export * from "./validation";
 export * from "./designs";
 export * from "./candidates";
+export * from "./figma";
+export * from "./figma-api";

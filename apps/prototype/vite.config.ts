@@ -8,6 +8,7 @@ import react from "@vitejs/plugin-react";
 import { createRunsApi } from "../../packages/prototype-adapter/src/http";
 import { defaultRunsDir } from "../../packages/prototype-adapter/src/store";
 import { defaultDesignsDir } from "../../packages/prototype-adapter/src/designs";
+import { createFigmaApi } from "../../packages/prototype-adapter/src/figma-api";
 
 
 // Serves designs/ (GHOSTLOOP_DESIGNS_DIR, default <repo>/designs, the same directory the CandidateAdapter writes to) at
@@ -51,7 +52,17 @@ function serveRunsApi(): Plugin {
   };
 }
 
+// Figma correspondence per design version (/api/figma/:versionId), read from designs/figma/ on every request.
+function serveFigmaApi(): Plugin {
+  const handler = createFigmaApi({ designsDir: path.resolve(defaultDesignsDir()) });
+  return {
+    name: "ghostloop-figma-api",
+    configureServer: (server) => void server.middlewares.use(handler),
+    configurePreviewServer: (server) => void server.middlewares.use(handler),
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), serveDesigns(), serveRunsApi()],
+  plugins: [react(), serveDesigns(), serveRunsApi(), serveFigmaApi()],
   server: { port: 5173 },
 });
