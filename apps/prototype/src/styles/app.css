@@ -55,11 +55,15 @@ p {
   user-select: none;
 }
 
+/* Scales with the stage height so the composition matches the 800px-tall Figma frame on any
+   screen: each value is its Figma pixel size / 800. At exactly 800px tall this is
+   630×783 at left -136px, bottom -190px. */
 .decor-sparkle {
-  left: -136px;
-  bottom: -190px;
-  width: 630px;
-  height: 783px;
+  --stage-h: max(100vh, 800px);
+  left: calc(var(--stage-h) * -0.17);
+  bottom: calc(var(--stage-h) * -0.2375);
+  width: calc(var(--stage-h) * 0.7875);
+  height: calc(var(--stage-h) * 0.97875);
 }
 
 /* ---------- Nav bar ---------- */
@@ -229,18 +233,19 @@ p {
   margin-top: 0;
 }
 
+/* Figma: just outside the card, 23px above its top-left corner (x 360, y 258 at 1280×800). */
 .back-link {
   position: absolute;
-  left: 47px;
-  top: 12px;
+  left: 0;
+  top: -23px;
   font-size: 12px;
   color: var(--color-muted);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .back-link:hover {
-  color: var(--color-navy);
+  text-decoration: underline;
 }
 
 .back-link:focus-visible {
@@ -358,9 +363,10 @@ p {
   text-align: center;
 }
 
+/* Figma: above the free card, 3px left of its edge (x 277, y 276 at 1280×800). */
 .plan .back-link {
-  left: 0;
-  top: -32px;
+  left: -3px;
+  top: 78px;
 }
 
 .plan .helper {

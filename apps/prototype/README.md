@@ -1,6 +1,6 @@
 # @ghostloop/prototype
 
-React + Vite prototype of the Matrix Coor onboarding flow (Figma page "01 Baseline A"). It is designed at 1280×800 and fills larger viewports: the nav and gradient span the full width, the card stays centered below the nav, and `decor.sparkle` is anchored bottom-left.
+React + Vite prototype of the Matrix Coor onboarding flow (Figma page "01 Baseline A"). It is designed at 1280×800 and fills larger viewports: the nav and gradient span the full width, the card stays centered below the nav, and `decor.sparkle` is anchored bottom-left and scales with the viewport height (exactly 630×783 at 800 px tall).
 
 ```sh
 npm run dev -w @ghostloop/prototype     # http://localhost:5173 → /v/ver_baseline/signup
@@ -25,5 +25,5 @@ Behaviour:
   - signup: name required (`signup.name.error`), valid email (`signup.email.error`), password of at least 8 characters (`signup.password.error`), consent checked (`signup.consent.error`).
   - workspace: name required (`workspace.name.error`).
   - invite: valid email (`invite.error`).
-- `workspace.back`, `plan.back` and `invite.back` return to the previous screen. Entered values, including consent, are kept in memory for the session. Signup and confirm have no back link.
+- `workspace.back`, `plan.back` and `invite.back` follow the Figma design: "←Back" just above the card (above the free plan card on plan). The arrow is decorative; the manifest label is the link text. They return to the previous screen. Entered values, including consent, are kept in memory for the session. Signup and confirm have no back link.
 - `confirm.done` ends the flow; there's no dashboard yet.

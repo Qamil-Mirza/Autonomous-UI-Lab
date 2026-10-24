@@ -109,6 +109,8 @@ export function BackLink({ id, to }: { id: ElementId; to: Screen }) {
   if (!el.visible) return null;
   return (
     <Link className={cx("back-link", tokenClass(el.styleToken))} to={pathTo(to)} data-testid={el.testId}>
+      {/* Arrow is decoration from the Figma design; the manifest label stays the accessible name. */}
+      <span aria-hidden="true">←</span>
       {el.label}
     </Link>
   );

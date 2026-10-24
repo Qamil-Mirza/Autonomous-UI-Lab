@@ -1,0 +1,10 @@
+/* The @fontsource/inter subsets omit U+2190 "←", used by the Back links. Pull just that glyph
+   from the full Inter Regular so it renders in Inter like Figma, not a system fallback. */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("inter-ui/web/Inter-Regular.woff2") format("woff2");
+  unicode-range: U+2190;
+}
