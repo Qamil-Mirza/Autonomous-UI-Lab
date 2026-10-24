@@ -3,11 +3,14 @@ import {
   isBehaviorallyValid,
   type AgentActionEvent,
   type AgentRunResult,
+  type EvaluationDecision,
   type EvaluationPolicy,
+  type GuardrailResult,
   type OutcomeCounts,
   type RunMetrics,
   type Scenario,
   type ScenarioMetrics,
+  type StoppingReason,
 } from "@ghostloop/contracts";
 
 export interface ComputeMetricsInput {
@@ -133,4 +136,100 @@ export function computeMetrics(input: ComputeMetricsInput): RunMetrics {
   };
   if (reasons.length > 0) metrics.incompleteReason = reasons.join("; ");
   return metrics;
+}
+
+export interface Comparison {
+  decision: EvaluationDecision;
+  deltaPp: number | null;
+  reasons: string[];
+}
+
+const round1 = (x: number): number => Math.round(x * 10) / 10;
+const fmtPp = (x: number): string => `${x >= 0 ? "+" : ""}${x.toFixed(1)}pp`;
+
+/** Spec 5.2 compare, steps 1-7 in order. */
+export function compare(
+  baseline: RunMetrics,
+  candidate: RunMetrics | null,
+  guardrails: GuardrailResult[],
+  policy: EvaluationPolicy,
+): Comparison {
+  // 1. Failed guardrail wins over everything.
+  const failed = guardrails.filter((g) => !g.passed);
+  if (failed.length > 0) {
+    return {
+      decision: "rejected",
+      deltaPp: null,
+      reasons: failed.map((g) => `guardrail failed: ${g.name}${g.detail ? ` (${g.detail})` : ""}`),
+    };
+  }
+  if (candidate === null) {
+    return { decision: "inconclusive", deltaPp: null, reasons: ["no candidate metrics to compare"] };
+  }
+
+  // 2. Incomplete side or null rate.
+  const baseRate = baseline.completionRate;
+  const candRate = candidate.completionRate;
+  const reasons: string[] = [];
+  if (!baseline.complete) reasons.push(`baseline incomplete${baseline.incompleteReason ? `: ${baseline.incompleteReason}` : ""}`);
+  if (baseRate === null) reasons.push("baseline has no valid runs");
+  if (!candidate.complete) reasons.push(`candidate incomplete${candidate.incompleteReason ? `: ${candidate.incompleteReason}` : ""}`);
+  if (candRate === null) reasons.push("candidate has no valid runs");
+  if (reasons.length > 0 || baseRate === null || candRate === null) {
+    return { decision: "inconclusive", deltaPp: null, reasons };
+  }
+
+  // 3. Delta.
+  const deltaPp = round1((candRate - baseRate) * 100);
+
+  // 4. Secondary regressions.
+  const regressions: string[] = [];
+  if (baseline.medianActionsToSuccess !== null && candidate.medianActionsToSuccess !== null) {
+    const inc = candidate.medianActionsToSuccess - baseline.medianActionsToSuccess;
+    if (inc > policy.maxMedianActionsIncrease) {
+      regressions.push(`median actions to success up ${inc} (limit ${policy.maxMedianActionsIncrease})`);
+    }
+  }
+  const baseVe = (baseline.validationErrorRuns / baseline.validRuns) * 100;
+  const candVe = (candidate.validationErrorRuns / candidate.validRuns) * 100;
+  const veInc = candVe - baseVe;
+  if (veInc > policy.maxValidationErrorRateIncreasePp) {
+    regressions.push(`validation-error run rate up ${veInc.toFixed(1)}pp (limit ${policy.maxValidationErrorRateIncreasePp}pp)`);
+  }
+  if (regressions.length > 0) {
+    return { decision: "rejected", deltaPp, reasons: [`secondary regression: ${regressions.join("; ")}`] };
+  }
+
+  // 5-7. Rate thresholds.
+  if (deltaPp >= policy.minImprovementPp) {
+    return { decision: "accepted", deltaPp, reasons: [`completion rate ${fmtPp(deltaPp)} \u2265 ${policy.minImprovementPp}pp margin`] };
+  }
+  if (deltaPp <= -policy.minImprovementPp) {
+    return { decision: "rejected", deltaPp, reasons: [`completion rate ${fmtPp(deltaPp)} \u2264 -${policy.minImprovementPp}pp margin`] };
+  }
+  return {
+    decision: "inconclusive",
+    deltaPp,
+    reasons: [`completion rate ${fmtPp(deltaPp)} within \u00b1${policy.minImprovementPp}pp margin`],
+  };
+}
+
+/** `null` means park in `accepted` (round complete, no stopping record yet). */
+export function stoppingReasonFor(
+  decision: EvaluationDecision,
+  candidateRate: number | null,
+  policy: EvaluationPolicy,
+  round: number,
+  maxIterations: number,
+): StoppingReason | null {
+  switch (decision) {
+    case "accepted":
+      if (candidateRate !== null && candidateRate >= policy.targetCompletionRate) return "TARGET_MET";
+      if (round >= maxIterations) return "ITERATION_BUDGET";
+      return null;
+    case "rejected":
+      return "NO_MEASURED_IMPROVEMENT";
+    case "inconclusive":
+      return "INCONCLUSIVE";
+  }
 }

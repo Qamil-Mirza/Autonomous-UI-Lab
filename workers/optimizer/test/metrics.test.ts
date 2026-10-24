@@ -83,4 +83,9 @@ describe("dedupeEvents / isBacktrackRun", () => {
     expect(isBacktrackRun([mk(0, "a", "b"), mk(1, "b", "c")])).toBe(false);
     expect(isBacktrackRun([mk(0, "a", "a"), mk(1, "a", "a")])).toBe(false);
   });
+  it("out-of-order duplicate events dedupe and sort", () => {
+    const e = (seq: number) => ({ ...goal.events[0]!, seq });
+    const ev = dedupeEvents([e(3), e(2), e(2), e(0), e(1)]);
+    expect(ev.map((x) => x.seq)).toEqual([0, 1, 2, 3]);
+  });
 });
