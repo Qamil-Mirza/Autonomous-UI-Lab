@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1.0.0",
+  "runId": "run_6e8c13f2-2206-4977-a1e7-9bd869e6ac49",
+  "experimentId": "exp_practice",
+  "protocolId": "proto_practice",
+  "versionId": "ver_baseline",
+  "scenarioId": "scn_first_time",
+  "batchId": "batch_practice",
+  "events": [
+    {
+      "runId": "run_6e8c13f2-2206-4977-a1e7-9bd869e6ac49",
+      "seq": 0,
+      "at": "2026-10-24T22:35:37.053Z",
+      "versionId": "ver_baseline",
+      "screenBefore": "signup",
+      "screenAfter": "signup",
+      "action": {
+        "type": "type",
+        "elementId": "signup.name",
+        "value": "Jaclyn Example",
+        "reason": "Begin signup by entering the full name."
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "frame-001.png",
+        "width": 1280,
+        "height": 800
+      }
+    }
+  ],
+  "goalVerified": false,
+  "goalEvidence": "{\"runId\":\"run_6e8c13f2-2206-4977-a1e7-9bd869e6ac49\",\"achieved\":false,\"checks\":[{\"name\":\"account_created\",\"passed\":false,\"detail\":\"no signup recorded\"},{\"name\":\"exactly_one_workspace\",\"passed\":false,\"detail\":\"no workspace\"},{\"name\":\"free_plan_selected\",\"passed\":false,\"detail\":\"no plan selected\"},{\"name\":\"invite_sent\",\"passed\":false,\"detail\":\"no invite sent\"},{\"name\":\"no_paid_trial\",\"passed\":true,\"detail\":\"no paid trial started\"}],\"at\":\"2026-10-24T22:35:37.061Z\"}",
+  "stepCount": 1,
+  "outcome": "step_limit",
+  "terminalScreen": "signup",
+  "screenshots": [
+    {
+      "uri": "frame-000.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "frame-001.png",
+      "width": 1280,
+      "height": 800
+    }
+  ],
+  "behaviorallyValid": true,
+  "startedAt": "2026-10-24T22:35:33.048Z",
+  "endedAt": "2026-10-24T22:35:37.296Z"
+}

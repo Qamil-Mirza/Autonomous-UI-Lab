@@ -1,4 +1,5 @@
-import { ControlRegistry, GoalCheckResult, type PrototypeGoalAdapter } from '@ghostloop/contracts';
+import { ControlRegistry, type PrototypeGoalAdapter } from '@ghostloop/contracts';
+import { verifyPrototypeGoal } from './goal';
 import type { RunOptions } from './run';
 
 export function prototypeUrl(baseUrl: string, versionId: string, runId: string) {
@@ -38,16 +39,12 @@ export function prototypeIntegration(baseUrl: string, versionId: string, adapter
       await call(runId, '/init', 'POST', signal);
       return (await loadRegistry(baseUrl, versionId, signal)).elements;
     },
-    checkGoal: async runId => {
-      const result = GoalCheckResult.parse(await adapter.checkGoal(runId));
-      if (result.runId !== runId) throw new Error('Goal checker returned another run ID');
-      return result;
-    },
+    checkGoal: runId => verifyPrototypeGoal(() => adapter.checkGoal(runId), runId),
     cleanup: async runId => { await call(runId, '', 'DELETE'); },
     allowRequest: (requestUrl, navigation, runId) => {
       const u = new URL(requestUrl);
-      if (u.origin !== base.origin) return false;
-      if (navigation) return u.pathname.startsWith(`/v/${versionId}/`) && ['signup', 'workspace', 'plan', 'invite', 'confirm'].includes(u.pathname.split('/').at(-1) ?? '') && u.searchParams.get('run') === runId;
+      if (u.origin !== base.origin || u.username || u.password) return false;
+      if (navigation) return ['signup', 'workspace', 'plan', 'invite', 'confirm'].some(screen => u.pathname === `/v/${encodeURIComponent(versionId)}/${screen}`) && u.searchParams.getAll('run').length === 1 && u.searchParams.get('run') === runId;
       if (u.pathname.startsWith('/api/runs/')) return u.pathname === `/api/runs/${runId}` || u.pathname.startsWith(`/api/runs/${runId}/`);
       // Local JS/CSS/assets and versioned manifests are needed by the Vite app.
       return !u.pathname.startsWith('/api/');

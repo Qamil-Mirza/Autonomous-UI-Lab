@@ -26,9 +26,14 @@ export class PatchError extends Error {
   }
 }
 
-// sha256 of JSON.stringify(elements): the manifest identity used across design versions.
+// Hash fields in a fixed order so schema parsing and object insertion order do not change identity.
 export function computeManifestHash(elements: readonly PresentedElement[]): string {
-  return `sha256:${createHash("sha256").update(JSON.stringify(elements)).digest("hex")}`;
+  const canonical = elements.map(e => ({
+    elementId: e.elementId, screen: e.screen, role: e.role, label: e.label,
+    protected: e.protected, categories: e.categories, supportedOps: e.supportedOps,
+    styleToken: e.styleToken, order: e.order, visible: e.visible,
+  }));
+  return `sha256:${createHash("sha256").update(JSON.stringify(canonical)).digest("hex")}`;
 }
 
 export interface ApplyPatchesOptions {

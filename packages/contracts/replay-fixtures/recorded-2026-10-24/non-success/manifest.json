@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0.0",
+  "provenance": "live-bitdeer",
+  "model": "Qwen/Qwen3.8-27B",
+  "sourceRunId": "run_6e8c13f2-2206-4977-a1e7-9bd869e6ac49",
+  "versionId": "ver_baseline",
+  "outcome": "step_limit",
+  "goalVerified": false,
+  "decisionCalls": 1,
+  "controlledActions": 0,
+  "note": "Recorded run, not a synthetic fixture. Controlled scenario interventions are labeled in events. A single run does not establish A/B improvement.",
+  "screenshots": [
+    {
+      "uri": "frame-000.png",
+      "sha256": "6ec6c888bccb9c229ead26de341a1dd55b05f8fe4f83064c844c4854b1a3db62"
+    },
+    {
+      "uri": "frame-001.png",
+      "sha256": "89d80b343557478469b9266863d7a2a6a5cba0a95027e597ff0812f5bbce52f4"
+    }
+  ]
+}

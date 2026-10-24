@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0.0",
+  "provenance": "live-bitdeer",
+  "model": "Qwen/Qwen3.8-27B",
+  "sourceRunId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+  "versionId": "ver_baseline",
+  "outcome": "goal",
+  "goalVerified": true,
+  "decisionCalls": 10,
+  "controlledActions": 0,
+  "note": "Recorded run, not a synthetic fixture. Controlled scenario interventions are labeled in events. A single run does not establish A/B improvement.",
+  "screenshots": [
+    {
+      "uri": "frame-000.png",
+      "sha256": "453547ccee21fba657dfa2d640c2237e5235659ff09d281ac0ad3227270f9961"
+    },
+    {
+      "uri": "frame-001.png",
+      "sha256": "e42dab4527de68914c019a8d23a32a1354267baf9099d2f993940cefa641b00f"
+    },
+    {
+      "uri": "frame-002.png",
+      "sha256": "5ee64d9c6e3267eab14e5e581dac261967fa6c4053c139831f066fa8671f7002"
+    },
+    {
+      "uri": "frame-003.png",
+      "sha256": "dc19171e15dff9cb67e0fd3a9a81daae616bd69b8cf082bea9a3118ba9ef8328"
+    },
+    {
+      "uri": "frame-004.png",
+      "sha256": "d999dd03ef4d1d1a32cbefbfe92a67e50a4427d055154e275f9ef0341ec109a3"
+    },
+    {
+      "uri": "frame-005.png",
+      "sha256": "4b2f6b8e0713a49b0bb18c1e55ac8905d54906a94b2352711bef43090f957692"
+    },
+    {
+      "uri": "frame-006.png",
+      "sha256": "937351afef7e045db13a26222b793d9c666fbad26fd48bf110946a293201e3c7"
+    },
+    {
+      "uri": "frame-007.png",
+      "sha256": "d63d24ca55f51a6d48592e941c27979b4637c58fde148eea3524b5eef35d9221"
+    },
+    {
+      "uri": "frame-008.png",
+      "sha256": "24ebdead73a32ebb7a0670e4807b31f2a47ff7f737af3c80e9cd349b026357a7"
+    },
+    {
+      "uri": "frame-009.png",
+      "sha256": "4d93bb82f4b0b8b025dfbb7e58df128262b96ca4efc506588066ac01013527bf"
+    },
+    {
+      "uri": "frame-010.png",
+      "sha256": "8868f682c28c08fd842e80fa1eb015c285f01abb4cc7b3903b6e95ec0a387265"
+    }
+  ]
+}

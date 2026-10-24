@@ -5,6 +5,7 @@ import { mkdtemp, readFile, rm, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { prototypeIntegration, loadRegistry, prototypeUrl } from '../src/prototype';
+import { REQUIRED_GOAL_CHECKS } from '../src/goal';
 import { runPractice } from '../src/run';
 
 it('uses run-scoped APIs, test IDs, trusted checks, and CSS pixels on Retina', async () => {
@@ -43,7 +44,7 @@ it('uses run-scoped APIs, test IDs, trusted checks, and CSS pixels on Retina', a
     const adapter = { checkGoal: async (runId: string) => {
       const response = await fetch(`${base}/api/runs/${runId}/state`);
       const state = await response.json() as { achieved: boolean };
-      return GoalCheckResult.parse({ runId, achieved: state.achieved, checks: [{ name: 'Stub server state', passed: state.achieved, detail: 'Local test stub' }], at: new Date().toISOString() });
+      return GoalCheckResult.parse({ runId, achieved: state.achieved, checks: REQUIRED_GOAL_CHECKS.map(name => ({ name, passed: state.achieved, detail: 'Local test stub, not real onboarding evidence' })), at: new Date().toISOString() });
     } };
     const integration = prototypeIntegration(base, 'ver_baseline', adapter);
     expect(prototypeUrl(base, 'ver_baseline', 'run_example')).toBe(`${base}/v/ver_baseline/signup?run=run_example`);

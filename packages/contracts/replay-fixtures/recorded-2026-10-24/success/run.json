@@ -1,0 +1,329 @@
+{
+  "schemaVersion": "1.0.0",
+  "runId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+  "experimentId": "exp_practice",
+  "protocolId": "proto_practice",
+  "versionId": "ver_baseline",
+  "scenarioId": "scn_first_time",
+  "batchId": "batch_practice",
+  "events": [
+    {
+      "runId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+      "seq": 0,
+      "at": "2026-10-24T23:33:39.932Z",
+      "versionId": "ver_baseline",
+      "screenBefore": "signup",
+      "screenAfter": "signup",
+      "action": {
+        "type": "type",
+        "elementId": "signup.name",
+        "value": "Jaclyn Example"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "frame-001.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+      "seq": 1,
+      "at": "2026-10-24T23:33:41.446Z",
+      "versionId": "ver_baseline",
+      "screenBefore": "signup",
+      "screenAfter": "signup",
+      "action": {
+        "type": "type",
+        "elementId": "signup.email",
+        "value": "test-run_d6e81e09-244d-4e23-9c21-8c360770a343@example.com"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "frame-002.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+      "seq": 2,
+      "at": "2026-10-24T23:33:42.797Z",
+      "versionId": "ver_baseline",
+      "screenBefore": "signup",
+      "screenAfter": "signup",
+      "action": {
+        "type": "type",
+        "elementId": "signup.password",
+        "value": "Demo-only-Pass123!"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "frame-003.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+      "seq": 3,
+      "at": "2026-10-24T23:33:44.011Z",
+      "versionId": "ver_baseline",
+      "screenBefore": "signup",
+      "screenAfter": "signup",
+      "action": {
+        "type": "click",
+        "elementId": "signup.consent"
+      },
+      "result": "ok",
+      "pointer": {
+        "x": 415,
+        "y": 517.5
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "frame-004.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+      "seq": 4,
+      "at": "2026-10-24T23:33:45.330Z",
+      "versionId": "ver_baseline",
+      "screenBefore": "signup",
+      "screenAfter": "workspace",
+      "action": {
+        "type": "click",
+        "elementId": "signup.submit",
+        "reason": "Submit the filled signup form to create the account."
+      },
+      "result": "ok",
+      "pointer": {
+        "x": 461.80078125,
+        "y": 561.1328125
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "frame-005.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+      "seq": 5,
+      "at": "2026-10-24T23:33:46.540Z",
+      "versionId": "ver_baseline",
+      "screenBefore": "workspace",
+      "screenAfter": "workspace",
+      "action": {
+        "type": "type",
+        "elementId": "workspace.name",
+        "value": "Demo"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "frame-006.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+      "seq": 6,
+      "at": "2026-10-24T23:33:48.834Z",
+      "versionId": "ver_baseline",
+      "screenBefore": "workspace",
+      "screenAfter": "plan",
+      "action": {
+        "type": "click",
+        "elementId": "workspace.continue",
+        "reason": "Submit the workspace name to create the single Demo workspace, then proceed toward inviting a teammate."
+      },
+      "result": "ok",
+      "pointer": {
+        "x": 817.796875,
+        "y": 452.6328125
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "frame-007.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+      "seq": 7,
+      "at": "2026-10-24T23:33:50.950Z",
+      "versionId": "ver_baseline",
+      "screenBefore": "plan",
+      "screenAfter": "invite",
+      "action": {
+        "type": "click",
+        "elementId": "plan.free.cta",
+        "reason": "Select the Free plan to avoid starting a paid trial."
+      },
+      "result": "ok",
+      "pointer": {
+        "x": 362.796875,
+        "y": 593.6328125
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "frame-008.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+      "seq": 8,
+      "at": "2026-10-24T23:33:52.323Z",
+      "versionId": "ver_baseline",
+      "screenBefore": "invite",
+      "screenAfter": "invite",
+      "action": {
+        "type": "type",
+        "elementId": "invite.email",
+        "value": "teammate@example.com"
+      },
+      "result": "ok",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "frame-009.png",
+        "width": 1280,
+        "height": 800
+      }
+    },
+    {
+      "runId": "run_d6e81e09-244d-4e23-9c21-8c360770a343",
+      "seq": 9,
+      "at": "2026-10-24T23:33:53.920Z",
+      "versionId": "ver_baseline",
+      "screenBefore": "invite",
+      "screenAfter": "confirm",
+      "action": {
+        "type": "click",
+        "elementId": "invite.send",
+        "reason": "Send the valid invitation to the teammate to complete the task."
+      },
+      "result": "ok",
+      "pointer": {
+        "x": 817.796875,
+        "y": 452.6328125
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "screenshot": {
+        "uri": "frame-010.png",
+        "width": 1280,
+        "height": 800
+      }
+    }
+  ],
+  "goalVerified": true,
+  "goalEvidence": "{\"runId\":\"run_d6e81e09-244d-4e23-9c21-8c360770a343\",\"achieved\":true,\"checks\":[{\"name\":\"account_created\",\"passed\":true,\"detail\":\"account for test-run_d6e81e09-244d-4e23-9c21-8c360770a343@example.com\"},{\"name\":\"exactly_one_workspace\",\"passed\":true,\"detail\":\"1 workspace: Demo\"},{\"name\":\"free_plan_selected\",\"passed\":true,\"detail\":\"plan is free\"},{\"name\":\"invite_sent\",\"passed\":true,\"detail\":\"invite sent to teammate@example.com\"},{\"name\":\"no_paid_trial\",\"passed\":true,\"detail\":\"no paid trial started\"}],\"at\":\"2026-10-24T23:33:53.923Z\"}",
+  "stepCount": 10,
+  "outcome": "goal",
+  "terminalScreen": "confirm",
+  "lastPointer": {
+    "x": 817.796875,
+    "y": 452.6328125
+  },
+  "screenshots": [
+    {
+      "uri": "frame-000.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "frame-001.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "frame-002.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "frame-003.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "frame-004.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "frame-005.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "frame-006.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "frame-007.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "frame-008.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "frame-009.png",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "uri": "frame-010.png",
+      "width": 1280,
+      "height": 800
+    }
+  ],
+  "behaviorallyValid": true,
+  "startedAt": "2026-10-24T23:33:36.485Z",
+  "endedAt": "2026-10-24T23:33:54.099Z"
+}

@@ -1,0 +1,117 @@
+import { mkdir, readFile, writeFile, rename, appendFile, link, rm } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { createHash, randomUUID } from 'node:crypto';
+import { BatchRequest, BatchResult, type SimulationAdapter, type PrototypeGoalAdapter, type AgentRunResult } from '@ghostloop/contracts';
+import { runOne, type RunOptions } from './run';
+import { prototypeIntegration } from './prototype';
+import { bitdeerDecider, type Decider } from './bitdeer';
+import { scenarioPolicy } from './scenarios';
+
+export interface BatchOptions {
+  outputDir: string;
+  goalAdapter: PrototypeGoalAdapter;
+  provenance: RunOptions['provenance'];
+  createDecider?: () => Decider;
+  headed?: boolean;
+  maxWallClockMs?: number;
+  maxInferenceCalls?: number;
+  maxInferenceUsd?: number;
+  estimatedUsdPerCall?: number;
+  publishScreenshot?: RunOptions['publishScreenshot'];
+}
+
+/** Implements D's callback interface; every slot owns a fresh browser and app run. */
+export function createSimulationAdapter(options: BatchOptions): SimulationAdapter {
+  return { async runBatch(raw, onEvent, externalSignal) {
+    const req = BatchRequest.parse(raw);
+    if (req.runsPerBatch > 100 || req.maxConcurrency > 8 || req.maxActionsPerRun > 20)
+      throw new Error('Batch limits: at most 100 runs, 8 concurrent sessions, 20 actions per run');
+    if (new Set(req.scenarios.map(s => s.id)).size !== req.scenarios.length ||
+        req.scenarios.reduce((n, s) => n + s.runs, 0) !== req.runsPerBatch)
+      throw new Error('Scenario IDs must be unique and allocations must sum to runsPerBatch');
+    const base = new URL(req.versionUrl);
+    if (!['http:', 'https:'].includes(base.protocol) || base.username || base.password) throw new Error('Invalid prototype URL');
+    const maxMs = options.maxWallClockMs ?? 900_000;
+    const maxCalls = options.maxInferenceCalls ?? req.runsPerBatch * req.maxActionsPerRun * 3;
+    if (!Number.isSafeInteger(maxMs) || maxMs < 1 || maxMs > 3_600_000 || !Number.isSafeInteger(maxCalls) || maxCalls < 0)
+      throw new Error('Invalid batch wall-clock or inference-call limit');
+    const price = options.provenance === 'mock-decisions' ? 0 : options.estimatedUsdPerCall;
+    if (price !== undefined && (!Number.isFinite(price) || price < 0)) throw new Error('Invalid estimated call cost');
+    if (options.maxInferenceUsd !== undefined && (!Number.isFinite(options.maxInferenceUsd) || options.maxInferenceUsd < 0 || price === undefined))
+      throw new Error('A dollar limit requires a finite configured call-cost estimate');
+    const root = resolve(options.outputDir);
+    await mkdir(root, { recursive: true });
+    // Freeze public scenario definitions, allocations and action budget across A/B versions.
+    const plan = JSON.stringify({ task: req.task, scenarios: req.scenarios, maxActionsPerRun: req.maxActionsPerRun, maxConcurrency: req.maxConcurrency });
+    const planFile = resolve(root, `${req.protocolId}.plan.json`);
+    const pendingPlan = resolve(root, `.plan-${randomUUID()}.tmp`);
+    await writeFile(pendingPlan, plan, { flag: 'wx' });
+    try {
+      // Publish a complete immutable file atomically, even when A/B starts concurrently.
+      try { await link(pendingPlan, planFile); }
+      catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+        if (await readFile(planFile, 'utf8') !== plan) throw new Error('Frozen protocol plan changed; use the same scenarios and allocations for A/B');
+      }
+    } finally { await rm(pendingPlan, { force: true }); }
+    const dir = resolve(root, req.batchId);
+    await mkdir(dir); // Never overwrite an earlier batch's evidence.
+    await writeFile(resolve(dir, 'request.json'), JSON.stringify({ ...req, planHash: createHash('sha256').update(plan).digest('hex'), provenance: options.provenance }, null, 2));
+    const started = performance.now();
+    const stop = new AbortController();
+    const signal = AbortSignal.any([externalSignal, stop.signal]);
+    let stopReason: string | undefined;
+    const cancel = (reason: string) => { stopReason ??= reason; stop.abort(new Error(reason)); };
+    const deadline = setTimeout(() => cancel('batch_wall_clock_limit'), maxMs);
+    const jobs = req.scenarios.flatMap(scenario => Array.from({ length: scenario.runs }, () => scenario));
+    const results = new Map<number, AgentRunResult>();
+    const failures: { slot: number; error: string }[] = [];
+    let next = 0, calls = 0;
+    // Synchronous reservation before awaiting the provider prevents concurrent overspend.
+    const reserve = () => {
+      signal.throwIfAborted();
+      if (calls >= maxCalls || (options.maxInferenceUsd !== undefined && (calls + 1) * price! > options.maxInferenceUsd)) {
+        cancel('batch_inference_limit'); signal.throwIfAborted();
+      }
+      calls++;
+    };
+    const worker = async () => {
+      while (!signal.aborted && next < jobs.length) {
+        const slot = next++;
+        const scenario = jobs[slot]!;
+        try {
+          const decide = options.createDecider?.() ?? bitdeerDecider();
+          const run = await runOne({ url: base.origin, outputDir: dir, signal,
+            prototype: prototypeIntegration(base.origin, req.versionId, options.goalAdapter),
+            decide: async (...args) => { reserve(); return decide(...args); },
+            decisionPolicy: scenarioPolicy(scenario),
+            task: req.task, scenario, experimentId: req.experimentId, protocolId: req.protocolId, batchId: req.batchId,
+            maxActions: req.maxActionsPerRun, maxWallClockMs: Math.max(1, Math.min(240_000, Math.ceil(maxMs - (performance.now() - started)))),
+            provenance: options.provenance, headed: options.headed, estimatedUsdPerCall: price,
+            publishScreenshot: options.publishScreenshot,
+            onEvent: async event => { await onEvent(event); },
+            onUsage: async usage => {
+              await appendFile(resolve(dir, `usage-${slot}.jsonl`), JSON.stringify(usage) + '\n');
+            },
+          });
+          results.set(slot, run);
+          if (run.outcome === 'model_error' || run.outcome === 'browser_error') cancel('run_infrastructure_error');
+        } catch (error) {
+          failures.push({ slot, error: error instanceof Error ? error.message : 'Run startup failed' });
+          cancel('run_startup_error');
+        }
+      }
+    };
+    try { await Promise.all(Array.from({ length: Math.min(req.maxConcurrency, jobs.length) }, worker)); }
+    finally { clearTimeout(deadline); }
+    const result = BatchResult.parse({ schemaVersion: '1.0.0', batchId: req.batchId, versionId: req.versionId,
+      runs: [...results.entries()].sort(([a], [b]) => a - b).map(([, run]) => run),
+      usage: { inferenceCalls: calls, inferenceUsd: calls * (price ?? 0), costKnown: price !== undefined,
+        costEstimated: options.provenance === 'live-bitdeer' && price !== undefined, wallClockMs: performance.now() - started },
+      cancelled: signal.aborted, plannedRuns: jobs.length });
+    await writeFile(resolve(dir, 'batch.json.tmp'), JSON.stringify(result, null, 2));
+    await rename(resolve(dir, 'batch.json.tmp'), resolve(dir, 'batch.json'));
+    await writeFile(resolve(dir, 'metadata.json'), JSON.stringify({ stopReason: stopReason ?? (externalSignal.aborted ? 'external_cancel' : undefined), failures, provenance: options.provenance }, null, 2));
+    return result;
+  } };
+}

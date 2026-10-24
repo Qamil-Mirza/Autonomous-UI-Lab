@@ -5,6 +5,8 @@ import { Scenario } from "./protocol";
 import { AgentActionEvent, AgentRunResult } from "./agent";
 
 export const UsageReport = z.object({
+  costKnown: z.boolean().optional(),
+  costEstimated: z.boolean().optional(),
   inferenceCalls: z.number().int().nonnegative(),
   inferenceUsd: z.number().nonnegative(),
   wallClockMs: z.number().nonnegative(),

@@ -9,7 +9,7 @@ export const INFRA_OUTCOMES = ["model_error", "browser_error"] as const satisfie
 export const ActionType = z.enum(["click", "type", "select", "stop"]);
 export type ActionType = z.infer<typeof ActionType>;
 
-export const ActionResult = z.enum(["ok", "validation_error", "no_effect", "rejected_invalid"]);
+export const ActionResult = z.enum(["ok", "validation_error", "no_effect", "rejected_invalid", "execution_error", "observation_error"]);
 export type ActionResult = z.infer<typeof ActionResult>;
 
 export const ExperimentState = z.enum([

@@ -3,8 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "exports": { ".": "./src/index.ts" },
   "scripts": {
     "demo": "tsx src/cli.ts",
+    "batch": "tsx src/batch-cli.ts",
+    "replay:export": "tsx src/export-cli.ts",
+    "integration:check": "tsx src/integration-cli.ts --mock",
+    "integration:live": "tsx src/integration-cli.ts",
     "check": "tsc -p .",
     "test": "vitest run --maxWorkers=1 --minWorkers=1"
   },
@@ -18,6 +23,7 @@
     "@types/node": "^22.0.0",
     "tsx": "^4.20.0",
     "typescript": "^5.6.0",
-    "vitest": "^2.1.0"
+    "vitest": "^2.1.0",
+    "vite": "^5.4.21"
   }
 }

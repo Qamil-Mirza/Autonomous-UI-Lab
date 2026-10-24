@@ -5,7 +5,7 @@
 - Viewport: 1280×800 **CSS pixels**. Bounds and pointer positions remain CSS pixels.
 - Screenshots use `scale: 'css'`, so exported PNGs are also 1280×800 even at device scale factor 2. A/Hanna must not multiply coordinates by the Retina scale factor. When displaying a screenshot at a different size, apply only the display-size/1280 ratio (and corresponding height ratio).
 - Target real controls using `getByTestId(elementId)`, including dotted IDs. Consent checkboxes support click actions. The practice page's older `data-agent-id` remains supported.
-- Only visible, enabled DOM controls on the current screen AND in the version registry are exposed. Static text/decorations are not action targets, even if they have a test ID.
+- Only visible, enabled, unobscured DOM controls on the current screen AND in the version registry are exposed. Static text/decorations are not action targets, even if they have a test ID.
 - Read `/designs/versions/<versionId>.json`. Accept wire IDs named `id` or `elementId`; require the correct `versionId`. Public registry objects retain only `elementId`, `screen`, `role`, and `label`. DOM observation supplies enabled status, available actions, options and bounds. Protected flags and mutation metadata never enter the prompt.
 - Generate a unique `run_...` ID; POST `/api/runs/<runId>/init` before opening `/v/<versionId>/signup?run=<runId>`.
 - Permit same-version signup/workspace/plan/invite/confirm navigation only with that same run ID. Permit local assets and the current run's API requests; reject other runs and external origins.
@@ -93,9 +93,19 @@ Automated tests exercise a local stub of C's API, run IDs in URLs and saves,
 registry redaction, dotted test IDs, consent clicks, wrong-run rejection, cleanup,
 and 1280×800 PNGs at Retina device scale factor 2. This does not verify C's app.
 
-This checkout has no `@ghostloop/prototype`, `packages/prototype-adapter`, or
-`policy.test.ts`. Therefore the real Pro-trial state, Back/update/no-duplicates
-behavior, full goal predicate, and invalid-email correction still require a live
-integration run once C's code arrives. D must update its absent policy test to use
-`plan.free.note` as a noninteractive visibility target. No messages were sent to
-other teammates.
+C's app and prototype adapter are now merged. The simulator passes
+`{ baseUrl: prototypeUrl }` to C's `checkGoal` so state is read over HTTP from
+the same server. A live Bitdeer run on October 24, 2026 completed all five trusted
+checks in 10 actions (run_d08aa880-80f3-409f-a7ec-6dec3930037c).
+
+The Pro-trial failure, Back/update isolation, and invalid-email recovery have
+separate website tests. The live model baseline run followed the happy path;
+model-driven recovery scenarios and candidate retests remain future work.
+
+
+Observation adapter completion: every new captured screenshot now has a matching
+`.png.observation.json` with the exact URL, screen, CSS viewport/scroll offset,
+public controls (including native types and bounds), and alerts. Snapshot controls
+are passed alongside that exact screenshot. Protected flags and checker results
+remain excluded. A browser test exercises all five screens of C's real website
+with scripted actions, including invalid-email correction, without model calls.
