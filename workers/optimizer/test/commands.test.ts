@@ -219,10 +219,10 @@ describe("recordFinalReview", () => {
     await store.putEvaluation({ ...accepted, ...own, id: "eval_acc", candidateVersionId: acceptedCandVersion });
     await store.putEvaluation({ ...inconclusive, ...own, id: "eval_inc" });
     await store.putEvaluation({ ...rejected, ...own, id: "eval_rej" });
-    await store.putCandidate(cand(acceptedCand, acceptedCandVersion, "eval_acc"));
-    await store.putCandidate(cand(inconclusiveCand, "ver_candinc", "eval_inc"));
-    await store.putCandidate(cand(rejectedCand, "ver_candrej", "eval_rej"));
-    await store.putCandidate(cand(noEvalCand, "ver_candnoe"));
+    await store.putCandidate(experimentId, cand(acceptedCand, acceptedCandVersion, "eval_acc"));
+    await store.putCandidate(experimentId, cand(inconclusiveCand, "ver_candinc", "eval_inc"));
+    await store.putCandidate(experimentId, cand(rejectedCand, "ver_candrej", "eval_rej"));
+    await store.putCandidate(experimentId, cand(noEvalCand, "ver_candnoe"));
   });
 
   it("promotion requires accepted evaluation", async () => {
@@ -271,6 +271,24 @@ describe("recordFinalReview", () => {
     expect(await cmd.recordFinalReview({ experimentId: other, candidateId: acceptedCand, status: "discarded" })).toMatchObject({ ok: false, code: "NOT_FOUND" });
     expect(await cmd.recordFinalReview({ experimentId, candidateId: "cand_missing", status: "discarded" })).toMatchObject({ ok: false, code: "NOT_FOUND" });
     expect(await cmd.recordFinalReview({ experimentId: "exp_missing", candidateId: acceptedCand, status: "discarded" })).toMatchObject({ ok: false, code: "NOT_FOUND" });
+  });
+
+  it("a candidate with no patches and no evaluation is still owned and can be discarded", async () => {
+    const bare = { ...cand("cand_bare", "ver_candbare"), patchIds: [] };
+    await store.putCandidate(experimentId, bare);
+    expect((await store.listCandidates(experimentId)).map((c) => c.id)).toContain("cand_bare");
+    expect((await cmd.recordFinalReview({ experimentId, candidateId: "cand_bare", status: "discarded" })).ok).toBe(true);
+    expect((await store.getCandidate("cand_bare"))!.reviewStatus).toBe("discarded");
+  });
+
+  it("promotion requires the accepted evaluation to measure this candidate in this experiment", async () => {
+    await store.putEvaluation({ ...accepted, experimentId: experimentId as Evaluation["experimentId"], id: "eval_wrongver", candidateVersionId: "ver_someoneelse" });
+    await store.putCandidate(experimentId, cand("cand_wrongver", "ver_candwv", "eval_wrongver"));
+    expect(await cmd.recordFinalReview({ experimentId, candidateId: "cand_wrongver", status: "promoted_measured" })).toMatchObject({ ok: false, code: "INVALID_STATE" });
+    await store.putEvaluation({ ...accepted, id: "eval_foreign", candidateVersionId: "ver_candfx" }); // experimentId exp_demo0001
+    await store.putCandidate(experimentId, cand("cand_foreignev", "ver_candfx", "eval_foreign"));
+    expect(await cmd.recordFinalReview({ experimentId, candidateId: "cand_foreignev", status: "promoted_measured" })).toMatchObject({ ok: false, code: "INVALID_STATE" });
+    expect((await store.getExperiment(experimentId))!.incumbentVersionId).toBe(base);
   });
 
   it("rejects status pending", async () => {

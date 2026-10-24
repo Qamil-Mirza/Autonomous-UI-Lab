@@ -84,12 +84,15 @@ export interface ExperimentStore {
   putApproval(a: Approval): Promise<void>;
   getApproval(experimentId: string, round: number): Promise<Approval | undefined>;
 
-  putCandidate(c: CandidateDesign): Promise<void>;
-  getCandidate(id: string): Promise<CandidateDesign | undefined>;
   /**
-   * `CandidateDesign` has no `experimentId`, so membership is derived: a candidate belongs to the experiment of its
-   * first stored patch, or failing that, of its stored evaluation.
+   * Stores a candidate under its owning experiment (ruling R7: ownership is recorded by the caller, never inferred
+   * from C-supplied `patchIds` or evaluations). Updating keeps the original owner; throws if `experimentId` differs.
    */
+  putCandidate(experimentId: string, c: CandidateDesign): Promise<void>;
+  getCandidate(id: string): Promise<CandidateDesign | undefined>;
+  /** Addition to the Task 9 interface: the experiment that owns a candidate, as recorded by `putCandidate`. */
+  getCandidateExperimentId(candidateId: string): Promise<string | undefined>;
+  /** Candidates whose recorded owner (from `putCandidate`) is `experimentId`. */
   listCandidates(experimentId: string): Promise<CandidateDesign[]>;
 
   putEvaluation(e: Evaluation): Promise<void>;
@@ -119,6 +122,7 @@ export class InMemoryStore implements ExperimentStore {
   private packets = new Map<string, DesignFeedbackPacket>();
   private approvals = new Map<string, Approval>();
   private candidates = new Map<string, CandidateDesign>();
+  private candidateOwners = new Map<string, string>();
   private evaluations = new Map<string, Evaluation>();
   private listeners = new Set<ChangeListener>();
 
@@ -240,22 +244,23 @@ export class InMemoryStore implements ExperimentStore {
     return clone(this.approvals.get(approvalKey(experimentId, round)));
   }
 
-  async putCandidate(c: CandidateDesign) {
+  async putCandidate(experimentId: string, c: CandidateDesign) {
+    const owner = this.candidateOwners.get(c.id);
+    if (owner !== undefined && owner !== experimentId) {
+      throw new Error(`candidate ${c.id} belongs to experiment ${owner}, not ${experimentId}`);
+    }
+    this.candidateOwners.set(c.id, experimentId);
     this.candidates.set(c.id, clone(c));
     this.emit("candidates", c.id);
   }
   async getCandidate(id: string) {
     return clone(this.candidates.get(id));
   }
-  async listCandidates(experimentId: string) {
-    return [...this.candidates.values()].filter((c) => this.candidateExperimentId(c) === experimentId).map(clone);
+  async getCandidateExperimentId(candidateId: string) {
+    return this.candidateOwners.get(candidateId);
   }
-  private candidateExperimentId(c: CandidateDesign): string | undefined {
-    for (const id of c.patchIds) {
-      const p = this.patches.get(id);
-      if (p) return p.experimentId;
-    }
-    return c.evaluationId ? this.evaluations.get(c.evaluationId)?.experimentId : undefined;
+  async listCandidates(experimentId: string) {
+    return [...this.candidates.values()].filter((c) => this.candidateOwners.get(c.id) === experimentId).map(clone);
   }
 
   async putEvaluation(e: Evaluation) {

@@ -170,8 +170,8 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
     const exp = await store.getExperiment(experimentId);
     if (!exp) return fail("NOT_FOUND", `experiment ${experimentId} not found`);
     const candidate = await store.getCandidate(candidateId);
-    const owned = candidate && (await store.listCandidates(experimentId)).some((c) => c.id === candidateId);
-    if (!candidate || !owned) return fail("NOT_FOUND", `candidate ${candidateId} not found in experiment ${experimentId}`);
+    const owner = await store.getCandidateExperimentId(candidateId);
+    if (!candidate || owner !== experimentId) return fail("NOT_FOUND", `candidate ${candidateId} not found in experiment ${experimentId}`);
     if (candidate.reviewStatus !== "pending") {
       return fail("ALREADY_APPROVED", `candidate ${candidateId} already has final review ${candidate.reviewStatus}`);
     }
@@ -181,6 +181,10 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
       if (evaluation?.decision !== "accepted") {
         return fail("INVALID_STATE", `candidate ${candidateId} has no accepted evaluation; only a measured winner can be promoted`);
       }
+      if (evaluation.candidateVersionId !== candidate.versionId || evaluation.experimentId !== experimentId) {
+        return fail("INVALID_STATE", `evaluation ${evaluation.id} does not measure candidate ${candidateId} in experiment ${experimentId}`);
+      }
+      // R8: enforces the stale-approval anti-goal: a winner measured against an older incumbent cannot overwrite a newer one.
       if (candidate.parentVersionId !== exp.incumbentVersionId) {
         return fail("STALE_SOURCE_VERSION", `candidate ${candidateId} was built on ${candidate.parentVersionId}, not the incumbent ${exp.incumbentVersionId}`);
       }
@@ -192,7 +196,7 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
       }
     }
 
-    await store.putCandidate({ ...candidate, reviewStatus: status });
+    await store.putCandidate(experimentId, { ...candidate, reviewStatus: status });
     if (status === "promoted_measured") {
       // The only path that moves the incumbent.
       await store.putExperiment({ ...exp, incumbentVersionId: candidate.versionId });
@@ -203,4 +207,8 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
   return { createExperiment, startExperiment, cancelExperiment, setObservationDisposition, approvePatches, recordFinalReview };
 }
 
+/**
+ * Each handler takes `unknown` and resolves to a `CommandResult`: bad input (parse failure, unknown ids, guard
+ * violations) never throws. Faults raised by the store itself are not input errors and reject the promise.
+ */
 export type Commands = ReturnType<typeof createCommands>;

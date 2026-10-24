@@ -123,14 +123,25 @@ describe("InMemoryStore", () => {
   });
 
   it("lists candidates and evaluations by experiment", async () => {
-    await s.putPatches(packet.patches);
-    await s.putCandidate(candidate);
+    await s.putCandidate("exp_demo0001", candidate);
     await s.putEvaluation(evaluation);
     expect(await s.getCandidate(candidate.id)).toEqual(candidate);
     expect((await s.listCandidates("exp_demo0001")).map((c) => c.id)).toEqual([candidate.id]);
     expect(await s.listCandidates("exp_other")).toEqual([]);
+    expect(await s.getCandidateExperimentId(candidate.id)).toBe("exp_demo0001");
     expect(await s.getEvaluation(evaluation.id)).toEqual(evaluation);
     expect((await s.listEvaluations("exp_demo0001")).map((x) => x.id)).toEqual([evaluation.id]);
+  });
+
+  it("records candidate ownership on put, not from patchIds or evaluation", async () => {
+    const bare = { ...candidate, id: "cand_bare" as const, patchIds: [], evaluationId: undefined };
+    await s.putCandidate("exp_owner", bare);
+    expect((await s.listCandidates("exp_owner")).map((c) => c.id)).toEqual(["cand_bare"]);
+    // update keeps the owner; a different owner throws
+    await s.putCandidate("exp_owner", { ...bare, reviewStatus: "discarded" });
+    await expect(s.putCandidate("exp_thief", bare)).rejects.toThrow();
+    expect(await s.getCandidateExperimentId("cand_bare")).toBe("exp_owner");
+    expect(await s.listCandidates("exp_thief")).toEqual([]);
   });
 
   it("onChange fires (table, key) after writes and can unsubscribe", async () => {
