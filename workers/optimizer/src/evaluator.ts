@@ -35,17 +35,32 @@ export function dedupeEvents(events: AgentActionEvent[]): AgentActionEvent[] {
   return out.sort((a, b) => a.seq - b.seq);
 }
 
-/** True if, in seq order, some event starts on a screen the run previously left (screenAfter differed). */
-export function isBacktrackRun(events: AgentActionEvent[]): boolean {
+/**
+ * Screens the run revisited, mapped to the seq of the first revisit: in seq order, an event starts on a
+ * screen S the run previously left (an earlier event on S had screenAfter !== S). Single definition of a revisit.
+ */
+export function screenRevisits(events: AgentActionEvent[]): Map<string, number> {
   const left = new Set<string>();
+  const revisits = new Map<string, number>();
   for (const e of dedupeEvents(events)) {
-    if (left.has(e.screenBefore)) return true;
+    if (left.has(e.screenBefore) && !revisits.has(e.screenBefore)) revisits.set(e.screenBefore, e.seq);
     if (e.screenAfter !== e.screenBefore) left.add(e.screenBefore);
   }
-  return false;
+  return revisits;
 }
 
-function dedupeRuns(runs: AgentRunResult[]): AgentRunResult[] {
+/** Set of screens the run revisited (see `screenRevisits`). */
+export function revisitedScreens(events: AgentActionEvent[]): Set<string> {
+  return new Set(screenRevisits(events).keys());
+}
+
+/** True if, in seq order, some event starts on a screen the run previously left (screenAfter differed). */
+export function isBacktrackRun(events: AgentActionEvent[]): boolean {
+  return screenRevisits(events).size > 0;
+}
+
+/** Unique by runId, first occurrence wins. */
+export function dedupeRuns(runs: AgentRunResult[]): AgentRunResult[] {
   const seen = new Set<string>();
   const out: AgentRunResult[] = [];
   for (const r of runs) {
