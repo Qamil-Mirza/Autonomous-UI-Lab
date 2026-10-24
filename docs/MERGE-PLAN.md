@@ -2,6 +2,8 @@
 
 **Event:** Cal Hacks 13.0  
 **Source of truth:** [Product PRD](PROJECT-PRD.md), especially sections 8–15, 17, and 22.  
+**Figma submission context:** [Sponsor brief and team responsibilities](FIGMA-SPONSOR-BRIEF.md). A coordinates submission assembly; all owners contribute their actual build process.
+
 **Status:** Implementation plan; milestones below have not yet been verified.  
 **Team assignments:** Unassigned. Each teammate, including the project owner, takes one workstream.
 
@@ -174,6 +176,10 @@ Until the dashboard is connected, an explicit developer command can submit the a
 - [ ] A teammate other than the setup owner starts the merged application from the documented instructions.
 - [ ] Rehearse the three-minute demo and save a replay of previously recorded real runs with a clear recorded label. Development fixtures must not be presented as real evidence.
 - [ ] Confirm the original design, candidate history, independent comparison, designer decision, and stopping reason remain inspectable.
+- [ ] A assembles the Figma submission: video at most 3 minutes, stage log at most 200 words per stage, and required Figma Slides. All owners supply actual tool choices, reasons, approximate minutes, ratings, handoffs, and friction.
+- [ ] A/C verify embedded Figma Make(s) and/or prototypes, the working code/repository link, “Anyone” file access, and Edu verification. Collect final links in the demo runbook; use the [sponsor checklist](FIGMA-SPONSOR-BRIEF.md#submission-checklist).
+
+These submission checks document how the team built GhostLoop. Editable variants and correspondence checks above remain GhostLoop product requirements; automated Figma writing is not required by the supplied sponsor brief. Runtime experiment evidence supports but does not replace the team's stage log.
 
 **Evidence:** Add the final tested commit, experiment ID, artifact references, original/candidate URLs, Figma links, and startup/demo commands to the demo runbook. Include the fallback procedure and identify live versus recorded portions.
 
