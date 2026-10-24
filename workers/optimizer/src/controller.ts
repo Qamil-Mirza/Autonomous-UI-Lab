@@ -2,7 +2,7 @@ import type { Experiment, ExperimentState, StoppingReason } from "@ghostloop/con
 import type { ExperimentRuntime as RuntimePort } from "./commands";
 import { runBatchPhase } from "./controller/batch";
 import { awaitingApproval, comparing, decided, patching, validating } from "./controller/candidate";
-import { cancelPending, IntegrationError, load, stop, transition, type ControllerDeps, type StepContext } from "./controller/context";
+import { CancelledError, cancelPending, IntegrationError, load, stop, transition, type ControllerDeps, type StepContext } from "./controller/context";
 import { diagnosing, observing, proposing } from "./controller/diagnosis";
 
 export type { ControllerDeps } from "./controller/context";
@@ -38,7 +38,8 @@ const DECISION_STATES: ExperimentState[] = ["accepted", "rejected", "inconclusiv
 /** Checked before every step: cancel first, then budgets (decision states only react to a stopping reason). */
 async function preCheck(ctx: StepContext, e: Experiment): Promise<StoppingReason | null> {
   if (cancelPending(ctx, e)) return "USER_STOP";
-  if (DECISION_STATES.includes(e.state)) return null;
+  // R11: parked states are not budget-limited while parked.
+  if (DECISION_STATES.includes(e.state) || (e.state === "awaiting_approval" && !e.round.approvalId)) return null;
   const { budgets } = e.protocol;
   if (e.usage.inferenceUsd >= budgets.maxInferenceUsd) return "COST_BUDGET";
   if (e.startedAt && ctx.deps.now() - Date.parse(e.startedAt) >= budgets.maxWallClockMs) return "TIME_BUDGET";
@@ -58,6 +59,10 @@ async function runStep(id: string, deps: ControllerDeps, signal: AbortSignal): P
     if (reason) await stop(ctx, reason);
     else progressed = await HANDLERS[e.state](ctx, e);
   } catch (err) {
+    if (err instanceof CancelledError) {
+      await stop(ctx, "USER_STOP");
+      return { experiment: await load(ctx), progressed: true };
+    }
     if (!(err instanceof IntegrationError)) throw err;
     const latest = await load(ctx);
     if (cancelPending(ctx, latest)) await stop(ctx, "USER_STOP");

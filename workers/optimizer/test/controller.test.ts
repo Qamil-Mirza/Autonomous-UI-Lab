@@ -275,14 +275,126 @@ describe("controller round on mocks", () => {
     expect(t.analysis.calls).toHaveLength(0);
   });
 
-  it("cost budget checked after the analysis call stops instead of parking", async () => {
+  it("cost spent by the analysis call does not stop a parked round (R11), but stops it once approved", async () => {
     // 0.336 baseline + 0.1 analysis = 0.436 ≥ 0.4.
     const t = await setup({ budgets: { maxInferenceUsd: 0.4 }, analysisUsd: 0.1 });
     await t.runtime.idle(t.id);
-    const e = await t.exp();
+    let e = await t.exp();
+    expect(e.state).toBe("awaiting_approval");
+    expect(e.usage.inferenceUsd).toBeCloseTo(0.436);
+    await t.approveAll();
+    e = await t.exp();
     expect(e.stopping!.reason).toBe("COST_BUDGET");
     expect(t.analysis.calls).toHaveLength(1);
-    expect(e.usage.inferenceUsd).toBeCloseTo(0.436);
+    expect(t.candidates.created).toHaveLength(0);
+  });
+
+  it("cancel landing mid-patching starts no createCandidate call", async () => {
+    const t = await setup();
+    await t.runtime.idle(t.id);
+    const orig = t.store.listPatches.bind(t.store);
+    let fired = false;
+    t.store.listPatches = async (experimentId, round) => {
+      if (!fired && (await t.store.getExperiment(t.id))!.state === "patching") {
+        fired = true;
+        await t.cmd.cancelExperiment({ experimentId: t.id });
+      }
+      return orig(experimentId, round);
+    };
+    await t.approveAll();
+    expect(fired).toBe(true);
+    const e = await t.exp();
+    expect(e.stopping!.reason).toBe("USER_STOP");
+    expect(t.candidates.created).toHaveLength(0);
+    expect(await t.store.listCandidates(t.id)).toHaveLength(0);
+  });
+
+  it("cancel landing mid-proposing starts no analysis call", async () => {
+    const t = await setup({ start: false });
+    const orig = t.store.listObservations.bind(t.store);
+    let fired = false;
+    t.store.listObservations = async (experimentId) => {
+      if (!fired && (await t.store.getExperiment(t.id))!.state === "proposing") {
+        fired = true;
+        await t.cmd.cancelExperiment({ experimentId: t.id });
+      }
+      return orig(experimentId);
+    };
+    await t.cmd.startExperiment({ experimentId: t.id });
+    await t.runtime.idle(t.id);
+    expect(fired).toBe(true);
+    const e = await t.exp();
+    expect(e.stopping!.reason).toBe("USER_STOP");
+    expect(t.analysis.calls).toHaveLength(0);
+  });
+
+  it("cancel landing between approve's guard and its write → approval refused, nothing stored", async () => {
+    const t = await setup();
+    await t.runtime.idle(t.id);
+    const ids = (await t.proposedPatches()).map((p) => p.id);
+    const orig = t.store.listPatches.bind(t.store);
+    let fired = false;
+    t.store.listPatches = async (experimentId, round) => {
+      if (!fired) {
+        fired = true; // approvePatches reads round patches after its guard, before writing
+        await t.cmd.cancelExperiment({ experimentId: t.id });
+      }
+      return orig(experimentId, round);
+    };
+    const r = await t.cmd.approvePatches({ ...t.okApproval(), patchIds: ids });
+    expect(r).toMatchObject({ ok: false, code: "INVALID_STATE" });
+    expect(await t.store.getApproval(t.id, 1)).toBeUndefined();
+    expect((await orig(t.id, 1)).every((p) => p.state === "proposed" || p.state === "blocked")).toBe(true);
+    await t.runtime.idle(t.id);
+    const e = await t.exp();
+    expect(e.round.approvalId).toBeUndefined();
+    expect(e.stopping!.reason).toBe("USER_STOP");
+    expect(t.candidates.created).toHaveLength(0);
+  });
+
+  it("two concurrent approvals → exactly one wins, the other ALREADY_APPROVED", async () => {
+    const t = await setup();
+    await t.runtime.idle(t.id);
+    const [label, token] = await t.proposedPatches();
+    const results = await Promise.all([
+      t.cmd.approvePatches({ ...t.okApproval(), patchIds: [label!.id] }),
+      t.cmd.approvePatches({ ...t.okApproval(), patchIds: [token!.id] }),
+    ]);
+    const oks = results.filter((r) => r.ok);
+    const fails = results.filter((r) => !r.ok);
+    expect(oks).toHaveLength(1);
+    expect(fails).toMatchObject([{ ok: false, code: "ALREADY_APPROVED" }]);
+    const winner = oks[0]! as { ok: true; value: { approvalId: string } };
+    const stored = await t.store.getApproval(t.id, 1);
+    expect(stored!.id).toBe(winner.value.approvalId);
+    expect((await t.exp()).round.approvalId).toBe(stored!.id);
+    await t.runtime.idle(t.id);
+    expect((await t.exp()).state).toBe("accepted");
+    expect(t.candidates.created).toEqual([{ sourceVersionId: BASE, patchIds: stored!.patchIds }]);
+  });
+
+  it("approval recorded against a non-incumbent source version is not applied", async () => {
+    const t = await setup();
+    await t.runtime.idle(t.id);
+    const [label] = await t.proposedPatches();
+    // A stale approval reaches the store directly (bypassing the command guard).
+    await t.store.putApproval({
+      schemaVersion: SCHEMA_VERSION,
+      id: "appr_stale0001",
+      experimentId: t.id as `exp_${string}`,
+      round: 1,
+      sourceVersionId: "ver_other0001",
+      patchIds: [label!.id],
+      approvedBy: "d",
+      at: NOW,
+    });
+    await t.store.updatePatch(label!.id, { state: "approved" });
+    await t.store.updateExperiment(t.id, (x) => ({ ...x, round: { ...x.round, approvalId: "appr_stale0001" } }));
+    t.runtime.launch(t.id);
+    await t.runtime.idle(t.id);
+    const e = await t.exp();
+    expect(e.stopping!.reason).toBe("NO_VALID_PATCH");
+    expect(states(e).slice(-2)).toEqual(["patching", "stopped"]);
     expect(t.candidates.created).toHaveLength(0);
   });
 

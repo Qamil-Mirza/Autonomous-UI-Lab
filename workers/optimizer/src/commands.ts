@@ -155,13 +155,28 @@ export function createCommands(store: ExperimentStore, runtime: ExperimentRuntim
       approvedBy,
       at: clock(),
     };
+    // The checks above ran on a copy read before several awaits. Re-check atomically while claiming the round, so a
+    // cancel or a concurrent approval that landed meanwhile wins and this call writes nothing.
+    let refused: { ok: false; code: CommandErrorCode; message: string } | undefined;
+    try {
+      await store.updateExperiment(experimentId, (x) => {
+        if (x.round.approvalId) refused = fail("ALREADY_APPROVED", `round ${round} of experiment ${experimentId} is already approved`);
+        else if (x.state !== "awaiting_approval" || x.cancelRequested || x.round.index !== round || x.incumbentVersionId !== sourceVersionId) {
+          refused = fail("INVALID_STATE", `experiment ${experimentId} changed before the approval was recorded (state ${x.state}${x.cancelRequested ? ", cancel requested" : ""})`);
+        }
+        if (refused) throw refused;
+        return { ...x, round: { ...x.round, approvalId: approval.id } };
+      });
+    } catch (err) {
+      if (refused && err === refused) return refused;
+      throw err;
+    }
     await store.putApproval(approval);
     const chosen = new Set<string>(selected);
     for (const p of roundPatches) {
       if (p.state === "blocked") continue;
       await store.updatePatch(p.id, { state: chosen.has(p.id) ? "approved" : "declined" });
     }
-    await store.updateExperiment(experimentId, (x) => ({ ...x, round: { ...x.round, approvalId: approval.id } }));
     runtime.launch(experimentId);
     return done({ approvalId: approval.id });
   });

@@ -121,6 +121,8 @@ describe("InMemoryStore", () => {
     };
     await s.putApproval(a);
     expect(await s.getApproval("exp_x", 1)).toEqual(a);
+    await expect(s.putApproval({ ...a, id: "appr_2" })).rejects.toThrow(/insert-only/);
+    expect((await s.getApproval("exp_x", 1))!.id).toBe("appr_1");
     expect(await s.getApproval("exp_x", 2)).toBeUndefined();
   });
 

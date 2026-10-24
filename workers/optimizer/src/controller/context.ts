@@ -38,7 +38,15 @@ export interface StepContext {
  */
 export class IntegrationError extends Error {}
 
-export async function adapter<T>(what: string, call: () => Promise<T>): Promise<T> {
+/** A cancel was found pending right before starting adapter work; the step stops with USER_STOP. */
+export class CancelledError extends Error {}
+
+/**
+ * Calls an adapter. Immediately before the call it re-reads the experiment: after a cancel no adapter work starts
+ * (spec 5.6). The call is invoked synchronously after that check, so a cancel cannot slip in between.
+ */
+export async function adapter<T>(ctx: StepContext, what: string, call: () => Promise<T>): Promise<T> {
+  if (ctx.signal.aborted || (await load(ctx)).cancelRequested) throw new CancelledError(`cancelled before ${what}`);
   try {
     return await call();
   } catch (err) {
@@ -77,12 +85,20 @@ export async function transition(
   change: (e: Experiment) => Experiment = (e) => e,
   note?: string,
 ): Promise<void> {
-  if (cancelPending(ctx, await load(ctx))) return stop(ctx, "USER_STOP");
-  await update(ctx, (latest) => ({
-    ...change(latest),
-    state: to,
-    transitions: [...latest.transitions, { from: latest.state, to, at: ctx.deps.clock(), ...(note !== undefined && { note }) }],
-  }));
+  const cancelled = new CancelledError(`cancelled before ${to}`);
+  try {
+    await update(ctx, (latest) => {
+      if (cancelPending(ctx, latest)) throw cancelled; // write nothing; stop instead
+      return {
+        ...change(latest),
+        state: to,
+        transitions: [...latest.transitions, { from: latest.state, to, at: ctx.deps.clock(), ...(note !== undefined && { note }) }],
+      };
+    });
+  } catch (err) {
+    if (err !== cancelled) throw err;
+    await stop(ctx, "USER_STOP");
+  }
 }
 
 /** Moves to `stopped` with the full stopping record (spec 5.6). No-op if already stopped. */

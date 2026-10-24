@@ -41,11 +41,11 @@ export async function proposing(ctx: StepContext, e: Experiment): Promise<boolea
   const { store, clock } = ctx.deps;
   const { protocol } = e;
   const observations = (await store.listObservations(e.id)).filter((o) => o.batchId === e.round.baselineBatchId);
-  const manifest = parsed(DesignManifest, await adapter("getManifest", () => ctx.deps.candidates.getManifest(e.incumbentVersionId)), "getManifest");
+  const manifest = parsed(DesignManifest, await adapter(ctx, "getManifest", () => ctx.deps.candidates.getManifest(e.incumbentVersionId)), "getManifest");
   const editableElements = manifest.elements.filter(
     (el) => !el.protected && !protocol.protectedElements.includes(el.elementId) && !el.categories.some((c) => protocol.protectedCategories.includes(c)),
   );
-  const out = await adapter("proposeFeedback", () =>
+  const out = await adapter(ctx, "proposeFeedback", () =>
     ctx.deps.analysis.proposeFeedback({
       experimentId: e.id,
       versionId: e.incumbentVersionId,

@@ -89,6 +89,7 @@ export interface ExperimentStore {
   putHypotheses(h: Hypothesis[]): Promise<void>;
   putPacket(p: DesignFeedbackPacket): Promise<void>;
 
+  /** Approvals are insert-only: one per experiment and round. Throws if one already exists. */
   putApproval(a: Approval): Promise<void>;
   getApproval(experimentId: string, round: number): Promise<Approval | undefined>;
 
@@ -259,6 +260,7 @@ export class InMemoryStore implements ExperimentStore {
 
   async putApproval(a: Approval) {
     const key = approvalKey(a.experimentId, a.round);
+    if (this.approvals.has(key)) throw new Error(`approval for ${a.experimentId} round ${a.round} already exists (approvals are insert-only)`);
     this.approvals.set(key, clone(a));
     this.emit("approvals", key);
   }

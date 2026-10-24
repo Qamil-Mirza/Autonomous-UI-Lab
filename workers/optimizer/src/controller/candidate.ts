@@ -17,7 +17,8 @@ import { adapter, IntegrationError, metricsFor, parsed, stop, transition, type S
 export async function awaitingApproval(ctx: StepContext, e: Experiment): Promise<boolean> {
   if (!e.round.approvalId) return false;
   const approval = await ctx.deps.store.getApproval(e.id, e.round.index);
-  if (!approval || approval.id !== e.round.approvalId) throw new Error(`experiment ${e.id}: approval ${e.round.approvalId} not found`);
+  // The command claims the round first and writes the Approval right after; it relaunches the drive once written.
+  if (!approval || approval.id !== e.round.approvalId) return false;
   if (approval.patchIds.length === 0) {
     await stop(ctx, "NO_VALID_PATCH", "designer approved no patches");
     return true;
@@ -38,7 +39,11 @@ export async function patching(ctx: StepContext, e: Experiment): Promise<boolean
     return true;
   }
   const approval = await store.getApproval(e.id, e.round.index);
-  const approvedIds = new Set<string>(approval?.patchIds ?? []);
+  if (!approval || approval.sourceVersionId !== e.incumbentVersionId) {
+    await stop(ctx, "NO_VALID_PATCH", `approval is for ${approval?.sourceVersionId ?? "(none)"}, not the incumbent ${e.incumbentVersionId}`);
+    return true;
+  }
+  const approvedIds = new Set<string>(approval.patchIds);
   const patches = (await store.listPatches(e.id, e.round.index)).filter((p) => approvedIds.has(p.id) && p.state === "approved");
   if (patches.length === 0) {
     await stop(ctx, "NO_VALID_PATCH", "no approved patches to apply");
@@ -46,7 +51,7 @@ export async function patching(ctx: StepContext, e: Experiment): Promise<boolean
   }
   const patchIds = patches.map((p) => p.id);
   const source = e.incumbentVersionId;
-  const cand = parsed(CandidateDesign, await adapter("createCandidate", () => candidates.createCandidate(source, patches)), "createCandidate");
+  const cand = parsed(CandidateDesign, await adapter(ctx, "createCandidate", () => candidates.createCandidate(source, patches)), "createCandidate");
 
   const returned = new Set<string>(cand.patchIds);
   if (returned.size !== patchIds.length || patchIds.some((id) => !returned.has(id))) {
@@ -57,9 +62,9 @@ export async function patching(ctx: StepContext, e: Experiment): Promise<boolean
 
   let manifestHash: string;
   try {
-    manifestHash = parsed(DesignManifest, await adapter("getManifest", () => candidates.getManifest(cand.versionId)), "getManifest").manifestHash;
+    manifestHash = parsed(DesignManifest, await adapter(ctx, "getManifest", () => candidates.getManifest(cand.versionId)), "getManifest").manifestHash;
   } catch (err) {
-    if (!(err instanceof IntegrationError) || !cand.figma) throw err;
+    if (!(err instanceof IntegrationError) || !cand.figma) throw err; // CancelledError is not an IntegrationError
     manifestHash = cand.figma.manifestHash;
   }
 
@@ -129,7 +134,7 @@ async function decide(
  */
 export async function validating(ctx: StepContext, e: Experiment): Promise<boolean> {
   const cand = await currentCandidate(ctx, e);
-  const v = parsed(ValidationResult, await adapter("validateCandidate", () => ctx.deps.candidates.validateCandidate(cand.id)), "validateCandidate");
+  const v = parsed(ValidationResult, await adapter(ctx, "validateCandidate", () => ctx.deps.candidates.validateCandidate(cand.id)), "validateCandidate");
   if (v.candidateId !== cand.id) throw new IntegrationError(`validateCandidate answered for ${v.candidateId}, not ${cand.id}`);
   await ctx.deps.store.putValidation(v);
 

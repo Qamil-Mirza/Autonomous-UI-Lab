@@ -53,7 +53,7 @@ export async function runBatchPhase(ctx: StepContext, e: Experiment, phase: "bas
     hiddenGoalRef: protocol.hiddenGoalRef,
   };
   const streamed: Promise<boolean>[] = [];
-  const raw = await adapter("runBatch", () => ctx.deps.simulation.runBatch(req, (ev) => streamed.push(store.insertAction(ev)), ctx.signal));
+  const raw = await adapter(ctx, "runBatch", () => ctx.deps.simulation.runBatch(req, (ev) => streamed.push(store.insertAction(ev)), ctx.signal));
   await Promise.all(streamed);
   const result = parsed(BatchResult, raw, "runBatch");
   const foreign = result.runs.filter((r) => r.batchId !== req.batchId || r.versionId !== req.versionId);
