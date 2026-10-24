@@ -73,7 +73,8 @@ npm run test:claude                           # one real API call against the fi
 - Claude's output is untrusted: `validatePacket` checks every cited observation and element, code assigns risk,
   and protected elements are blocked. An invalid proposal gets one retry, then `NO_VALID_PATCH`.
 - A refusal or a truncated answer stops the round with `INTEGRATION_FAILURE`. Refusals first fall back server-side
-  to another model (`fallbacks: "default"`); cost is reported per attempt in the experiment's usage.
+  to another model (`fallbacks: "default"`); the cost of every attempt (declined and fallback) is included in the
+  round's `inferenceUsd`.
 - Only editable (non-protected) elements are offered to the model; observations may still mention protected ones
   as evidence.
 
