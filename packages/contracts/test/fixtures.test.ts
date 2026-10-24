@@ -197,11 +197,11 @@ describe("other fixture content", () => {
     const rej = loadFixture("evaluation.rejected.json", Evaluation);
     const inc = loadFixture("evaluation.inconclusive.json", Evaluation);
     expect(acc).toMatchObject({ decision: "accepted" });
-    expect(acc.deltaPp).toBeCloseTo(25, 6);
+    expect(acc.deltaPp).toBe(25);
     expect(rej).toMatchObject({ decision: "rejected", candidate: null, deltaPp: null });
     expect(rej.guardrails.some((g) => !g.passed)).toBe(true);
     expect(inc).toMatchObject({ decision: "inconclusive" });
-    expect(inc.deltaPp).toBeCloseTo(8.333, 2);
+    expect(inc.deltaPp).toBe(8.3);
     const base = batch("batch.baseline.json");
     expect(acc.baseline).toMatchObject({ batchId: base.batchId, successes: 6, validRuns: 12, completionRate: 0.5, medianActionsToSuccess: 7.5, backtrackRuns: 5, validationErrorRuns: 1 });
     expect(acc.candidate).toMatchObject({ batchId: batch("batch.candidate-improved.json").batchId, successes: 9, completionRate: 0.75 });

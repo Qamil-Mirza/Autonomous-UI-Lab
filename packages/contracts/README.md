@@ -92,6 +92,6 @@ candidate changes the incumbent version.
 
 ## Schema-change process
 
-1. Raise the change with D. D edits `src/*.ts` **and** the affected fixtures in the same PR. `npm run check -w @ghostloop/contracts` must pass.
+1. Raise the change with D. D edits `src/*.ts` **and** the fixtures in the same PR: update `scripts/generate-fixtures.mjs`, run `npm run fixtures:generate -w @ghostloop/contracts`, and commit the regenerated JSON (see [`fixtures/README.md`](fixtures/README.md)). `npm run check -w @ghostloop/contracts` must pass.
 2. A breaking change bumps `SCHEMA_VERSION`.
 3. Teammates rebase onto `main` and update their adapters. Do not fork or patch contract types locally.

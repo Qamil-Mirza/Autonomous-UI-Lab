@@ -19,6 +19,19 @@ const baseline = loadFixture("batch.baseline.json", BatchResult);
 - A JSON array cannot carry a label, so array fixtures (only `observations.json`) are stored as
   `{ "provenance": "synthetic-fixture", "items": [...] }`. When the schema is a `z.array(...)`, the loader parses `items`.
 
+## Schema changes and regenerating
+
+Do not hand-edit the JSON. It is all produced by the deterministic generator `scripts/generate-fixtures.mjs`:
+
+```sh
+npm run fixtures:generate -w @ghostloop/contracts   # rewrites fixtures/*.json in place
+npm run check -w @ghostloop/contracts
+```
+
+When a contract changes, D updates `src/*.ts`, then the generator, then regenerates and commits the generator and
+the JSON together. Running the generator on unchanged sources reproduces the committed files byte-for-byte, so
+`git diff --exit-code packages/contracts/fixtures` after a run shows exactly what the change did.
+
 ## Placeholder IDs
 
 The demo task has five screens: `signup`, `workspace`, `plan`, `invite`, `done`. The plan screen also has a
@@ -54,7 +67,7 @@ Shared IDs: experiment `exp_demo0001`, protocol `proto_demo0001`, base version `
 | `validation.fail.json` | `ValidationResult` | `cand_0003` fails the `protected_elements_unchanged` guardrail |
 | `evaluation.accepted.json` | `Evaluation` | Baseline vs improved: `deltaPp` 25, `accepted`. 0.75 is below the 0.8 target, so there is no stopping reason |
 | `evaluation.rejected.json` | `Evaluation` | Guardrail failure: `candidate: null`, `deltaPp: null`, `rejected`, `NO_MEASURED_IMPROVEMENT` |
-| `evaluation.inconclusive.json` | `Evaluation` | Baseline vs flat: `deltaPp` = (7/12 − 0.5) × 100 ≈ 8.33 (stored as the raw float), `inconclusive`, `INCONCLUSIVE` |
+| `evaluation.inconclusive.json` | `Evaluation` | Baseline vs flat: `deltaPp` 8.3 ((7/12 − 0.5) × 100 rounded to 1 decimal, as `compare()` does), `inconclusive`, `INCONCLUSIVE` |
 
 ### Batch outcome table
 

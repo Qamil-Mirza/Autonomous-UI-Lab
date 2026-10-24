@@ -11,7 +11,8 @@
   },
   "scripts": {
     "check": "tsc -p . && vitest run",
-    "test": "vitest run"
+    "test": "vitest run",
+    "fixtures:generate": "node scripts/generate-fixtures.mjs"
   },
   "dependencies": { "zod": "^3.25.0" },
   "devDependencies": {
