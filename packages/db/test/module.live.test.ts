@@ -2,11 +2,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { setGlobalLogLevel } from "spacetimedb";
 import type { CommandKind } from "@ghostloop/contracts";
 import { connect, reducerErrorCode, submitCommand, type CommandRow, type Connected, type EventContext } from "../src/index";
-import { publishTestDb } from "../test-support/live";
+import { dropConnection, publishTestDb } from "../test-support/live";
 
 setGlobalLogLevel("warn"); // keep the SDK's per-connection info lines out of test output
-
-const LIVE = process.env.GHOSTLOOP_STDB_TEST === "1";
 
 async function rejectionCode(p: Promise<unknown>): Promise<string | undefined> {
   try {
@@ -17,12 +15,13 @@ async function rejectionCode(p: Promise<unknown>): Promise<string | undefined> {
   throw new Error("expected the reducer to reject");
 }
 
-describe.skipIf(!LIVE)("spacetimedb module (live)", () => {
+describe.skipIf(!process.env.GHOSTLOOP_STDB_TEST)("spacetimedb module (live)", () => {
   let writer: Connected;
   let other: Connected;
+  let target: { uri: string; database: string };
 
   beforeAll(async () => {
-    const target = await publishTestDb("ghostloop-test-db");
+    target = await publishTestDb("ghostloop-test-db");
     writer = await connect(target);
     await writer.conn.reducers.claimWriter({});
     other = await connect(target);
@@ -148,6 +147,25 @@ describe.skipIf(!LIVE)("spacetimedb module (live)", () => {
     it("rejects COMMAND_TIMEOUT when no worker completes the row", async () => {
       await expect(submitCommand(other.conn, "startExperiment", { experimentId: "exp_1" }, { timeoutMs: 300 }))
         .rejects.toThrow(/^COMMAND_TIMEOUT:/);
+    });
+  });
+
+  describe("connect onDisconnect", () => {
+    it("fires once when the connection drops after connect resolved", async () => {
+      const lost: Error[] = [];
+      const { conn } = await connect({ ...target, onDisconnect: (err) => lost.push(err) });
+      dropConnection(conn);
+      await expect.poll(() => lost.length, { timeout: 2000 }).toBe(1);
+      expect(lost[0]).toBeInstanceOf(Error);
+      expect(conn.isActive).toBe(false);
+    });
+
+    it("does not fire for a deliberate disconnect()", async () => {
+      const lost: Error[] = [];
+      const { conn } = await connect({ ...target, onDisconnect: (err) => lost.push(err) });
+      conn.disconnect();
+      await new Promise((r) => setTimeout(r, 300));
+      expect(lost).toEqual([]);
     });
   });
 });

@@ -2,7 +2,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { setGlobalLogLevel } from "spacetimedb";
 import { ExperimentProtocol, type Experiment } from "@ghostloop/contracts";
 import { loadFixture } from "@ghostloop/contracts/fixtures";
-import { publishTestDb } from "@ghostloop/db/test-support";
+import { dropConnection, publishTestDb } from "@ghostloop/db/test-support";
 import { SpacetimeStore } from "../src/spacetime-store";
 import { runStoreContract } from "./store-contract";
 
@@ -101,6 +101,31 @@ describe.skipIf(!process.env.GHOSTLOOP_STDB_TEST)("SpacetimeStore (live)", () =>
       expect(err).toBeInstanceOf(Error);
       expect((err as Error).message).toMatch(/^NOT_WRITER:/);
       expect((err as Error).message).toContain("npm run stdb:publish:fresh");
+    });
+  });
+
+  describe("connection loss", () => {
+    it("reports a drop once and fails pending and later writes with DISCONNECTED", async () => {
+      const lost: Error[] = [];
+      const store = await SpacetimeStore.open({ ...target, token, onDisconnect: (err) => lost.push(err) });
+      try {
+        const pending = store.putExperiment(mkExperiment("exp_drop0001"));
+        dropConnection(store.connection);
+        await expect(pending).rejects.toThrow(/^DISCONNECTED:/);
+        expect(lost).toHaveLength(1);
+        await expect(store.putExperiment(mkExperiment("exp_drop0002"))).rejects.toThrow(/^DISCONNECTED:/);
+        expect(lost).toHaveLength(1);
+      } finally {
+        await store.close();
+      }
+    });
+
+    it("close() is not reported as a disconnect", async () => {
+      const lost: Error[] = [];
+      const store = await SpacetimeStore.open({ ...target, token, onDisconnect: (err) => lost.push(err) });
+      await store.close();
+      await new Promise((r) => setTimeout(r, 300));
+      expect(lost).toEqual([]);
     });
   });
 });

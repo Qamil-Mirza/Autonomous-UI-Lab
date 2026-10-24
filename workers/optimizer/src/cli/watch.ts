@@ -6,7 +6,14 @@ const commandDetail = (r: CommandRow) => ` ${r.kind} ${r.status}`;
 
 async function main(): Promise<void> {
   const { uri, database } = resolveTarget();
-  const { conn } = await connect({ uri, database });
+  const { conn } = await connect({
+    uri,
+    database,
+    onDisconnect: (err) => {
+      console.error(`disconnected: ${err.message}`);
+      process.exit(1);
+    },
+  });
   console.log(`watching ${database} at ${uri}; Ctrl+C to stop`);
 
   // Every generated table handle has the same callback surface; `key` names the row, `detail` adds state.

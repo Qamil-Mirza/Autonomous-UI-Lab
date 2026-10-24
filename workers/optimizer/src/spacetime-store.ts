@@ -43,6 +43,18 @@ interface WatchedTable<R> {
   onDelete(cb: (ctx: EventContext, row: R) => void): void;
 }
 
+export interface SpacetimeStoreOptions {
+  uri: string;
+  database: string;
+  token?: string;
+  timeoutMs?: number;
+  /**
+   * Called once if the connection is lost after `open` resolved; not called for `close()`. The store does not
+   * reconnect: pending and later writes reject with `DISCONNECTED: ...`, so the caller should stop (or reopen).
+   */
+  onDisconnect?: (err: Error) => void;
+}
+
 /**
  * `ExperimentStore` over the GhostLoop SpacetimeDB module (spec §3). Writes go through reducers; reads parse rows from
  * this connection's subscription cache with the contracts schemas. After an awaited reducer resolves, this
@@ -52,11 +64,36 @@ export class SpacetimeStore implements ExperimentStore {
   private listeners = new Set<ChangeListener>();
   /** Tail of the in-process write queue per experiment id (see `serialize`). */
   private experimentQueues = new Map<string, Promise<unknown>>();
+  /** Set once the connection is lost (see `lose`). */
+  private lostError?: Error;
+  /** Rejects when the connection is lost; every reducer call races it (see `reducers`). */
+  private readonly lost: Promise<never>;
+  private rejectLost!: (err: Error) => void;
+  /**
+   * `connection.reducers`, but each call rejects with `DISCONNECTED: ...` once the connection is lost: without
+   * automatic reconnect the SDK leaves a call on a closed socket pending forever.
+   */
+  private readonly reducers: DbConnection["reducers"];
 
   private constructor(
     readonly connection: DbConnection,
     readonly token: string,
+    private readonly onDisconnect?: (err: Error) => void,
   ) {
+    this.lost = new Promise<never>((_, reject) => {
+      this.rejectLost = reject;
+    });
+    this.lost.catch(() => {}); // nobody may be waiting when the connection drops
+    this.reducers = new Proxy(connection.reducers, {
+      get: (target, prop, receiver) => {
+        const value: unknown = Reflect.get(target, prop, receiver);
+        if (typeof value !== "function") return value;
+        return (...args: unknown[]) => {
+          if (this.lostError) return Promise.reject(this.lostError);
+          return Promise.race([(value as (...a: unknown[]) => Promise<unknown>).apply(target, args), this.lost]);
+        };
+      },
+    });
     const db = connection.db;
     // Table callbacks run for this connection's writes before the reducer promise resolves, and for other
     // connections' writes when their updates arrive.
@@ -80,10 +117,23 @@ export class SpacetimeStore implements ExperimentStore {
    * Connects, waits for the subscription to every table, and claims the writer slot. Rejects with `NOT_WRITER: ...`
    * when another identity already holds it.
    */
-  static async open(opts: { uri: string; database: string; token?: string; timeoutMs?: number }): Promise<SpacetimeStore> {
-    const { conn, token } = await connect(opts);
+  static async open(opts: SpacetimeStoreOptions): Promise<SpacetimeStore> {
+    // A drop before the store exists (during the writer claim) fails `open` instead.
+    let store: SpacetimeStore | undefined;
+    let failClaim!: (err: Error) => void;
+    const claimLost = new Promise<never>((_, reject) => {
+      failClaim = reject;
+    });
+    claimLost.catch(() => {});
+    const { conn, token } = await connect({
+      ...opts,
+      onDisconnect: (err) => {
+        if (store) return store.lose(err);
+        failClaim(new Error(`DISCONNECTED: ${err.message}`));
+      },
+    });
     try {
-      await conn.reducers.claimWriter({});
+      await Promise.race([conn.reducers.claimWriter({}), claimLost]);
     } catch (e) {
       conn.disconnect();
       if (reducerErrorCode(e) === "NOT_WRITER") {
@@ -94,7 +144,20 @@ export class SpacetimeStore implements ExperimentStore {
       }
       throw e;
     }
-    return new SpacetimeStore(conn, token);
+    store = new SpacetimeStore(conn, token, opts.onDisconnect);
+    return store;
+  }
+
+  /** Records a lost connection: fails pending and later writes, then tells the owner. */
+  private lose(err: Error): void {
+    if (this.lostError) return;
+    this.lostError = new Error(`DISCONNECTED: ${err.message}`);
+    this.rejectLost(this.lostError);
+    try {
+      this.onDisconnect?.(err);
+    } catch {
+      // the owner's handler must not break the SDK's event loop
+    }
   }
 
   async close(): Promise<void> {
@@ -103,7 +166,7 @@ export class SpacetimeStore implements ExperimentStore {
 
   /** Deletes every domain and command row (writer only). For tests and demo resets. */
   async devReset(): Promise<void> {
-    await this.connection.reducers.devReset({});
+    await this.reducers.devReset({});
   }
 
   private watch<R>(table: WatchedTable<R>, name: StoreTable, key: (row: R) => string): void {
@@ -140,7 +203,7 @@ export class SpacetimeStore implements ExperimentStore {
   }
 
   private writeExperiment(e: Experiment, expectedRev: bigint): Promise<void> {
-    return this.connection.reducers.putExperiment({
+    return this.reducers.putExperiment({
       id: e.id,
       state: e.state,
       round: e.round.index,
@@ -182,7 +245,7 @@ export class SpacetimeStore implements ExperimentStore {
 
   async insertVersion(v: DesignVersion) {
     await insertOnly(
-      this.connection.reducers.insertVersion({ id: v.id, parentId: v.parentVersionId ?? undefined, json: JSON.stringify(v) }),
+      this.reducers.insertVersion({ id: v.id, parentId: v.parentVersionId ?? undefined, json: JSON.stringify(v) }),
       "versions",
     );
   }
@@ -192,7 +255,7 @@ export class SpacetimeStore implements ExperimentStore {
   }
 
   async putBatch(b: BatchRecord) {
-    await this.connection.reducers.putBatch({ id: b.batchId, experimentId: b.experimentId, round: b.round, json: JSON.stringify(b) });
+    await this.reducers.putBatch({ id: b.batchId, experimentId: b.experimentId, round: b.round, json: JSON.stringify(b) });
   }
   async getBatch(id: string) {
     const row = this.connection.db.batch.id.find(id);
@@ -201,7 +264,7 @@ export class SpacetimeStore implements ExperimentStore {
 
   async putRun(r: AgentRunResult) {
     const { events, ...run } = r;
-    await this.connection.reducers.putRun({ id: run.runId, batchId: run.batchId, json: JSON.stringify(run) });
+    await this.reducers.putRun({ id: run.runId, batchId: run.batchId, json: JSON.stringify(run) });
     for (const e of events) await this.insertAction(e);
   }
   async listRuns(batchId: string) {
@@ -214,9 +277,10 @@ export class SpacetimeStore implements ExperimentStore {
   }
 
   async insertAction(e: AgentActionEvent) {
-    // The module treats a duplicate as a no-op, so the cache decides whether this call wrote anything.
+    // The module is the dedupe guard: a duplicate insert is a no-op there. The boolean is best-effort, read from the
+    // cache before the call, so two concurrent inserts of one key on this store can both return true.
     if (this.connection.db.agentAction.key.find(`${e.runId}:${e.seq}`)) return false;
-    await this.connection.reducers.insertAction({ runId: e.runId, seq: e.seq, json: JSON.stringify(e) });
+    await this.reducers.insertAction({ runId: e.runId, seq: e.seq, json: JSON.stringify(e) });
     return true;
   }
   async listActions(runId: string) {
@@ -227,7 +291,7 @@ export class SpacetimeStore implements ExperimentStore {
 
   async putObservations(obs: ObservationTrend[]) {
     for (const o of obs) {
-      await this.connection.reducers.putObservation({ id: o.id, experimentId: o.experimentId, json: JSON.stringify(o) });
+      await this.reducers.putObservation({ id: o.id, experimentId: o.experimentId, json: JSON.stringify(o) });
     }
   }
   async listObservations(experimentId: string) {
@@ -241,7 +305,7 @@ export class SpacetimeStore implements ExperimentStore {
   }
 
   async setDisposition(fingerprint: string, d: ObservationDisposition) {
-    await this.connection.reducers.setDisposition({ fingerprint, disposition: d });
+    await this.reducers.setDisposition({ fingerprint, disposition: d });
   }
   async getDispositions() {
     const out = new Map<string, ObservationDisposition>();
@@ -253,7 +317,7 @@ export class SpacetimeStore implements ExperimentStore {
 
   async putPatches(p: MutationPatch[]) {
     for (const x of p) {
-      await this.connection.reducers.putPatch({
+      await this.reducers.putPatch({
         id: x.id,
         experimentId: x.experimentId,
         round: x.round,
@@ -279,7 +343,7 @@ export class SpacetimeStore implements ExperimentStore {
 
   async putHypotheses(h: Hypothesis[]) {
     for (const x of h) {
-      await this.connection.reducers.putHypothesis({
+      await this.reducers.putHypothesis({
         id: x.id,
         experimentId: x.experimentId,
         round: x.round,
@@ -291,12 +355,12 @@ export class SpacetimeStore implements ExperimentStore {
     // The packet contract has no round field, but the row needs one (an index helper only, never read back): use the
     // round of its first patch, else of its first hypothesis, else 0.
     const round = p.patches[0]?.round ?? p.hypotheses[0]?.round ?? 0;
-    await this.connection.reducers.putPacket({ id: p.id, experimentId: p.experimentId, round, json: JSON.stringify(p) });
+    await this.reducers.putPacket({ id: p.id, experimentId: p.experimentId, round, json: JSON.stringify(p) });
   }
 
   async putApproval(a: Approval) {
     await insertOnly(
-      this.connection.reducers.putApproval({
+      this.reducers.putApproval({
         experimentId: a.experimentId,
         round: a.round,
         sourceVersionId: a.sourceVersionId,
@@ -312,7 +376,7 @@ export class SpacetimeStore implements ExperimentStore {
   }
 
   async putCandidate(experimentId: string, c: CandidateDesign) {
-    await this.connection.reducers.putCandidate({ id: c.id, experimentId, json: JSON.stringify(c) });
+    await this.reducers.putCandidate({ id: c.id, experimentId, json: JSON.stringify(c) });
   }
   async getCandidate(id: string) {
     const row = this.connection.db.candidate.id.find(id);
@@ -328,7 +392,7 @@ export class SpacetimeStore implements ExperimentStore {
   }
 
   async putValidation(v: ValidationResult) {
-    await this.connection.reducers.putValidation({ candidateId: v.candidateId, json: JSON.stringify(v) });
+    await this.reducers.putValidation({ candidateId: v.candidateId, json: JSON.stringify(v) });
   }
   async getValidation(candidateId: string) {
     const row = this.connection.db.validation.candidateId.find(candidateId);
@@ -336,7 +400,7 @@ export class SpacetimeStore implements ExperimentStore {
   }
 
   async putEvaluation(e: Evaluation) {
-    await this.connection.reducers.putEvaluation({ id: e.id, experimentId: e.experimentId, json: JSON.stringify(e) });
+    await this.reducers.putEvaluation({ id: e.id, experimentId: e.experimentId, json: JSON.stringify(e) });
   }
   async getEvaluation(id: string) {
     const row = this.connection.db.evaluation.id.find(id);

@@ -139,7 +139,7 @@ from the dashboard, not security.
 ## 7. Packages and files
 
 - `spacetimedb/` — the module (`src/schema.ts`, `src/index.ts`), own `package.json` with `spacetimedb` 2.13.x, the
-  tsconfig `spacetime init` generates, and `spacetime.json` pointing at the local server. Added to root workspaces.
+  tsconfig `spacetime init` generates. Added to root workspaces.
 - `packages/db/` (`@ghostloop/db`) — browser-safe (no Node-only APIs; the token is passed in, never read from
   disk), so A can use it from a browser dashboard or a Node process. Committed generated bindings (`src/bindings/`), `connect({ uri, database,
   token? })`, typed readers (`readExperiment(row)` etc. that parse `json` with contracts), and

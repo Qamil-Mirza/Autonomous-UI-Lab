@@ -1,12 +1,12 @@
-import { existsSync, mkdtempSync, readFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { setGlobalLogLevel } from "spacetimedb";
 import { BatchRecord, DesignManifest, Evaluation, Experiment, ExperimentProtocol, MutationPatch, type SimulationAdapter } from "@ghostloop/contracts";
 import { loadFixture } from "@ghostloop/contracts/fixtures";
 import { connect, parseRow, submitCommand, type DbConnection } from "@ghostloop/db";
-import { publishTestDb } from "@ghostloop/db/test-support";
+import { dropConnection, publishTestDb } from "@ghostloop/db/test-support";
 import { SpacetimeStore } from "../src/spacetime-store";
 import { startWorker } from "../src/worker";
 
@@ -181,5 +181,71 @@ describe.skipIf(!process.env.GHOSTLOOP_STDB_TEST)("worker (live)", () => {
     );
     expect((err as Error).message).toMatch(/^NOT_WRITER:/);
     expect((err as Error).message).toContain("npm run stdb:publish:fresh");
+  });
+
+  it("logs `disconnected: <reason>` and calls onDisconnect when the connection drops", async () => {
+    const lines: string[] = [];
+    const lost: Error[] = [];
+    const w = await start({ log: (l) => lines.push(l), onDisconnect: (err) => lost.push(err) });
+    dropConnection(w.store.connection);
+    await waitFor(() => lost.length === 1);
+    expect(lines.filter((l) => l.startsWith("disconnected: "))).toHaveLength(1);
+    await expect(w.store.devReset()).rejects.toThrow(/^DISCONNECTED:/);
+  });
+
+  it("does not report close() as a disconnect", async () => {
+    const lost: Error[] = [];
+    const w = await start({ onDisconnect: (err) => lost.push(err) });
+    await w.close();
+    workers.splice(0);
+    await new Promise((r) => setTimeout(r, 300));
+    expect(lost).toEqual([]);
+  });
+
+  it("keeps the token file owner-only, tightening a looser existing file", async () => {
+    const first = await start();
+    expect(statSync(tokenPath).mode & 0o777).toBe(0o600);
+    await first.close();
+    workers.splice(0);
+    chmodSync(tokenPath, 0o644);
+    await start();
+    expect(statSync(tokenPath).mode & 0o777).toBe(0o600);
+  });
+
+  it("names the token file to delete when a saved token is rejected", async () => {
+    const badToken = join(mkdtempSync(join(tmpdir(), "ghostloop-bad-")), "worker-token");
+    writeFileSync(badToken, "not-a-real-token");
+    // The SDK logs the refused connect at error level, which `setGlobalLogLevel("warn")` keeps.
+    const quiet = vi.spyOn(console, "log").mockImplementation(() => {});
+    const err = await startWorker({ ...target, tokenPath: badToken, log: () => {} })
+      .then(
+        () => undefined,
+        (e: unknown) => e,
+      )
+      .finally(() => quiet.mockRestore());
+    expect((err as Error).message).toMatch(/^CONNECT_FAILED:/);
+    expect((err as Error).message).toContain(`delete ${badToken} to get a fresh identity`);
+  });
+
+  it("an explicit undefined adapter keeps the default mock", async () => {
+    await start({ adapters: { simulation: undefined, analysis: undefined, candidates: undefined } });
+    const id = await createAndStart();
+    expect(await approveFirst(id)).toMatchObject({ ok: true });
+    await expectAccepted(id);
+  });
+
+  it("closes the store when a startup step throws", async () => {
+    const first = await start();
+    // An experiment row that fails the contracts schema makes the startup scan throw.
+    await first.store.connection.reducers.putExperiment({ id: "exp_bad00001", state: "created", round: 0, expectedRev: 0n, json: "{}" });
+    await first.close();
+    workers.splice(0);
+    const close = vi.spyOn(SpacetimeStore.prototype, "close");
+    try {
+      await expect(startWorker({ ...target, tokenPath, log: () => {} })).rejects.toThrow(/exp_bad00001/);
+      expect(close).toHaveBeenCalledTimes(1);
+    } finally {
+      close.mockRestore();
+    }
   });
 });

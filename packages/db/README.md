@@ -22,6 +22,17 @@ const { conn, identity, token } = await connect({
 `CONNECT_FAILED: ...` if the server is unreachable, the database does not exist, or nothing happens within
 `timeoutMs`. In a browser, keep `token` in `localStorage` if you want the same identity across reloads.
 
+The SDK does not reconnect on its own. If the connection is lost after `connect` resolved (server restart,
+network drop), `onDisconnect` is called once with the reason; a deliberate `conn.disconnect()` does not call it.
+After a loss the cache stops updating and reducer calls never settle, so stop using `conn` and connect again (or
+exit):
+
+```ts
+const { conn } = await connect({
+  onDisconnect: (err) => showBanner(`disconnected: ${err.message}`),
+});
+```
+
 Watch changes with the generated table handles:
 
 ```ts

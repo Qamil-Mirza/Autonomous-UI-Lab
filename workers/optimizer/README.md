@@ -42,9 +42,15 @@ through `submit_command`.
 
 - Run `demo:mock --store spacetime` or `worker`, never both: both claim the writer with the same identity and two
   drivers would duplicate adapter work.
-- The writer token is saved at `<repo>/.ghostloop/worker-token` (git-ignored); keep it to stay the writer across runs.
+- No automatic reconnect: if the server goes away (restart, network drop), `worker`, `demo:mock --store spacetime`
+  and `stdb:watch` print `disconnected: <reason>` and exit non-zero. Rerun `npm run worker` once the server is back
+  and it resumes: commands left `running` are failed and unfinished experiments continue.
+- The writer token is saved at `<repo>/.ghostloop/worker-token` (git-ignored, owner-only); keep it to stay the
+  writer across runs.
 - Reset with `npm run stdb:publish:fresh`: it deletes all data, including the writer claim. If a run fails with
-  `NOT_WRITER`, the token no longer matches the claim; reset the same way.
+  `NOT_WRITER`, the token no longer matches the claim; reset the same way. If it fails with `CONNECT_FAILED` and
+  says the saved token may be rejected (e.g. the server was reinstalled), delete `.ghostloop/worker-token` to get a
+  fresh identity (then reset, since the old identity still holds the writer claim).
 - Env vars: `GHOSTLOOP_STDB_URI` (default `ws://127.0.0.1:3000`), `GHOSTLOOP_STDB_DB` (default `ghostloop`).
 - `npm run test:live` runs every test including the ones that need a server (`GHOSTLOOP_STDB_TEST=1`); they publish
   their own `ghostloop-test-*` databases. Plain `npm run check` needs no server.

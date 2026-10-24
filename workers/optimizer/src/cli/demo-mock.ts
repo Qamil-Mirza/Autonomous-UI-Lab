@@ -43,9 +43,21 @@ export async function main(argv: string[], log: (line: string) => void = console
   const candidate = parseCandidate(argv);
   const which = parseStore(argv);
   const NOW = () => new Date().toISOString();
-  const spacetime = which === "spacetime" ? await openWriterStore({ ...resolveTarget(), tokenPath: opts.tokenPath ?? DEFAULT_TOKEN_PATH }) : undefined;
+  // A lost connection logs `disconnected: <reason>` and rejects the run (no reconnect); the CLI then exits 1.
+  let onLost!: (err: Error) => void;
+  const lost = new Promise<never>((_, reject) => {
+    onLost = (err) => {
+      log(`disconnected: ${err.message}`);
+      reject(new Error(`DISCONNECTED: ${err.message}`));
+    };
+  });
+  lost.catch(() => {});
+  const spacetime =
+    which === "spacetime"
+      ? await openWriterStore({ ...resolveTarget(), tokenPath: opts.tokenPath ?? DEFAULT_TOKEN_PATH, onDisconnect: onLost })
+      : undefined;
   try {
-    return await drive(spacetime ?? new InMemoryStore(), candidate, NOW, log, spacetime !== undefined);
+    return await Promise.race([drive(spacetime ?? new InMemoryStore(), candidate, NOW, log, spacetime !== undefined), lost]);
   } finally {
     await spacetime?.close();
   }

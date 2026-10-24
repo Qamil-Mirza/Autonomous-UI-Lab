@@ -12,6 +12,12 @@ export interface ConnectOptions {
   /** SQL subscription queries; defaults to `SELECT * FROM <table>` for every table. */
   subscribe?: string[];
   timeoutMs?: number;
+  /**
+   * Called once if the connection is lost after `connect` resolved (server restart, network drop). Not called for
+   * a deliberate `conn.disconnect()`. The SDK does not reconnect, and reducer calls made after a loss never settle,
+   * so stop using `conn` and reconnect (or exit) here.
+   */
+  onDisconnect?: (err: Error) => void;
 }
 
 export interface Connected {
@@ -24,6 +30,7 @@ export interface Connected {
 /**
  * Opens a connection and resolves once its subscription is applied, so the client cache is populated.
  * Rejects with `CONNECT_FAILED: ...` on a connect or subscription error, a disconnect, or after `timeoutMs`.
+ * A loss after that is reported to `opts.onDisconnect`.
  */
 export function connect(opts: ConnectOptions = {}): Promise<Connected> {
   const uri = opts.uri ?? DEFAULT_URI;
@@ -66,7 +73,11 @@ export function connect(opts: ConnectOptions = {}): Promise<Connected> {
           else sub.subscribeToAllTables();
         })
         .onConnectError((_ctx, err) => fail(err.message))
-        .onDisconnect((_ctx, err) => fail(err ? err.message : "disconnected"))
+        .onDisconnect((_ctx, err) => {
+          if (!settled) return fail(err ? err.message : "disconnected");
+          if (conn?.isDisconnectRequested) return; // our caller's own disconnect()
+          opts.onDisconnect?.(err ?? new Error("connection closed"));
+        })
         .build();
     } catch (e) {
       fail(e instanceof Error ? e.message : String(e));

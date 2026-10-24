@@ -41,3 +41,13 @@ function publish(database: string): Promise<{ uri: string; database: string }> {
     });
   });
 }
+
+/**
+ * Simulates a dropped connection: closes the socket underneath `conn` without `conn.disconnect()`, so the SDK sees the
+ * same close event a server restart or network loss produces. Reaches into the SDK's private `ws` field.
+ */
+export function dropConnection(conn: object): void {
+  const ws = (conn as { ws?: { close(): void } }).ws;
+  if (!ws) throw new Error("dropConnection: connection has no open socket");
+  ws.close();
+}

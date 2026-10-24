@@ -13,6 +13,11 @@ export interface WorkerOptions {
   /** Overrides for the default adapters (the demo's mocks with the improved candidate). */
   adapters?: Partial<Pick<ControllerDeps, "simulation" | "analysis" | "candidates">>;
   log?: (line: string) => void;
+  /**
+   * Called once if the connection to SpacetimeDB is lost (server restart, network drop); not called for `close()`.
+   * The worker does not reconnect and its writes now fail: the owner should exit (a rerun resumes, spec §6).
+   */
+  onDisconnect?: (err: Error) => void;
 }
 
 /**
@@ -22,40 +27,53 @@ export interface WorkerOptions {
  */
 export async function startWorker(opts: WorkerOptions) {
   const log = opts.log ?? (() => {});
-  const store = await openWriterStore(opts);
+  const store = await openWriterStore({
+    ...opts,
+    onDisconnect: (err) => {
+      log(`disconnected: ${err.message}`);
+      opts.onDisconnect?.(err);
+    },
+  });
   log(`connected to ${opts.database} at ${opts.uri} as the writer`);
 
-  const clock = () => new Date().toISOString();
-  const runtime = new ExperimentRuntime({
-    store,
-    // Batch phase comes from the stored batch record, so a restarted mock replays the right fixture.
-    ...createMockAdapters("improved", { phaseOf: async (req) => (await store.getBatch(req.batchId))?.phase }),
-    ...opts.adapters,
-    clock,
-    now: Date.now,
-  });
-  const commands = createCommands(store, runtime, clock);
-  const processor = createCommandProcessor(store.connection, commands, log);
+  try {
+    const clock = () => new Date().toISOString();
+    // An explicit `undefined` in `opts.adapters` keeps the default mock.
+    const adapters = Object.fromEntries(Object.entries(opts.adapters ?? {}).filter(([, v]) => v !== undefined));
+    const runtime = new ExperimentRuntime({
+      store,
+      // Batch phase comes from the stored batch record, so a restarted mock replays the right fixture.
+      ...createMockAdapters("improved", { phaseOf: async (req) => (await store.getBatch(req.batchId))?.phase }),
+      ...adapters,
+      clock,
+      now: Date.now,
+    });
+    const commands = createCommands(store, runtime, clock);
+    const processor = createCommandProcessor(store.connection, commands, log);
 
-  const failed = await processor.failRunning();
-  if (failed > 0) log(`failed ${failed} command(s) left running by a previous worker`);
-  const repaired = await recoverInterruptedApprovals(store);
-  if (repaired.length > 0) log(`repaired interrupted approvals: ${repaired.join(", ")}`);
-  for (const exp of await store.listExperiments()) {
-    // A created experiment nobody started waits for `startExperiment`; launching it would start it.
-    if (exp.state === "stopped" || (exp.state === "created" && !exp.startedAt)) continue;
-    log(`resuming ${exp.id} (${exp.state})`);
-    runtime.launch(exp.id);
+    const failed = await processor.failRunning();
+    if (failed > 0) log(`failed ${failed} command(s) left running by a previous worker`);
+    const repaired = await recoverInterruptedApprovals(store);
+    if (repaired.length > 0) log(`repaired interrupted approvals: ${repaired.join(", ")}`);
+    for (const exp of await store.listExperiments()) {
+      // A created experiment nobody started waits for `startExperiment`; launching it would start it.
+      if (exp.state === "stopped" || (exp.state === "created" && !exp.startedAt)) continue;
+      log(`resuming ${exp.id} (${exp.state})`);
+      runtime.launch(exp.id);
+    }
+    processor.start();
+
+    return {
+      store,
+      runtime,
+      processor,
+      /** Disconnects. Drives are not aborted: an abort would record `USER_STOP`; the next worker resumes them. */
+      async close(): Promise<void> {
+        await store.close();
+      },
+    };
+  } catch (e) {
+    await store.close();
+    throw e;
   }
-  processor.start();
-
-  return {
-    store,
-    runtime,
-    processor,
-    /** Disconnects. Drives are not aborted: an abort would record `USER_STOP`; the next worker resumes them. */
-    async close(): Promise<void> {
-      await store.close();
-    },
-  };
 }
