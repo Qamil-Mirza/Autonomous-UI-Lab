@@ -13,6 +13,7 @@ import {
   stepOf,
   taskProblems,
   useImports,
+  type CheckSuggestions,
   type ImportTask,
   type ImportView,
   type RuntimeStatus,
@@ -218,7 +219,7 @@ const emptyTask = (): ImportTask => ({
   task: "",
   startRoute: "/",
   viewport: { width: 1280, height: 800 },
-  successChecks: [{ kind: "text", text: "", match: "contains" }],
+  successChecks: [],
   protectedTexts: [],
   protectedBehavior: [],
   inputs: {},
@@ -294,6 +295,8 @@ export function ImportDetail({ id, back, started }: { id: string; back: () => vo
   const [inputsText, setInputsText] = useState("")
   const [dirty, setDirty] = useState(false)
   const [formError, setFormError] = useState("")
+  const [suggested, setSuggested] = useState<CheckSuggestions | undefined>()
+  const [suggestError, setSuggestError] = useState("")
   const [run, setRun] = useState({ trials: 6, maxSteps: 12, maxUsd: 10, maxMinutes: 20, minImprovementPp: 10 })
 
   useEffect(() => {
@@ -349,6 +352,23 @@ export function ImportDetail({ id, back, started }: { id: string; back: () => vo
   }
   const draft = (): ImportTask => ({ ...task, protectedTexts: lines(protectedText), protectedBehavior: lines(behaviorText), inputs: parseInputs(inputsText) })
   const problems = taskProblems(draft())
+  const checkKey = (c: SuccessCheck) => JSON.stringify(c)
+  const addChecks = (cs: SuccessCheck[]) => {
+    const have = new Set(task.successChecks.map(checkKey))
+    edit({ ...task, successChecks: [...task.successChecks, ...cs.filter((c) => !have.has(checkKey(c)))].slice(0, 5) })
+  }
+  const suggest = async () => {
+    setBusy("suggest")
+    setSuggestError("")
+    try {
+      setSuggested(await importsApi.suggestChecks(id, task))
+    } catch (e) {
+      setSuggestError(friendlyError(e instanceof Error ? e.message : String(e)))
+    } finally {
+      setBusy(undefined)
+    }
+  }
+  const canSuggest = task.task.trim().length >= 10
   /** Saves the form (when it changed) and, with `check`, verifies it against the preview right after. */
   const submitTask = async (check: boolean) => {
     setBusy(check ? "verify" : "save")
@@ -500,25 +520,88 @@ export function ImportDetail({ id, back, started }: { id: string; back: () => vo
               </label>
             </div>
             <div className="protected">
-              <strong>Success checks · all must pass</strong>
-              <p className="judged-note">
-                GhostLoop checks these itself on the page the simulated user ends up on. The simulated user and the model
-                proposing changes cannot declare success.
-              </p>
+              <div className="success-mode">
+                <div>
+                  <strong>How success is decided</strong>
+                  <p className="judged-note">
+                    {task.successChecks.length === 0
+                      ? "Judged against your task description. A separate Claude judge reads each trial's actions and screenshots; the simulated user and the model proposing changes can't declare success. Add checks for verified results."
+                      : "Verified by page checks: GhostLoop evaluates these on the page the simulated user ends up on, and all must pass. No model decides success."}
+                  </p>
+                </div>
+                <Badge tone={task.successChecks.length === 0 ? "warn" : "good"}>{task.successChecks.length === 0 ? "Judged" : "Verified"}</Badge>
+              </div>
               {task.successChecks.map((c, i) => (
                 <CheckEditor
                   key={i}
                   check={c}
                   set={(n) => edit({ ...task, successChecks: task.successChecks.map((x, j) => (j === i ? n : x)) })}
-                  remove={task.successChecks.length > 1 ? () => edit({ ...task, successChecks: task.successChecks.filter((_, j) => j !== i) }) : undefined}
+                  remove={() => edit({ ...task, successChecks: task.successChecks.filter((_, j) => j !== i) })}
                 />
               ))}
-              {task.successChecks.length < 5 && (
-                <button type="button" className="text-btn" onClick={() => edit({ ...task, successChecks: [...task.successChecks, { kind: "route", path: "/", match: "exact" }] })}>
-                  + Add a check
+              <div className="check-actions">
+                <button type="button" className="btn secondary" disabled={!canSuggest || busy !== undefined} onClick={() => void suggest()}>
+                  {busy === "suggest" ? "Suggesting…" : "Suggest checks"}
                 </button>
+                {task.successChecks.length < 5 && (
+                  <button type="button" className="text-btn" onClick={() => edit({ ...task, successChecks: [...task.successChecks, { kind: "text", text: "", match: "contains" }] })}>
+                    + Add a check manually
+                  </button>
+                )}
+                {!canSuggest && <small className="check-desc">Describe the task first; suggestions read it.</small>}
+              </div>
+              {suggestError && <div className="alert bad">{suggestError}</div>}
+              {suggested && (
+                <div className="suggestions">
+                  {suggested.suggestions.length === 0 ? (
+                    <p className="check-desc">
+                      No usable checks found: the app shows no distinctive text or route for the finished task. Judging against the description still works.
+                    </p>
+                  ) : (
+                    <>
+                      <div className="suggestions-head">
+                        <b>Suggested checks</b>
+                        <button type="button" className="text-btn" onClick={() => addChecks(suggested.suggestions.map((x) => x.check))}>
+                          Add all
+                        </button>
+                      </div>
+                      {suggested.suggestions.map((x) => {
+                        const added = task.successChecks.some((c) => checkKey(c) === checkKey(x.check))
+                        return (
+                          <div className="suggestion" key={checkKey(x.check)}>
+                            <div>
+                              <b>{describeCheck(x.check)}</b>
+                              {x.why && <small>{x.why}</small>}
+                            </div>
+                            <button type="button" className="btn secondary" disabled={added} onClick={() => addChecks([x.check])}>
+                              {added ? "Added" : "Add"}
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </>
+                  )}
+                  {suggested.rejected.length > 0 && (
+                    <details className="check-desc">
+                      <summary>
+                        {suggested.rejected.length} proposal{suggested.rejected.length === 1 ? "" : "s"} set aside
+                      </summary>
+                      <ul>
+                        {suggested.rejected.map((r, k) => (
+                          <li key={k}>
+                            {r.reason} <code>{r.proposed}</code>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                  <small className="check-desc">
+                    Suggested by {suggested.model} from your task, the starting page and the app's own text and routes; checks
+                    that already pass at the start are set aside.
+                  </small>
+                </div>
               )}
-              <p className="quality-note">{rec.checkCaveat}</p>
+              <p className="quality-note">{task.successChecks.length === 0 ? rec.judgedCaveat : rec.checkCaveat}</p>
             </div>
             <div className="field-row">
               <label>
@@ -587,7 +670,8 @@ export function ImportDetail({ id, back, started }: { id: string; back: () => vo
           <div className="verify-grid">
             {v.screenshot && <img className="card verify-shot" src={v.screenshot} alt="What a simulated user sees at the starting route" />}
             <div className="card verify-list">
-              <b>What each check says at the start</b>
+              <b>{v.checks.length ? "What each check says at the start" : "Success is judged"}</b>
+              {v.checks.length === 0 && <p>No page checks: Claude will judge each trial against your task description.</p>}
               {v.checks.map((c) => (
                 <p key={c.name}>
                   <Badge tone={c.passedAtStart ? "warn" : "muted"}>{c.passedAtStart ? "Passes already" : "Not yet"}</Badge> {c.description}

@@ -334,3 +334,13 @@ input:hover,textarea:hover,select:hover { border-color:#aeb8b1; }
 /* Placeholders are examples, not values: lighter and regular weight so they never read as filled in. */
 input::placeholder,textarea::placeholder { color:#9aa39e; font-weight:400; opacity:1; }
 .check-fields input[aria-invalid="true"] { border-color:#d9a441; background:#fffbf1; }
+.success-mode { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+.success-mode p { margin:4px 0 6px; }
+.check-actions { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:10px 0 4px; }
+.suggestions { margin-top:12px; padding:12px 14px; border:1px solid var(--line); border-radius:var(--radius-sm); background:white; display:grid; gap:10px; }
+.suggestions-head { display:flex; justify-content:space-between; align-items:center; }
+.suggestion { display:flex; justify-content:space-between; align-items:center; gap:14px; padding-top:10px; border-top:1px solid var(--line); }
+.suggestion b { display:block; font-size:13px; }
+.suggestion small { display:block; color:var(--muted); font-size:12px; margin-top:3px; }
+.suggestions details ul { margin:6px 0 0; padding-left:18px; }
+.suggestions code { font-size:11px; color:var(--muted); word-break:break-all; }

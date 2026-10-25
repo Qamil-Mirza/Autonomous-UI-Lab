@@ -1399,6 +1399,13 @@ function Results({
       <ErrorNote error={error} />
       <StoppedEarlyNote batch={view.baseline} what="The first test" />
       {view.candidateBatch && <StoppedEarlyNote batch={view.candidateBatch} what="The retest" />}
+      {live && view.judged && isImportedVersion(view.incumbentVersionId) && (
+        <div className="alert warn">
+          <b>Judged, not verified.</b> Both versions were scored by the same judge ({view.judged.model}, {view.judged.instructionVersion}) against
+          your task description, not by page checks. The update changed wording, and a judge reads wording: open a few trials and check the
+          judge's evidence before relying on this result, or add success checks for verified results.
+        </div>
+      )}
       {!live && (
         <div className="scenario card">
           <label>

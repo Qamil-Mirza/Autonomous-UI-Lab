@@ -74,6 +74,9 @@ export interface ImportView {
   preview?: { versionId: string; url: string }
   checkDescriptions: string[]
   checkCaveat: string
+  judgedCaveat: string
+  /** The saved task has no page checks, so trials are judged against its description. */
+  judged?: boolean
   editable?: { total: number; editable: number }
 }
 
@@ -93,6 +96,13 @@ export interface ImportedElement {
   supportedOps: ("set_label" | "set_style_token" | "set_order" | "set_visibility")[]
   note?: string
   source: { file: string; line: number; column: number }
+}
+
+export interface CheckSuggestions {
+  suggestions: { check: SuccessCheck; why: string }[]
+  rejected: { proposed: string; reason: string }[]
+  model: string
+  usd: number
 }
 
 type ApiError = { error: { code: string; message: string; hint?: string } }
@@ -130,6 +140,8 @@ export const importsApi = {
   cancel: (id: string) => call<ImportView>(`/api/imports/${id}/cancel`, { method: "POST" }),
   retry: (id: string) => call<ImportView>(`/api/imports/${id}/retry`, { method: "POST" }),
   saveTask: (id: string, task: ImportTask) => call<ImportView>(`/api/imports/${id}/task`, jsonInit("PUT", task)),
+  suggestChecks: (id: string, t: Pick<ImportTask, "task" | "startRoute" | "viewport">) =>
+    call<CheckSuggestions>(`/api/imports/${id}/suggest-checks`, jsonInit("POST", { task: t.task, startRoute: t.startRoute, viewport: t.viewport })),
   verify: (id: string) => call<ImportView>(`/api/imports/${id}/verify`, { method: "POST" }),
   freeze: (id: string) => call<ImportView>(`/api/imports/${id}/freeze`, { method: "POST" }),
   startExperiment: (id: string, o: { trials: number; maxSteps: number; maxUsd: number; maxMinutes: number; minImprovementPp: number }) =>

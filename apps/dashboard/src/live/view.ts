@@ -149,6 +149,8 @@ export interface ExperimentView {
   stopNote?: string
   /** The current candidate's failed validation checks, as `name: detail`. */
   failedChecks?: string[]
+  /** Set when trials were scored by a judge model rather than page checks. */
+  judged?: { model: string; instructionVersion: string }
 }
 
 export interface ExperimentSummary {
@@ -312,7 +314,8 @@ export function batchView(
       if (r.outcome === "agent_stop" && last?.decisionSource === "scenario") outcome = "Gave up (scenario rule)"
       // Judged trials: the verdict, not how the session ended, is what the designer needs to see.
       if (r.protectedViolation) [outcome, tone] = [`Broke a protected rule (${r.protectedViolation.replace(/_/g, " ")})`, "bad"]
-      else if (r.judge && r.outcome === "goal") outcome = "Goal verified"
+      // Imported apps judged without page checks: say judged, never verified.
+      else if (r.judge && r.outcome === "goal") outcome = r.versionId.startsWith("ver_imp_") ? "Goal reached (judged)" : "Goal verified"
       else if (r.judge?.reached === "uncertain") [outcome, tone] = ["Judge unsure", "warn"]
       else if (r.judge && ["agent_stop", "step_limit", "flow_blocked"].includes(r.outcome)) [outcome, tone] = ["Goal not reached", "warn"]
       const checks = r.versionId.startsWith("ver_imp_") ? checksOf(r) : undefined
@@ -607,6 +610,7 @@ export function experimentView(
     results: evaluation ? resultView(evaluation) : undefined,
     candidate,
     ...(stopped ? { stopNote: e.transitions.at(-1)?.note } : {}),
+    ...(baselineRecord?.judge ? { judged: baselineRecord.judge } : {}),
     ...(cand ? { failedChecks: snap.validations.find((x) => x.candidateId === cand.id)?.checks.filter((c) => !c.passed).map((c) => `${c.name}: ${c.detail ?? "failed"}`) } : {}),
   }
 }
