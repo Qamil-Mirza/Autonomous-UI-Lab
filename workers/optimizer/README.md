@@ -78,6 +78,28 @@ npm run test:claude                           # one real API call against the fi
 - Only editable (non-protected) elements are offered to the model; observations may still mention protected ones
   as evidence.
 
+## Real round (all adapters real)
+
+`npm run worker:real` runs the worker with Jaclyn's simulator (B: Playwright browsers on the prototype, Bitdeer
+choosing actions, C's trusted goal check), Emma's candidate adapter (C: patch engine writing `designs/`) and Claude
+analysis. Keys come from the repo-root `.env` (`ANTHROPIC_API_KEY`, `BITDEER_API_KEY`, `BITDEER_BASE_URL`,
+`BITDEER_MODEL`); variables already set in the shell win. Each adapter can also be chosen on its own:
+`--simulation mock|real`, `--candidates mock|real`, `--analysis mock|claude` (an explicit flag overrides `--real`).
+
+```sh
+npm run stdb:start                          # terminal 1: SpacetimeDB on 127.0.0.1:3000
+npm run stdb:publish                        # once (stdb:publish:fresh wipes all data)
+npm run dev -w @ghostloop/prototype         # terminal 2: prototype on :5173 (serves designs/ and the run API)
+npm run worker:real                         # terminal 3: the worker, real adapters
+npm run dev -w @ghostloop/dashboard         # terminal 4: dashboard on :5174; create and start a test there
+```
+
+- Real runs spend money: every simulated step is a Bitdeer call and each proposing step is one Claude call. Start
+  with a few trials.
+- Screenshots land in `workers/simulator/artifacts/` and are published as `/artifacts/...` URLs, which the dashboard
+  serves for the replay. `GHOSTLOOP_PROTOTYPE_URL` (default `http://localhost:5173`) moves the prototype.
+- Real simulation needs real candidates: the prototype does not serve mock candidate versions.
+
 ## Module map
 
 | Path | Role |
@@ -92,7 +114,8 @@ npm run test:claude                           # one real API call against the fi
 | `src/spacetime-store.ts`, `src/worker.ts`, `src/recovery.ts` | SpacetimeDB store, long-running worker, startup repair |
 | `src/claude/*` | Claude analysis adapter, prompt + output schema, pricing, `--analysis` selection |
 | `src/cli/demo-mock.ts` | The demo CLI (`--store memory|spacetime`, `--analysis mock|claude`) |
-| `src/cli/worker.ts`, `src/cli/watch.ts` | Worker service (`--analysis mock|claude`) and live row watcher |
+| `src/real-adapters.ts` | Real B (simulator) and C (candidate adapter) wiring, adapter flags, screenshot publishing |
+| `src/cli/worker.ts`, `src/cli/watch.ts` | Worker service (`--real`, `--simulation`, `--candidates`, `--analysis`) and live row watcher |
 
 ## State machine
 
