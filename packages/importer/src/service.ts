@@ -16,7 +16,8 @@ import {
 } from "@ghostloop/contracts";
 import { discoverControls, openBrowserSession, waitForDiscoveryReady, type AppIntegration } from "@ghostloop/simulator";
 import { validateProject } from "./archive";
-import { evaluateChecks } from "./checks";
+import { evaluateCheck, evaluateChecks } from "./checks";
+import { findRoutes, groundSuggestions, type CheckSuggester, type GroundedSuggestions } from "./suggest";
 import { ImportError, errorInfo } from "./errors";
 import { importedIntegration, previewRequestPolicy } from "./integration";
 import { buildManifest, protectedByTask, toDesignManifest, type ImportedManifest } from "./manifest";
@@ -26,6 +27,8 @@ import { ImportRecord, ImportStore, type VersionRecord, type Verification } from
 import {
   CHECK_CAVEAT,
   DEFAULT_PERSONAS,
+  JUDGED_CAVEAT,
+  isJudgedTask,
   FrozenTask,
   ImportTask,
   canonicalJson,
@@ -52,6 +55,8 @@ export interface ImportServiceOptions {
   publishScreenshot?: (shot: ScreenshotRef) => Promise<ScreenshotRef>;
   runtime?: RuntimeManager;
   commands?: ExperimentCommands;
+  /** Proposes success checks from the task and the app (Claude in the worker); optional. */
+  suggester?: CheckSuggester;
   log?: (line: string) => void;
 }
 
@@ -367,13 +372,16 @@ export class ImportService {
       const found = await discoverControls(session.page);
       controls = found.map((c) => ({ ref: c.elementId, role: c.role, label: c.label }));
       await session.page.screenshot({ path: shotPath, scale: "css", animations: "disabled" });
-      const result = await evaluateChecks(session.page, task.successChecks, "run_verification");
-      checks = task.successChecks.map((c, i) => ({ name: checkName(c), description: describeCheck(c), passedAtStart: result.checks[i]!.passed, detail: result.checks[i]!.detail }));
+      if (!isJudgedTask(task)) {
+        const result = await evaluateChecks(session.page, task.successChecks, "run_verification");
+        checks = task.successChecks.map((c, i) => ({ name: checkName(c), description: describeCheck(c), passedAtStart: result.checks[i]!.passed, detail: result.checks[i]!.detail }));
+      }
       if (new URL(session.page.url()).pathname !== new URL(url).pathname) warnings.push(`The app moved from ${task.startRoute} to ${new URL(session.page.url()).pathname} on load.`);
     } finally {
       await session.close();
     }
     if (controls.length === 0) blockers.push("No controls a simulated user could act on were found at the starting route.");
+    if (isJudgedTask(task)) warnings.push(JUDGED_CAVEAT);
     if (checks.length > 0 && checks.every((c) => c.passedAtStart)) blockers.push("Every success check already passes at the starting route, so they cannot tell success apart from doing nothing. Make at least one check specific to the finished task.");
     else for (const c of checks.filter((c) => c.passedAtStart)) warnings.push(`“${c.name}” already passes at the start; it adds no evidence on its own.`);
     const base = await this.version(rec.baseVersionId);
@@ -475,6 +483,47 @@ export class ImportService {
     return { frozen, version, hash };
   }
 
+  /** Whether a batch's frozen task is judged (no page checks); such batches must run with a judge. */
+  async isJudged(hiddenGoalRef: string): Promise<boolean> {
+    const hash = parseTaskRef(hiddenGoalRef);
+    return hash ? isJudgedTask((await this.frozenTask(hash)).task) : false;
+  }
+
+  /**
+   * Proposes up to three success checks for a task: the suggester sees the task, the starting page (text, controls,
+   * screenshot) and the app's own text and routes; code keeps only checks grounded in the app and not already true
+   * on the starting page. Nothing is saved; the designer adds the ones they want.
+   */
+  async suggestChecks(id: string, draft: { task: string; startRoute: string; viewport: { width: number; height: number } }): Promise<GroundedSuggestions & { model: string; usd: number }> {
+    if (!this.opts.suggester) throw new ImportError("INVALID_STATE", "Check suggestions need Claude: set ANTHROPIC_API_KEY for the worker.");
+    const shape = ImportTask.safeParse({ ...draft, successChecks: [] });
+    if (!shape.success) throw new ImportError("INVALID_TASK", shape.error.issues.map((i) => `${i.path.join(".") || "task"}: ${i.message}`).join("; "));
+    const rec = await this.get(id);
+    if (!rec.baseVersionId) throw new ImportError("INVALID_STATE", "The import has no built version yet.");
+    const base = await this.version(rec.baseVersionId);
+    const files = await this.store.readSource(base.sourceHash);
+    const appTexts = base.manifest.elements.flatMap((e) => (e.label ? [{ text: e.label, file: e.source.file }] : []));
+    const routes = findRoutes(files);
+    const origin = await this.ensurePreview(base.versionId);
+    const url = new URL(shape.data.startRoute, origin).href;
+    const shotDir = path.join(this.opts.artifactsDir, "imports", id);
+    await mkdir(shotDir, { recursive: true });
+    const screenshotPath = path.join(shotDir, `suggest-${Date.now()}.png`);
+    const session = await openBrowserSession({ url, signal: AbortSignal.timeout(120_000), viewport: shape.data.viewport, discovery: true, allowRequest: previewRequestPolicy(origin) });
+    try {
+      await waitForDiscoveryReady(session.page);
+      const controls = (await discoverControls(session.page)).map((c) => ({ role: c.role, label: c.label }));
+      const text = ((await session.page.evaluate("document.body ? document.body.innerText : ''")) as string).replace(/\s+\n/g, "\n").slice(0, 6000);
+      await session.page.screenshot({ path: screenshotPath, scale: "css", animations: "disabled" });
+      const { raw, usd } = await this.opts.suggester.suggest({ task: shape.data.task, startRoute: shape.data.startRoute, startPage: { url, text, controls, screenshotPath }, appTexts, routes });
+      const grounded = await groundSuggestions(raw, { appTexts, routes, startRoute: shape.data.startRoute, passesAtStart: async (c) => (await evaluateCheck(session.page, c)).passed });
+      this.log(`[${id}] suggested ${grounded.suggestions.length} check(s), rejected ${grounded.rejected.length} ($${usd.toFixed(3)})`);
+      return { ...grounded, model: this.opts.suggester.model, usd };
+    } finally {
+      await session.close();
+    }
+  }
+
   /** Simulator integration for a batch on an imported version (baseline or candidate), under the frozen task. */
   async integrationFor(req: BatchRequest): Promise<AppIntegration> {
     const { frozen, version } = await this.taskFor(req.hiddenGoalRef, req.versionId);
@@ -552,7 +601,7 @@ export class ImportService {
     let frozen: FrozenTask | undefined;
     try {
       frozen = await this.frozenTask(rec.taskHash);
-      checks.push(pass("success_checks_unchanged", "guardrail", `frozen task ${rec.taskHash.slice(0, 12)} intact; ${frozen.task.successChecks.length} check(s) kept outside the candidate's source`));
+      checks.push(pass("success_checks_unchanged", "guardrail", `frozen task ${rec.taskHash.slice(0, 12)} intact; ${isJudgedTask(frozen.task) ? "judged against the task description" : `${frozen.task.successChecks.length} check(s) kept outside the candidate's source`}`));
     } catch (err) {
       checks.push(fail("success_checks_unchanged", "guardrail", errorInfo(err).message));
     }
@@ -579,7 +628,11 @@ export class ImportService {
         checks.push(cand.controls.length > 0 ? pass("start_route_renders", "runnable", `${frozen.task.startRoute} rendered ${cand.controls.length} control(s)`) : fail("start_route_renders", "runnable", `${frozen.task.startRoute} rendered no controls`));
         const roles = (xs: { role: string }[]) => xs.map((x) => x.role).sort().join(",");
         checks.push(roles(cand.controls) === roles(par.controls) ? pass("structure_preserved", "guardrail", `same ${par.controls.length} controls by role as ${parent.versionId} at ${frozen.task.startRoute}`) : fail("structure_preserved", "guardrail", `controls by role differ: parent [${roles(par.controls)}], candidate [${roles(cand.controls)}]`));
-        checks.push(cand.checksPassAtStart ? fail("checks_not_satisfied_at_start", "guardrail", "every success check passes before any action on the candidate") : pass("checks_not_satisfied_at_start", "guardrail", "success still requires completing the task"));
+        checks.push(
+          isJudgedTask(frozen.task) ? pass("checks_not_satisfied_at_start", "guardrail", "judged task: no page checks; the same judge scores both versions")
+          : cand.checksPassAtStart ? fail("checks_not_satisfied_at_start", "guardrail", "every success check passes before any action on the candidate")
+          : pass("checks_not_satisfied_at_start", "guardrail", "success still requires completing the task"),
+        );
         const visible = version.changes.filter((c) => par.text.includes(c.before.toLowerCase()));
         const missing = visible.filter((c) => !cand.text.includes(c.after.toLowerCase()));
         checks.push(missing.length === 0 ? pass("approved_text_rendered", "guardrail", visible.length ? `${visible.length} change(s) visible at ${frozen.task.startRoute}` : `changes are not on ${frozen.task.startRoute}; verified in source`) : fail("approved_text_rendered", "guardrail", `not rendered: ${missing.map((m) => `“${m.after}”`).join(", ")}`));
@@ -598,6 +651,7 @@ export class ImportService {
       await waitForDiscoveryReady(session.page);
       const controls = (await discoverControls(session.page)).map((c) => ({ role: c.role, label: c.label }));
       const text = ((await session.page.evaluate("document.body ? document.body.innerText : ''")) as string).replace(/\s+/g, " ").toLowerCase();
+      if (isJudgedTask(frozen.task)) return { controls, text, checksPassAtStart: false };
       const result = await evaluateChecks(session.page, frozen.task.successChecks, "run_smoke");
       return { controls, text, checksPassAtStart: result.achieved };
     } finally {

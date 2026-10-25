@@ -27,9 +27,10 @@ async function main(): Promise<void> {
   console.log(`simulation: ${simulation === "real" ? "real (Playwright + Bitdeer on the prototype)" : "mock fixtures"}`);
   console.log(`candidates: ${candidates === "real" ? "real (prototype-adapter patch engine)" : "mock fixtures"}`);
   console.log(`analysis: ${analysisLabel(choice)}`);
-  console.log(`imports: ${imports ? `on (imported apps always use real Playwright + Bitdeer; success = frozen page checks; API port ${importPort})` : "off"}`);
+  console.log(`imports: ${imports ? `on (real Playwright + Bitdeer; success = frozen page checks, or a Claude judge for tasks without checks; API port ${importPort})` : "off"}`);
   if (imports && choice === "mock") console.warn("imports with mock analysis: the mock model only knows onboarding elements, so imported experiments will stop with NO_VALID_PATCH; use --analysis claude");
   if (imports && !process.env.BITDEER_API_KEY) console.warn("BITDEER_API_KEY is not set; imported-app trials will fail as model errors");
+  if (imports && !process.env.ANTHROPIC_API_KEY) console.warn("ANTHROPIC_API_KEY is not set; check suggestions and judged imported tasks (no checks) will fail");
   if (simulation === "real" && !process.env.BITDEER_API_KEY) console.warn("BITDEER_API_KEY is not set; real simulation runs will fail");
   if (simulation === "real" && !process.env.ANTHROPIC_API_KEY) console.warn("ANTHROPIC_API_KEY is not set; the Claude judge will fail and every trial will be a model error");
   if (simulation === "real" && candidates === "mock") {

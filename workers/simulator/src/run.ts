@@ -71,12 +71,15 @@ export interface AppIntegration {
   viewport?: { width: number; height: number };
   /** Recorded in metadata. */
   kind?: 'onboarding-prototype' | 'imported-app';
+  /** Success is decided only by a judge (the checker reports page facts, not success): runs without one are refused. */
+  requiresJudge?: boolean;
 }
 
 /** The judge's own time limit, independent of the run's and batch's remaining budget (above the client's 120 s). */
 export const JUDGE_TIMEOUT_MS = 150_000;
 
 export async function runOne(options: RunOptions): Promise<AgentRunResult> {
+  if (options.prototype?.requiresJudge && !options.judging) throw new Error('This app integration is judged: pass a judge, or its page facts would count as success');
   const maxActions = options.maxActions ?? (options.prototype ? 16 : 6);
   if (!Number.isInteger(maxActions) || maxActions < 1 || maxActions > 20) throw new Error('maxActions must be between 1 and 20');
   const maxWallClockMs = options.maxWallClockMs ?? 240_000;

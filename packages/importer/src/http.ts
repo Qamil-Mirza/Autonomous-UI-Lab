@@ -4,7 +4,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import path from "node:path";
 import { ImportError, errorInfo, type ImportErrorCode } from "./errors";
 import type { ImportService, StartExperimentOptions } from "./service";
-import { CHECK_CAVEAT, describeCheck, type ImportTaskDraft } from "./task";
+import { CHECK_CAVEAT, JUDGED_CAVEAT, describeCheck, isJudgedTask, type ImportTaskDraft } from "./task";
 import { DEFAULT_ZIP_LIMITS } from "./zip";
 
 const STATUS: Partial<Record<ImportErrorCode | "INTERNAL", number>> = {
@@ -73,6 +73,8 @@ async function view(service: ImportService, id: string) {
     preview: base && build?.status === "ready" ? { versionId: base.versionId, url: service.previewUrl(base) } : undefined,
     checkDescriptions: rec.task?.successChecks.map(describeCheck) ?? [],
     checkCaveat: CHECK_CAVEAT,
+    judgedCaveat: JUDGED_CAVEAT,
+    judged: rec.task ? isJudgedTask(rec.task) : undefined,
     editable: base ? { total: base.manifest.elements.length, editable: base.manifest.elements.filter((e) => e.supportedOps.length).length } : undefined,
   };
 }
@@ -132,6 +134,9 @@ export function importApiHandler(service: ImportService, opts: { allowedOrigins?
       if (action === "cancel" && method === "POST") return send(res, 200, (await service.cancel(id), await view(service, id)));
       if (action === "retry" && method === "POST") return send(res, 200, (await service.retry(id), await view(service, id)));
       if (action === "task" && method === "PUT") return send(res, 200, (await service.saveTask(id, (await json(req)) as ImportTaskDraft), await view(service, id)));
+      if (action === "suggest-checks" && method === "POST") {
+        return send(res, 200, await service.suggestChecks(id, (await json(req)) as { task: string; startRoute: string; viewport: { width: number; height: number } }));
+      }
       if (action === "verify" && method === "POST") return send(res, 200, (await service.verify(id), await view(service, id)));
       if (action === "freeze" && method === "POST") return send(res, 200, (await service.freeze(id), await view(service, id)));
       if (action === "experiments" && method === "POST") return send(res, 201, await service.startExperiment(id, (await json(req)) as StartExperimentOptions));

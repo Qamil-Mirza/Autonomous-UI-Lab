@@ -63,6 +63,7 @@ export function createSimulationAdapter(options: BatchOptions): SimulationAdapte
     const app = options.integration ? await options.integration(req, externalSignal)
       : prototypeIntegration(base.origin, req.versionId, options.goalAdapter!);
     if (app.versionId !== req.versionId) throw new Error(`Integration is for ${app.versionId}, not ${req.versionId}`);
+    if (app.requiresJudge && !options.judge) throw new Error('This batch needs a judge: its app integration reports page facts, not success');
     const root = resolve(options.outputDir);
     await mkdir(root, { recursive: true });
     // Freeze public scenario definitions, allocations and action budget across A/B versions.

@@ -18,7 +18,7 @@ retest under the same frozen protocol.
 | One app, at the root or inside one wrapper folder, possibly nested (shallowest `package.json` next to `index.html`) | Several apps in one ZIP |
 | `vite.config.{ts,mts,js,mjs,cjs}`, public npm dependencies, with or without `package-lock.json` | Private registries, packages that need install scripts (scripts are disabled) |
 | Local app state (`useState`, `localStorage`, history routing) | Hosted backends: from previews, only same-origin requests and passive cross-origin assets (images, fonts, CSS, media) are allowed |
-| Success checks: **route**, **visible text**, **visible control** (role + accessible name), combined as *all of* | Backend or email verification; arbitrary scripts; "any of" combinations |
+| Success decided by optional page checks (**route**, **visible text**, **visible control**, *all of*) — or, with none, by a Claude judge against the task description | Backend or email verification; arbitrary scripts; "any of" combinations |
 | Candidate edits: **`set_label` on literal JSX text** under `src/**/*.tsx|jsx` (excluding `src/components/ui/`) | Style, layout, order or visibility changes; attribute text; text that appears more than once or contains HTML entities |
 
 Changes are **not** written back to the Figma file. A code ZIP has no reliable mapping to Figma nodes. A Figma link
@@ -58,9 +58,20 @@ upload ─▶ validate ZIP ─▶ immutable source (sha256) ─▶ npm install �
   and starts at the frozen route and viewport. Controls are discovered from the rendered page as `role.label-slug`
   references. Each chosen reference is re-resolved and re-validated against the live page right before acting.
   Navigation must stay on the preview origin. CSS animations are disabled so observations settle.
-- **Success** (`checks.ts`). Only the frozen checks decide `goal`. GhostLoop evaluates them on the final page after every action,
+- **Success: two modes, fixed per frozen task.**
+  - **Judged (default, no checks).** The designer only describes the task. A separate Claude judge (`judge-v1`, the
+    one the onboarding app uses) scores each finished trial from its actions, reasons and screenshots against the task
+    as written; the integration contributes only the final page path as a fact. Results say *judged*, never
+    *verified*, and Results warns that a wording change can sway a judge. A judged integration refuses to run without a
+    judge (fail closed), and baseline/retest scored by different judges compare as inconclusive.
+  - **Verified (with checks, `checks.ts`).** Only the frozen checks decide `goal`. GhostLoop evaluates them on the final page after every action,
   and no judge model is used. The agent saying it is done counts as `agent_stop`, not success. A check that fails to evaluate is
   an infrastructure error, never success. Checks are **UI evidence**: a visible confirmation is not proof that a backend did anything.
+- **Check suggestions** (`suggest.ts`, Claude adapter in the optimizer). "Suggest checks" sends the task, the starting
+  page (text, controls, screenshot), the app's literal texts and the route literals found in its source to Claude.
+  Code keeps at most three proposals: valid checks grounded in the app's own text or routes, not the starting route,
+  and not already true on the starting page; the rest are listed with the reason. Nothing is saved until the designer
+  adds a suggestion (about $0.02 per request).
 - **Freezing** (`task.ts`). The verified task is stored as `tasks/<sha256>.json`, outside every source tree, and the protocol
   carries `hiddenGoalRef: "import-task:<sha256>"`. The baseline and every retest load it by hash, and an edited file is
   refused. Freezing requires a verification of the same task, and verification refuses checks that already pass at the start.
@@ -129,6 +140,7 @@ model only knows onboarding elements.
 | `GET` | `/api/imports/:id` | Status, report, error (code, hint, log tail), preview URL |
 | `POST` | `/api/imports/:id/cancel` · `/retry` | Cancel an import in progress · retry a failed/cancelled one from the stored upload |
 | `PUT` | `/api/imports/:id/task` | Save the task draft (validated) |
+| `POST` | `/api/imports/:id/suggest-checks` | Propose grounded success checks for `{task, startRoute, viewport}` (not saved) |
 | `POST` | `/api/imports/:id/verify` · `/freeze` | Verify against the preview · freeze the verified task |
 | `POST` | `/api/imports/:id/experiments` | Create and start a baseline under the frozen task |
 | `GET` | `/api/imports/:id/log?step=install\|build&version=` | Sandbox log |
@@ -143,6 +155,8 @@ Requests that carry an `Origin` header must come from the dashboard origin. JSON
   Install scripts are skipped, so packages that require them will fail to build (the log says so).
 - Controls are discovered only inside the viewport; scrolling, iframes, shadow DOM and multi-select are out of scope,
   the same as the onboarding simulator.
+- Judged results are weaker evidence than checks: the judge is a model, it costs about $0.03–0.05 per trial, and the
+  wording changes GhostLoop tests can influence it. Add checks (or accept suggested ones) when it matters.
 - Success checks are UI evidence only. Apps that render a confirmation without a real backend will "succeed".
 - One narrow edit class (literal JSX text). The edit isn't previewed before approval because building takes ~10–20 s.
   The candidate is previewed on Results after it is built.

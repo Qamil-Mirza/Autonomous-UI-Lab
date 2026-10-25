@@ -47,8 +47,11 @@ export const ImportTask = z
       .max(300)
       .regex(/^\/(?!\/)[^\s]*$/, "the starting route is a path on the preview, like / or /checkout"),
     viewport: z.object({ width: z.number().int().min(320).max(1920), height: z.number().int().min(480).max(1400) }).strict(),
-    /** All must pass ("all of"); the only combination supported. */
-    successChecks: z.array(SuccessCheck).min(1, "add at least one success check").max(5),
+    /**
+     * Optional. With checks, success is verified by GhostLoop on the final page, and all must pass ("all of"). Without
+     * any, each trial is judged by a separate model against the task as written (reported as judged, not verified).
+     */
+    successChecks: z.array(SuccessCheck).max(5).default([]),
     /** Visible text that must not change (matched against editable text, case-insensitive). */
     protectedTexts: z.array(z.string().trim().min(1).max(200)).max(20).default([]),
     /** Behavior that must keep working, in the designer's words; shown to the model as constraints. */
@@ -70,6 +73,12 @@ export const ImportTask = z
   });
 export type ImportTask = z.infer<typeof ImportTask>;
 export type ImportTaskDraft = z.input<typeof ImportTask>;
+
+/** True when the task has no page checks, so trials are judged against the task description instead. */
+export const isJudgedTask = (t: Pick<ImportTask, "successChecks">) => t.successChecks.length === 0;
+
+/** The single fact a judged run records from the page (no page checks exist to report). */
+export const FINAL_PAGE_FACT = "final_page";
 
 /** Unique, stable name for a check, used as the GoalCheck name. */
 export function checkName(c: SuccessCheck): string {
@@ -98,6 +107,9 @@ export function describeCheck(c: SuccessCheck): string {
       return `A visible ${c.role} whose accessible name is “${c.name}” is on the page.`;
   }
 }
+
+export const JUDGED_CAVEAT =
+  "No success checks: a separate Claude judge decides each trial from its actions and screenshots against your task description. Results are labeled judged, not verified. Because GhostLoop's suggestions change wording, and a judge reads wording, add checks when you need verified evidence.";
 
 export const CHECK_CAVEAT =
   "These checks read what the page shows. A visible confirmation is evidence the UI flow completed, not proof that an email was sent, a payment was taken or a backend saved anything.";

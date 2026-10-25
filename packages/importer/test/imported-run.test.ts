@@ -74,7 +74,8 @@ function scripted(steps: ({ type: "click" | "type" | "stop"; label?: string; val
     if (s.type === "stop") return { type: "stop", reason: s.reason ?? "done" };
     const c = controls.find((x) => x.label === s.label);
     if (!c) return { type: "stop", reason: `no control labeled ${s.label}` };
-    return s.type === "type" ? { type: "type", elementId: c.elementId, value: s.value ?? "" } : { type: "click", elementId: c.elementId };
+    const reason = "scripted test step";
+    return s.type === "type" ? { type: "type", elementId: c.elementId, value: s.value ?? "", reason } : { type: "click", elementId: c.elementId, reason };
   };
 }
 
@@ -171,6 +172,40 @@ describe("imported-app run (real browser, scripted decisions)", () => {
     expect(new Set(result.runs.map((r) => r.runId)).size).toBe(2);
     expect(events).toHaveLength(8);
   }, 120_000);
+});
+
+describe("judged imported tasks (no page checks)", () => {
+  const judgedTask = () => frozen({ successChecks: [] });
+  const judge = (reached: boolean | "uncertain", seen: unknown[] = []) => ({
+    info: { model: "test-judge", instructionVersion: "test-v1" },
+    judge: async (input: unknown) => (seen.push(input), { verdict: { reached, explanation: "test verdict", evidence: ["seq 3"] }, usd: 0.01 }),
+  });
+
+  it("refuses to run without a judge, so page facts can never count as success", async () => {
+    await expect(runOne({ url: origin, outputDir: dir, signal: new AbortController().signal, provenance: "mock-decisions", maxActions: 1,
+      task: judgedTask().task.task, prototype: integration(judgedTask()), decide: scripted([{ type: "stop" }]) })).rejects.toThrow(/judged/);
+    const adapter = createSimulationAdapter({ outputDir: path.join(dir, "batches-nojudge"), provenance: "mock-decisions", integration: async () => integration(judgedTask()) });
+    await expect(adapter.runBatch({ batchId: "batch_nojudge1", experimentId: "exp_x", protocolId: "proto_x", versionId: "ver_imp_aaaaaaaaaaaa", versionUrl: origin,
+      task: judgedTask().task.task, hiddenGoalRef: "import-task:x", scenarios: [{ id: "scn_a", name: "A", description: "", inputs: {}, runs: 1 }],
+      runsPerBatch: 1, maxActionsPerRun: 2, maxConcurrency: 1 }, () => {}, new AbortController().signal)).rejects.toThrow(/needs a judge/);
+  });
+
+  it("lets only the judge's verdict decide, with the final page as evidence", async () => {
+    const seen: { appState: { name: string; detail?: string }[] }[] = [];
+    const steps = [{ type: "click" as const, label: "Add flat white" }, { type: "click" as const, label: "Go to bag" }, { type: "type" as const, label: "Email", value: "pat@example.com" }, { type: "click" as const, label: "Proceed" }, { type: "stop" as const, reason: "done" }];
+    const reached = await runOne({ url: origin, outputDir: dir, signal: new AbortController().signal, provenance: "mock-decisions", maxActions: 6,
+      task: judgedTask().task.task, prototype: integration(judgedTask()), decide: scripted(steps),
+      judging: { judge: judge(true, seen as unknown[]), vetoRules: [] } });
+    expect(reached.outcome).toBe("goal");
+    expect(reached.judge).toMatchObject({ reached: true, model: "test-judge" });
+    expect(seen[0]!.appState).toEqual([{ name: "final_page", passed: true, detail: expect.stringContaining("Page path /done") }]);
+    // Same trial, judge says no: not a success, however the session ended.
+    const notReached = await runOne({ url: origin, outputDir: dir, signal: new AbortController().signal, provenance: "mock-decisions", maxActions: 6,
+      task: judgedTask().task.task, prototype: integration(judgedTask()), decide: scripted(steps), judging: { judge: judge(false), vetoRules: [] } });
+    // It keeps how it ended (the confirmation page has no controls, so flow_blocked); never a goal.
+    expect(notReached.outcome).toBe("flow_blocked");
+    expect(notReached.goalVerified).toBe(false);
+  }, 60_000);
 });
 
 describe("previewRequestPolicy", () => {

@@ -6,6 +6,7 @@ export * from "./manifest";
 export * from "./patch";
 export * from "./store";
 export * from "./checks";
+export * from "./suggest";
 export * from "./integration";
 export * from "./runtime/docker";
 export * from "./runtime/manager";
