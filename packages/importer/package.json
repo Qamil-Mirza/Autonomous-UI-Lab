@@ -1,0 +1,27 @@
+{
+  "name": "@ghostloop/importer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check": "tsc -p . && vitest run",
+    "test": "vitest run",
+    "fixture:zip": "tsx scripts/build-fixture-zip.ts",
+    "live:check": "tsx scripts/live-check.ts"
+  },
+  "dependencies": {
+    "@ghostloop/contracts": "*",
+    "@ghostloop/simulator": "*",
+    "playwright": "1.58.2",
+    "typescript": "^5.6.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "vitest": "^2.1.0"
+  }
+}

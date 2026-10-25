@@ -86,7 +86,7 @@ export async function proposing(ctx: StepContext, e: Experiment): Promise<boolea
   await store.putPacket(result.packet);
   const open = result.patches.filter((p) => p.state !== "blocked");
   if (open.length === 0) {
-    await stop(ctx, "NO_VALID_PATCH", "every proposed patch is blocked");
+    await stop(ctx, "NO_VALID_PATCH", result.patches.length === 0 ? "the analysis proposed no changes" : "every proposed patch is blocked");
     return true;
   }
   await transition(

@@ -16,8 +16,8 @@ import type { Snapshot, StoredRun } from "./snapshot"
 
 export type Tone = "good" | "warn" | "bad" | "muted" | "coral"
 
-/** A manifest element plus the presentation fields the prototype's manifests also carry. */
-export type Element = ManifestElement & { order?: number; styleToken?: string }
+/** A manifest element plus the presentation fields the prototype's manifests (or an imported app's) also carry. */
+export type Element = ManifestElement & { order?: number; styleToken?: string; source?: { file: string; line: number }; note?: string }
 export type Elements = ReadonlyMap<string, Element>
 
 export interface ActionView {
@@ -44,6 +44,8 @@ export interface RunView {
   issues?: number
   /** The persona (scenario) this trial played. */
   persona?: string
+  /** Imported apps: what each frozen success check found at the end (UI evidence, decided by GhostLoop). */
+  checks?: { name: string; passed: boolean; detail: string }[]
 }
 
 export interface BatchView {
@@ -89,6 +91,8 @@ export interface PatchView {
   screen?: string
   /** The stored patch, for building a preview; absent for sample data. */
   raw?: MutationPatch
+  /** Imported apps: where the text lives, e.g. `src/components/Bag.tsx:36`. */
+  source?: string
 }
 
 export type BehaviorRow = [label: string, original: string, updated: string, difference: string, tone: Tone]
@@ -141,6 +145,12 @@ export interface ExperimentView {
   update?: { progress: number; label: string }
   results?: ResultView
   candidate?: CandidateView
+  /** Why the experiment stopped, from its last transition (e.g. an integration failure's message). */
+  stopNote?: string
+  /** The current candidate's failed validation checks, as `name: detail`. */
+  failedChecks?: string[]
+  /** Set when trials were scored by a judge model rather than page checks. */
+  judged?: { model: string; instructionVersion: string }
 }
 
 export interface ExperimentSummary {
@@ -229,6 +239,18 @@ const RESULT: Record<Exclude<ActionResult, "ok">, string> = {
 
 const isUrl = (uri: string) => /^(https?:\/\/|\/|data:image\/)/.test(uri)
 
+/** Page-check evidence recorded on an imported-app run (`goalEvidence` holds a GoalCheckResult). */
+export function checksOf(r: StoredRun): RunView["checks"] {
+  if (r.judge || !r.goalEvidence) return undefined
+  try {
+    const e = JSON.parse(r.goalEvidence) as { checks?: { name?: unknown; passed?: unknown; detail?: unknown }[] }
+    if (!Array.isArray(e.checks)) return undefined
+    return e.checks.map((c) => ({ name: String(c.name), passed: c.passed === true, detail: String(c.detail ?? "") }))
+  } catch {
+    return undefined
+  }
+}
+
 export function actionView(e: AgentActionEvent, elements: Elements): ActionView {
   const { action } = e
   const target =
@@ -292,10 +314,12 @@ export function batchView(
       if (r.outcome === "agent_stop" && last?.decisionSource === "scenario") outcome = "Gave up (scenario rule)"
       // Judged trials: the verdict, not how the session ended, is what the designer needs to see.
       if (r.protectedViolation) [outcome, tone] = [`Broke a protected rule (${r.protectedViolation.replace(/_/g, " ")})`, "bad"]
-      else if (r.judge && r.outcome === "goal") outcome = "Goal verified"
+      // Imported apps judged without page checks: say judged, never verified.
+      else if (r.judge && r.outcome === "goal") outcome = r.versionId.startsWith("ver_imp_") ? "Goal reached (judged)" : "Goal verified"
       else if (r.judge?.reached === "uncertain") [outcome, tone] = ["Judge unsure", "warn"]
       else if (r.judge && ["agent_stop", "step_limit", "flow_blocked"].includes(r.outcome)) [outcome, tone] = ["Goal not reached", "warn"]
-      return { id: r.runId, label: "", outcome, tone, running: false, actions: actionsOf(r.runId), persona: batch.personas?.get(r.scenarioId), ...(r.judge ? { verdict: r.judge.explanation } : {}) }
+      const checks = r.versionId.startsWith("ver_imp_") ? checksOf(r) : undefined
+      return { id: r.runId, label: "", outcome, tone, running: false, actions: actionsOf(r.runId), persona: batch.personas?.get(r.scenarioId), ...(r.judge ? { verdict: r.judge.explanation } : {}), ...(checks ? { checks } : {}) }
     }),
     ...streaming.map((runId) => {
       const scenarioId = actionsByRun.get(runId)?.find((a) => a.scenarioId)?.scenarioId
@@ -375,6 +399,7 @@ function patchView(p: MutationPatch, elements: Elements, snap: Snapshot, figma: 
     correspondence: figma,
     observationIds: p.observationIds,
     ...(el?.screen ? { screen: el.screen } : {}),
+    ...(el?.source ? { source: `${el.source.file}:${el.source.line}` } : {}),
     raw: p,
   }
 }
@@ -584,5 +609,8 @@ export function experimentView(
     update: updateProgress(e.state, candidateBatch),
     results: evaluation ? resultView(evaluation) : undefined,
     candidate,
+    ...(stopped ? { stopNote: e.transitions.at(-1)?.note } : {}),
+    ...(baselineRecord?.judge ? { judged: baselineRecord.judge } : {}),
+    ...(cand ? { failedChecks: snap.validations.find((x) => x.candidateId === cand.id)?.checks.filter((c) => !c.passed).map((c) => `${c.name}: ${c.detail ?? "failed"}`) } : {}),
   }
 }

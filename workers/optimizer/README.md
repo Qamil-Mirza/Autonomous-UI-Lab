@@ -105,6 +105,13 @@ npm run dev -w @ghostloop/dashboard         # terminal 4: dashboard on :5174; cr
   toward the experiment's cost budget. If the baseline and candidate batches were scored by different judges, the
   comparison is `inconclusive`. Without `ANTHROPIC_API_KEY`, every trial ends as a model error.
 
+## Imported Figma Make apps
+
+`npm run worker:real` (and `npm run worker`) also hosts the import API on `127.0.0.1:5180` and routes every batch and
+candidate on an imported version (`ver_imp_*`) to `@ghostloop/importer`. Those trials run in a Docker-built preview,
+are decided only by the frozen page checks (no judge), and candidates are separate rebuilt versions. Onboarding versions
+keep the adapters above. `--imports off` disables it. See [`packages/importer/README.md`](../../packages/importer/README.md).
+
 ## Module map
 
 | Path | Role |
@@ -120,7 +127,8 @@ npm run dev -w @ghostloop/dashboard         # terminal 4: dashboard on :5174; cr
 | `src/claude/*` | Claude analysis adapter, prompt + output schema, pricing, `--analysis` selection |
 | `src/cli/demo-mock.ts` | The demo CLI (`--store memory|spacetime`, `--analysis mock|claude`) |
 | `src/real-adapters.ts` | Real B (simulator) and C (candidate adapter) wiring, adapter flags, screenshot publishing |
-| `src/cli/worker.ts`, `src/cli/watch.ts` | Worker service (`--real`, `--simulation`, `--candidates`, `--analysis`) and live row watcher |
+| `src/cli/worker.ts`, `src/cli/watch.ts` | Worker service (`--real`, `--simulation`, `--candidates`, `--analysis`, `--imports`) and live row watcher |
+| `src/imported.ts` | Import service wiring and the dispatchers that send imported versions to `@ghostloop/importer` |
 
 ## State machine
 

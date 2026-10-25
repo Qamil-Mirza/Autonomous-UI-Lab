@@ -500,3 +500,19 @@ must not interpret it as free inference. Mock batches report known zero cost.
 Automated tests use scripted decisions and real C website pages with no model
 charges. They verify all four scenarios, recovery feedback, isolation/cleanup,
 ordered delivery, frozen-plan rejection, concurrency, cancellation and call caps.
+
+
+## Imported apps — `AppIntegration` with control discovery
+
+`RunOptions.prototype` is an `AppIntegration` (exported from `src/run.ts`). C's onboarding prototype is one
+(`prototypeIntegration`, unchanged behavior). `@ghostloop/importer` supplies another for imported Figma Make apps:
+
+- `discover: true` finds visible, enabled, actionable controls on any rendered page without test IDs (`src/discovery.ts`):
+  native controls and common ARIA roles, each referenced as `role.label-slug` (numbered when repeated) and tagged with
+  `data-gl-ref`. The executor re-discovers and re-validates the chosen reference right before acting. Screens are the
+  route plus the first visible `h1`/`h2`. Alerts include `role=alert`, live regions and toasts. CSS animations are disabled.
+- `viewport` sets the CSS viewport per integration (the onboarding default stays 1280×800).
+- `checkGoal(runId, page)` may read the live page; `requiredChecks` replaces the onboarding check list.
+- `allowRequest(url, navigation, runId, resourceType)` lets imported apps load passive cross-origin assets while
+  navigation stays on the preview origin.
+- `createSimulationAdapter({ integration })` resolves the app once per batch; `goalAdapter` is then optional.

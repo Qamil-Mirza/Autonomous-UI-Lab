@@ -3,6 +3,7 @@ import type { CommandKind, CommandResult, DesignManifest } from "@ghostloop/cont
 import { connect, DEFAULT_DATABASE, DEFAULT_URI, submitCommand, type DbConnection } from "@ghostloop/db"
 import { emptySnapshot, readSnapshot, type Snapshot } from "./snapshot"
 import { fetchManifest } from "./setup"
+import { importsApi, isImportedVersion } from "./imports"
 import type { Element, Elements } from "./view"
 
 export type LinkStatus =
@@ -145,9 +146,13 @@ export function useElements(versionId: string | undefined): Elements {
   useEffect(() => {
     if (!versionId) return
     let current = true
-    fetchManifest(versionId)
-      .then((m: DesignManifest) => {
-        if (current) setElements(new Map(m.elements.map((el) => [el.elementId, el as Element])))
+    // Imported apps' manifests (with source locations) come from the worker's import API, not the prototype.
+    const load: Promise<{ elements: Element[] }> = isImportedVersion(versionId)
+      ? importsApi.version(versionId).then((v) => ({ elements: v.manifest.elements as Element[] }))
+      : fetchManifest(versionId).then((m: DesignManifest) => ({ elements: m.elements as Element[] }))
+    load
+      .then((m) => {
+        if (current) setElements(new Map(m.elements.map((el) => [el.elementId, el])))
       })
       .catch(() => {
         if (current) setElements(new Map())

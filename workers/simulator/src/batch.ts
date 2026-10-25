@@ -2,14 +2,20 @@ import { mkdir, readFile, writeFile, rename, appendFile, link, rm } from 'node:f
 import { resolve } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { BatchRequest, BatchResult, DEFAULT_VETO_RULES, type SimulationAdapter, type PrototypeGoalAdapter, type AgentRunResult, type TrialJudge } from '@ghostloop/contracts';
-import { runOne, type RunOptions } from './run';
+import { runOne, type AppIntegration, type RunOptions } from './run';
 import { prototypeIntegration } from './prototype';
 import { bitdeerDecider, type Decider } from './bitdeer';
 import { ModelResponseError } from './decision';
 
 export interface BatchOptions {
   outputDir: string;
-  goalAdapter: PrototypeGoalAdapter;
+  /** C's trusted onboarding checker; required unless `integration` supplies the app. */
+  goalAdapter?: PrototypeGoalAdapter;
+  /**
+   * Resolves the app for a request (e.g. an imported app's preview and frozen checks). Defaults to C's onboarding
+   * prototype at the request's origin.
+   */
+  integration?: (req: BatchRequest, signal: AbortSignal) => Promise<AppIntegration>;
   provenance: RunOptions['provenance'];
   createDecider?: () => Decider;
   headed?: boolean;
@@ -52,6 +58,12 @@ export function createSimulationAdapter(options: BatchOptions): SimulationAdapte
     if (price !== undefined && (!Number.isFinite(price) || price < 0)) throw new Error('Invalid estimated call cost');
     if (options.maxInferenceUsd !== undefined && (!Number.isFinite(options.maxInferenceUsd) || options.maxInferenceUsd < 0 || price === undefined))
       throw new Error('A dollar limit requires a finite configured call-cost estimate');
+    if (!options.integration && !options.goalAdapter) throw new Error('A batch needs a goal adapter or an app integration');
+    // Resolved once per batch, so every run of it uses the same app, checks and viewport.
+    const app = options.integration ? await options.integration(req, externalSignal)
+      : prototypeIntegration(base.origin, req.versionId, options.goalAdapter!);
+    if (app.versionId !== req.versionId) throw new Error(`Integration is for ${app.versionId}, not ${req.versionId}`);
+    if (app.requiresJudge && !options.judge) throw new Error('This batch needs a judge: its app integration reports page facts, not success');
     const root = resolve(options.outputDir);
     await mkdir(root, { recursive: true });
     // Freeze public scenario definitions, allocations and action budget across A/B versions.
@@ -69,7 +81,8 @@ export function createSimulationAdapter(options: BatchOptions): SimulationAdapte
     } finally { await rm(pendingPlan, { force: true }); }
     const dir = resolve(root, req.batchId);
     await mkdir(dir); // Never overwrite an earlier batch's evidence.
-    await writeFile(resolve(dir, 'request.json'), JSON.stringify({ ...req, planHash: createHash('sha256').update(plan).digest('hex'), provenance: options.provenance }, null, 2));
+    await writeFile(resolve(dir, 'request.json'), JSON.stringify({ ...req, planHash: createHash('sha256').update(plan).digest('hex'), provenance: options.provenance,
+      integration: app.kind ?? 'onboarding-prototype', viewport: app.viewport ?? null }, null, 2));
     const started = performance.now();
     const stop = new AbortController();
     const signal = AbortSignal.any([externalSignal, stop.signal]);
@@ -96,7 +109,7 @@ export function createSimulationAdapter(options: BatchOptions): SimulationAdapte
         try {
           const decide = options.createDecider?.() ?? bitdeerDecider();
           const run = await runOne({ url: base.origin, outputDir: dir, signal,
-            prototype: prototypeIntegration(base.origin, req.versionId, options.goalAdapter),
+            prototype: app,
             decide: async (...args) => {
               reserve();
               try { return await decide(...args); }
