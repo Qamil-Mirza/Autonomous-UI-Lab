@@ -364,7 +364,8 @@ With `createSimulationAdapter({ ..., judge })` (D's `worker:real` passes a Claud
 task as written, from the trial's final state:
 
 - A trial no longer ends when the fixed checks pass. It runs until the model returns `stop` (task complete, or it can't
-  proceed) or hits the action limit. Every action must carry a short `reason`.
+  proceed) or hits the action limit. Every action is asked for a short `reason`; a missing one is requested again, and
+  accepted on the last attempt so it never costs the trial.
 - After every action the trusted checker runs only to enforce protected rules (`BatchRequest.vetoRules`, default
   `["no_paid_trial"]`). A violation ends the trial as `flow_blocked` with `protectedViolation` set.
 - At the end the checker is read once for the final application state, and the judge receives the task, the scenario's

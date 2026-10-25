@@ -44,7 +44,10 @@ export async function requestDecision(options: {
     try {
       const raw = await options.decide(options.input, options.controls, options.signal, feedback);
       options.signal.throwIfAborted();
-      action = validateDecision(raw, options.controls, options.allowNavigation, { requireReason: options.requireReason });
+      action = validateDecision(raw, options.controls, options.allowNavigation);
+      // Ask again for a missing reason, but a reason alone never costs the trial: the last attempt is accepted as is.
+      if (options.requireReason && !action.reason?.trim() && attempt < maxAttempts)
+        throw new ActionValidationError('Every action needs a short reason: what you are doing and why');
     } catch (error) {
       options.signal.throwIfAborted();
       // A rate limit is the provider asking us to slow down, not a bad answer: wait (honoring Retry-After) and ask
