@@ -283,3 +283,5 @@ input:hover,textarea:hover,select:hover { border-color:#aeb8b1; }
 .timeline li.flagged b { color:var(--bad); }
 .timeline .step-flag { display:block; margin-top:3px; color:var(--bad); font-size:11px; font-style:normal; font-weight:700; }
 .run-list .issue-count { color:var(--bad) !important; font-weight:700; }
+.run-list .persona { color:var(--ink) !important; font-weight:650; margin-top:2px; }
+.persona-tag { display:inline-block; margin-left:8px; padding:2px 8px; border-radius:99px; background:#eff1ed; color:#56605c; font-size:10px; font-weight:800; vertical-align:middle; }

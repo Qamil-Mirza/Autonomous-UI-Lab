@@ -250,6 +250,15 @@ describe("experimentView", () => {
     expect(v.baseline.runs[0]!.issues).toBe(3)
   })
 
+  it("labels each trial with its persona, for finished and streaming trials", () => {
+    const v = experimentView(
+      snap({ runs: [run("run_b", "goal", "2026-10-24T10:01:00.000Z")], actions: [action("run_e", 0, { scenarioId: "scn_a" }), action("run_f", 0)] }),
+      "exp_a",
+      {},
+    )!
+    expect(v.baseline.runs.map((r) => r.persona)).toEqual(["A", "A", undefined])
+  })
+
   it("describes non-ok results and stop reasons", () => {
     const v = experimentView(
       snap({

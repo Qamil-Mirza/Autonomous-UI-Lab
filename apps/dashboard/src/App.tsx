@@ -863,6 +863,7 @@ function Runs({
             >
               <span>
                 <b>{r.label}</b>
+                {r.persona && <small className="persona">{r.persona}</small>}
                 <small>{r.id}</small>
                 {r.issues ? (
                   <small className="issue-count">
@@ -878,7 +879,10 @@ function Runs({
           <div className="run-detail card">
             <div className="card-head">
               <div>
-                <b>{selected.label}</b>
+                <b>
+                  {selected.label}
+                  {selected.persona && <span className="persona-tag">{selected.persona}</span>}
+                </b>
                 <small>{selected.id}</small>
               </div>
               <Badge tone={selected.tone}>{selected.outcome}</Badge>

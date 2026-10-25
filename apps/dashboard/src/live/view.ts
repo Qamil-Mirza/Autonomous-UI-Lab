@@ -42,6 +42,8 @@ export interface RunView {
   verdict?: string
   /** Steps in this trial that hit a validation error or didn't work. */
   issues?: number
+  /** The persona (scenario) this trial played. */
+  persona?: string
 }
 
 export interface BatchView {
@@ -256,7 +258,7 @@ function median(xs: number[]): number | null {
 
 /** Finished runs from `agent_run`, plus runs still streaming actions, in start order. */
 export function batchView(
-  batch: { batchId?: string; planned: number; expectedSteps: number; cancelled?: boolean; cancelRequested?: boolean },
+  batch: { batchId?: string; planned: number; expectedSteps: number; cancelled?: boolean; cancelRequested?: boolean; personas?: ReadonlyMap<string, string> },
   snap: Snapshot,
   elements: Elements,
   labels: Map<string, string>,
@@ -293,9 +295,12 @@ export function batchView(
       else if (r.judge && r.outcome === "goal") outcome = "Goal verified"
       else if (r.judge?.reached === "uncertain") [outcome, tone] = ["Judge unsure", "warn"]
       else if (r.judge && ["agent_stop", "step_limit", "flow_blocked"].includes(r.outcome)) [outcome, tone] = ["Goal not reached", "warn"]
-      return { id: r.runId, label: "", outcome, tone, running: false, actions: actionsOf(r.runId), ...(r.judge ? { verdict: r.judge.explanation } : {}) }
+      return { id: r.runId, label: "", outcome, tone, running: false, actions: actionsOf(r.runId), persona: batch.personas?.get(r.scenarioId), ...(r.judge ? { verdict: r.judge.explanation } : {}) }
     }),
-    ...streaming.map((runId) => ({ id: runId, label: "", outcome: "In progress", tone: "coral" as Tone, running: true, actions: actionsOf(runId) })),
+    ...streaming.map((runId) => {
+      const scenarioId = actionsByRun.get(runId)?.find((a) => a.scenarioId)?.scenarioId
+      return { id: runId, label: "", outcome: "In progress", tone: "coral" as Tone, running: true, actions: actionsOf(runId), persona: scenarioId ? batch.personas?.get(scenarioId) : undefined }
+    }),
   ].map((r, i) => {
     const label = `Trial ${pad(i + 1)}`
     labels.set(r.id, label)
@@ -490,8 +495,9 @@ export function experimentView(
   const labels = new Map<string, string>()
   const baselineRecord = findBatch(r.baselineBatchId)
   const maxSteps = e.protocol.budgets.maxActionsPerRun
+  const personas = new Map(e.protocol.scenarios.map((s) => [s.id as string, s.name]))
   const baseline = batchView(
-    { batchId: r.baselineBatchId, planned: plannedOf(baselineRecord, e), expectedSteps: maxSteps, cancelled: baselineRecord?.cancelled, cancelRequested: e.cancelRequested },
+    { batchId: r.baselineBatchId, planned: plannedOf(baselineRecord, e), expectedSteps: maxSteps, cancelled: baselineRecord?.cancelled, cancelRequested: e.cancelRequested, personas },
     snap,
     elements,
     labels,
@@ -506,6 +512,7 @@ export function experimentView(
           expectedSteps: baseline.medianStepsToSuccess ?? maxSteps,
           cancelled: candidateRecord?.cancelled,
           cancelRequested: e.cancelRequested,
+          personas,
         },
         snap,
         elements,
