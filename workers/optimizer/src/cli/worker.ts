@@ -51,9 +51,23 @@ async function main(): Promise<void> {
     onDisconnect: () => process.exit(1),
   });
   console.log(`worker running (token ${TOKEN_PATH}); Ctrl+C to stop`);
+  let stoppingAt = 0;
   for (const sig of ["SIGINT", "SIGTERM"] as const) {
-    // close() also stops every sandbox container this worker owns.
-    process.once(sig, () => void worker.close().finally(() => process.exit(0)));
+    process.on(sig, () => {
+      // npm and tsx relay the terminal's signal, so one Ctrl+C can arrive several times at once: repeats within
+      // 2 s are the same request. A later signal forces the exit; the next worker start removes leftover containers.
+      if (stoppingAt) {
+        if (Date.now() - stoppingAt > 2000) process.exit(1);
+        return;
+      }
+      stoppingAt = Date.now();
+      console.log("stopping: removing sandbox containers and disconnecting…");
+      // close() also stops every sandbox container this worker owns.
+      void worker.close().finally(() => {
+        console.log("stopped");
+        process.exit(0);
+      });
+    });
   }
 }
 

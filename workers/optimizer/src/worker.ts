@@ -94,8 +94,13 @@ export async function startWorker(opts: WorkerOptions) {
       processor,
       /** Disconnects. Drives are not aborted: an abort would record `USER_STOP`; the next worker resumes them. */
       async close(): Promise<void> {
-        await new Promise<void>((resolve) => (importServer ? importServer.close(() => resolve()) : resolve()));
+        // Sandbox containers first: an open HTTP keep-alive (e.g. the dashboard's polling) must not delay their removal.
         await imports?.service.shutdown();
+        if (importServer) {
+          const closed = new Promise<void>((resolve) => importServer!.close(() => resolve()));
+          importServer.closeAllConnections();
+          await closed;
+        }
         await store.close();
       },
     };
