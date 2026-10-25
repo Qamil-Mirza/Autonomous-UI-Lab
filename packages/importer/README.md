@@ -91,7 +91,8 @@ GHOSTLOOP_DOCKER_TEST=1 npm test -w @ghostloop/importer -- docker.live   # real 
 npm run fixture:zip -w @ghostloop/importer           # packs the compatibility fixture into fixtures/northwind-make-export.zip
 ```
 
-Running the whole product (four terminals):
+Running the whole product: `./demo.sh` from the repository root starts (or reuses) everything below and stops what
+it started on Ctrl+C; `./demo.sh --e2e 6` also runs the scripted dashboard walkthrough. By hand (four terminals):
 
 ```sh
 npm run stdb:start                                    # 1: SpacetimeDB on :3000 (then once: npm run stdb:publish)
