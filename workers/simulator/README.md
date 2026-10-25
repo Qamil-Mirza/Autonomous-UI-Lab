@@ -358,6 +358,26 @@ confirmation screen, including a false model success claim. C's checker suite
 also covers duplicate workspaces, invalid/missing signup and invites, sticky paid
 trials, run isolation and missing state. These tests use no live model calls.
 
+## Judged trials — when a judge is configured
+
+With `createSimulationAdapter({ ..., judge })` (D's `worker:real` passes a Claude judge), success is decided against the
+task as written, from the trial's final state:
+
+- A trial no longer ends when the fixed checks pass. It runs until the model returns `stop` (task complete, or it can't
+  proceed) or hits the action limit. Every action must carry a short `reason`.
+- After every action the trusted checker runs only to enforce protected rules (`BatchRequest.vetoRules`, default
+  `["no_paid_trial"]`). A violation ends the trial as `flow_blocked` with `protectedViolation` set.
+- At the end the checker is read once for the final application state, and the judge receives the task, the scenario's
+  persona and inputs (password redacted), every action with its reason, result and screens, the screens visited, the
+  final screen, those facts, and up to six screenshots (the final one plus the last before each screen change).
+- Only behavioral endings are judged. `reached: true` is `goal`; `false` or `"uncertain"` keeps how the trial ended; a
+  failed judge call is `model_error`. Infrastructure errors and cancellations keep their outcomes and are never judged.
+- The run carries `judge` (verdict, explanation, model, instruction version, cost) and the batch carries `judge`
+  (model and instruction version). Judge costs are added to the batch's `inferenceUsd`. `judge.json` in each run
+  directory holds the exact input and verdict.
+
+Without a judge, everything below applies unchanged.
+
 ## Complete ordered traces
 
 Each new action event includes experiment/protocol/batch/scenario/version/run IDs,

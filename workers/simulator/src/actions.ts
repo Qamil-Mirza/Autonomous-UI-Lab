@@ -23,10 +23,12 @@ export const Decision = z.discriminatedUnion('type', [
   z.object({ type: z.literal('stop'), reason }).strict(),
 ]);
 export type Decision = z.infer<typeof Decision>;
-export function validateDecision(raw: unknown, controls: ObservedControl[], allowNavigation?: (url: string) => boolean): Decision {
+export function validateDecision(raw: unknown, controls: ObservedControl[], allowNavigation?: (url: string) => boolean,
+  opts: { requireReason?: boolean } = {}): Decision {
   const parsed = Decision.safeParse(raw);
   if (!parsed.success) throw new ActionValidationError('Invalid action shape: use only click, type, select, or stop with the required fields');
   const action = parsed.data;
+  if (opts.requireReason && !action.reason?.trim()) throw new ActionValidationError('Every action needs a short reason: what you are doing and why');
   if (action.type === 'stop') return action;
   const matches = controls.filter(c => c.elementId === action.elementId);
   if (matches.length !== 1) throw new ActionValidationError('Target must identify exactly one observed control');

@@ -65,6 +65,13 @@ describe('bounded decisions', () => {
       expect(permanent).toHaveBeenCalledTimes(1);
     }
   });
+  it('requires a reason when asked', async () => {
+    const decide = vi.fn().mockResolvedValueOnce({ type: 'type', elementId: 'name', value: 'Demo' }).mockResolvedValue({ ...valid, reason: 'fill the name' });
+    const onAttempt = vi.fn();
+    expect(await requestDecision({ ...defaults, decide, onAttempt, requireReason: true })).toEqual({ ...valid, reason: 'fill the name' });
+    expect(onAttempt.mock.calls[0]![0].feedback).toContain('reason');
+    expect(await requestDecision({ ...defaults, decide: vi.fn().mockResolvedValue(valid) })).toEqual(valid);
+  });
   it('waits out rate limits without spending attempts, honoring Retry-After', async () => {
     const limited = new ModelResponseError('Bitdeer HTTP 429 (rate limited)', true, { limited: true, retryAfterMs: 5 });
     const decide = vi.fn().mockRejectedValueOnce(limited).mockRejectedValueOnce(limited).mockRejectedValueOnce(limited).mockResolvedValue(valid);

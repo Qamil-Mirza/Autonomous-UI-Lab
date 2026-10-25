@@ -22,6 +22,8 @@ export async function requestDecision(options: {
   maxAttempts?: number; retryDelayMs?: number;
   /** Rate-limit (HTTP 429) waits allowed per decision; they do not use up attempts. */
   maxRateLimitWaits?: number; rateLimitDelayMs?: number;
+  /** Judged trials need a reason on every action, so the judge can weigh what the user meant to do. */
+  requireReason?: boolean;
   onAttempt?: (attempt: DecisionAttempt) => Promise<void>;
 }) {
   const maxAttempts = options.maxAttempts ?? 3;
@@ -42,7 +44,7 @@ export async function requestDecision(options: {
     try {
       const raw = await options.decide(options.input, options.controls, options.signal, feedback);
       options.signal.throwIfAborted();
-      action = validateDecision(raw, options.controls, options.allowNavigation);
+      action = validateDecision(raw, options.controls, options.allowNavigation, { requireReason: options.requireReason });
     } catch (error) {
       options.signal.throwIfAborted();
       // A rate limit is the provider asking us to slow down, not a bad answer: wait (honoring Retry-After) and ask

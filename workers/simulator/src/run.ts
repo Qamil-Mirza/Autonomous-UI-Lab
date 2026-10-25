@@ -2,7 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile, appendFile, rm, rename } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Page } from 'playwright';
-import { AgentRunResult, AgentActionEvent, PublicAgentInput, Scenario, VersionId, ExperimentId, ProtocolId, BatchId, isBehaviorallyValid, type RunOutcome, type ControlRegistryEntry, type GoalCheckResult } from '@ghostloop/contracts';
+import { AgentRunResult, AgentActionEvent, PublicAgentInput, Scenario, VersionId, ExperimentId, ProtocolId, BatchId, isBehaviorallyValid, type RunOutcome, type ControlRegistryEntry, type GoalCheckResult, type JudgeRecord, type TrialJudge } from '@ghostloop/contracts';
+import { buildJudgeInput, scoreTrial, vetoViolation } from './judging';
 import { openBrowserSession, captureObservation, waitForObservationReady, execute, viewport, checkPracticeGoal, type BrowserSession, type BrowserObservation } from './browser';
 import { bounded, type RunUsage } from './lifecycle';
 import { ActionValidationError } from './actions';
@@ -43,6 +44,11 @@ export interface RunOptions {
     allowRequest: (url: string, navigation: boolean, runId: string) => boolean;
   };
   checkGoal?: (page: Page) => Promise<boolean>;
+  /**
+   * Prototype runs only. The trial runs until the user stops or runs out of actions; protected rules are checked
+   * after every action; at the end the judge scores the final state against the task as written.
+   */
+  judging?: { judge: TrialJudge; vetoRules: readonly string[] };
 }
 export async function runOne(options: RunOptions): Promise<AgentRunResult> {
   const maxActions = options.maxActions ?? (options.prototype ? 16 : 6);
@@ -93,6 +99,11 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
   let browserCleanupError: string | undefined;
   let usageError: string | undefined;
   let stopReason: string | undefined;
+  const judging = options.prototype ? options.judging : undefined;
+  const localShots: { path: string; screen: string }[] = [];
+  let violation: string | undefined;
+  let judgeRecord: JudgeRecord | undefined;
+  let judgeError: string | undefined;
   const startedMs = performance.now();
   const budget = new AbortController();
   const signal = AbortSignal.any([options.signal, budget.signal]);
@@ -147,12 +158,13 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
         throw new Error('Published screenshot dimensions differ from the captured image');
       replayRefs.set(observation.screenshot.uri, validated);
       screenshots.push(validated);
+      localShots.push({ path: observation.screenshot.uri, screen: observation.screenId });
       terminalScreen = observation.screenId;
       return observation;
     };
     await waitForObservationReady(page, registry);
     let observation = await capture();
-    if (await bounded(() => checkGoal(page!), hookTimeoutMs, 'Goal checker', signal)) outcome = 'goal';
+    if (!judging && await bounded(() => checkGoal(page!), hookTimeoutMs, 'Goal checker', signal)) outcome = 'goal';
     for (let step = 0; step < maxActions && outcome !== 'goal'; step++) {
       signal.throwIfAborted();
       phase = 'browser_error';
@@ -175,7 +187,7 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
           try { return await bounded(() => options.decide(...args), maxWallClockMs, 'Model decision', signal); }
           finally { if (!signal.aborted) await reportUsage(); }
         },
-        input, controls, signal, allowNavigation,
+        input, controls, signal, allowNavigation, requireReason: Boolean(judging),
         onAttempt: async attempt => { await appendFile(resolve(dir, 'decision-attempts.jsonl'),
           JSON.stringify({ step, at: new Date().toISOString(), ...attempt }) + '\n'); },
       });
@@ -218,7 +230,12 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
       catch (error) { sinkError = error instanceof Error ? error.message : 'Event sink failed'; throw new Error(`Event sink failed: ${sinkError}`); }
       if (actionError) throw actionError;
       observation = after!;
-      if (await bounded(() => checkGoal(page!), hookTimeoutMs, 'Goal checker', signal)) { outcome = 'goal'; break; }
+      if (judging) {
+        // Only protected rules end a judged trial early; the goal itself is judged once, on the final state.
+        await bounded(() => checkGoal(page!), hookTimeoutMs, 'Goal checker', signal);
+        violation = vetoViolation(goalEvidence, judging.vetoRules);
+        if (violation) { outcome = 'flow_blocked'; break; }
+      } else if (await bounded(() => checkGoal(page!), hookTimeoutMs, 'Goal checker', signal)) { outcome = 'goal'; break; }
       if (action.type === 'stop') { outcome = 'agent_stop'; break; }
     }
   } catch (error) {
@@ -230,7 +247,8 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
     if (page && (options.prototype || !page.isClosed())) {
       try {
         const achieved = await checkGoal(page);
-        if (!['model_error', 'browser_error', 'user_cancelled'].includes(outcome)) {
+        if (judging) violation ??= vetoViolation(goalEvidence, judging.vetoRules);
+        else if (!['model_error', 'browser_error', 'user_cancelled'].includes(outcome)) {
           if (achieved) outcome = 'goal';
           else if (outcome === 'goal') { outcome = 'browser_error'; errorMessage = 'Goal verification changed at termination'; }
         }
@@ -250,11 +268,29 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
   }
   clearTimeout(deadline);
   if (signal.aborted) { outcome = 'user_cancelled'; stopReason ??= 'external_cancel'; }
+  let goalVerified = outcome === 'goal';
+  if (judging) {
+    if (!violation && ['agent_stop', 'step_limit', 'flow_blocked'].includes(outcome)) {
+      const labels = new Map((registry ?? []).map(e => [e.elementId, e.label]));
+      const input = buildJudgeInput({ task, scenario, events, labels, localShots, finalScreen: terminalScreen, appState: goalEvidence });
+      try {
+        // A finished trial is always judged: only an external cancel stops it, not this run's own budget or deadline.
+        const { verdict, usd } = await bounded(() => judging.judge.judge(input, options.signal), maxWallClockMs, 'Judge', options.signal);
+        judgeRecord = { ...verdict, ...judging.judge.info, usd };
+        await writeFile(resolve(dir, 'judge.json'), JSON.stringify({ input, verdict: judgeRecord }, null, 2));
+      } catch (error) {
+        if (options.signal.aborted) { outcome = 'user_cancelled'; stopReason ??= 'external_cancel'; }
+        else { judgeError = error instanceof Error ? error.message : 'Judge failed'; errorMessage = `Judge failed: ${judgeError}`; }
+      }
+    }
+    ({ outcome, goalVerified } = scoreTrial({ ended: outcome, violation, verdict: judgeRecord, judgeError }));
+  }
   try { await reportUsage(true); }
   catch (error) { usageError = error instanceof Error ? error.message : 'Usage reporting failed'; }
   const result = AgentRunResult.parse({ schemaVersion: '1.0.0', runId, experimentId, protocolId,
     versionId, scenarioId: scenario.id, batchId, events,
-    goalVerified: outcome === 'goal', goalEvidence: goalEvidence ? JSON.stringify(goalEvidence) : outcome === 'goal' ? 'Trusted application-state checker verified the task.' : undefined,
+    goalVerified, goalEvidence: judgeRecord ? JSON.stringify(judgeRecord) : goalEvidence ? JSON.stringify(goalEvidence) : outcome === 'goal' ? 'Trusted application-state checker verified the task.' : undefined,
+    ...(judgeRecord ? { judge: judgeRecord } : {}), ...(violation ? { protectedViolation: violation } : {}),
     stepCount: events.filter(e => e.action.type !== 'stop' && e.executionStatus === 'executed').length, outcome, terminalScreen, lastPointer, screenshots,
     behaviorallyValid: isBehaviorallyValid(outcome), startedAt, endedAt: new Date().toISOString() });
   await writeFile(resolve(dir, 'run.json.tmp'), JSON.stringify(result, null, 2));
