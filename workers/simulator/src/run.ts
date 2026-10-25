@@ -5,6 +5,7 @@ import type { Page } from 'playwright';
 import { AgentRunResult, AgentActionEvent, PublicAgentInput, Scenario, VersionId, ExperimentId, ProtocolId, BatchId, isBehaviorallyValid, type RunOutcome, type ControlRegistryEntry, type GoalCheckResult, type JudgeRecord, type TrialJudge } from '@ghostloop/contracts';
 import { buildJudgeInput, scoreTrial, vetoViolation } from './judging';
 import { openBrowserSession, captureObservation, waitForObservationReady, execute, viewport, checkPracticeGoal, type BrowserSession, type BrowserObservation } from './browser';
+import { waitForDiscoveryReady } from './discovery';
 import { bounded, type RunUsage } from './lifecycle';
 import { ActionValidationError } from './actions';
 import { verifyPrototypeGoal } from './goal';
@@ -35,14 +36,8 @@ export interface RunOptions {
   onResult?: (result: AgentRunResult) => void | Promise<void>;
   /** Upload/store an existing local screenshot and return a durable replay reference. */
   publishScreenshot?: (local: AgentRunResult['screenshots'][number]) => Promise<AgentRunResult['screenshots'][number]>;
-  prototype?: {
-    versionId: string;
-    url: (runId: string) => string;
-    initialize: (runId: string, signal: AbortSignal) => Promise<ControlRegistryEntry[]>;
-    checkGoal: (runId: string) => Promise<GoalCheckResult>;
-    cleanup: (runId: string) => Promise<void>;
-    allowRequest: (url: string, navigation: boolean, runId: string) => boolean;
-  };
+  /** The app under test: C's onboarding prototype (`prototypeIntegration`) or an imported app. */
+  prototype?: AppIntegration;
   checkGoal?: (page: Page) => Promise<boolean>;
   /**
    * Prototype runs only. The trial runs until the user stops or runs out of actions; protected rules are checked
@@ -55,6 +50,29 @@ export interface RunOptions {
     signal?: AbortSignal;
   };
 }
+/**
+ * How a run reaches, observes, checks and cleans up one app version. The trusted checker is supplied here, never by
+ * the model: it may read server state (the prototype) or the live page (imported apps).
+ */
+export interface AppIntegration {
+  versionId: string;
+  url: (runId: string) => string;
+  /** Prepares isolated state; returns the version's control registry, or undefined when controls are discovered. */
+  initialize: (runId: string, signal: AbortSignal) => Promise<ControlRegistryEntry[] | undefined>;
+  /** `page` is the run's live page; page-based checkers must refuse to answer without it. */
+  checkGoal: (runId: string, page?: Page) => Promise<GoalCheckResult>;
+  /** Check names the evidence must contain; defaults to the onboarding checks. */
+  requiredChecks?: readonly string[];
+  cleanup: (runId: string) => Promise<void>;
+  allowRequest: (url: string, navigation: boolean, runId: string, resourceType?: string) => boolean;
+  /** Discover controls from the rendered page (role + accessible name refs) instead of a test-ID registry. */
+  discover?: boolean;
+  /** CSS viewport for every run of this version; defaults to 1280×800. */
+  viewport?: { width: number; height: number };
+  /** Recorded in metadata. */
+  kind?: 'onboarding-prototype' | 'imported-app';
+}
+
 /** The judge's own time limit, independent of the run's and batch's remaining budget (above the client's 120 s). */
 export const JUDGE_TIMEOUT_MS = 150_000;
 
@@ -108,6 +126,7 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
   let usageError: string | undefined;
   let stopReason: string | undefined;
   const judging = options.prototype ? options.judging : undefined;
+  const discover = options.prototype?.discover === true;
   const localShots: { path: string; screen: string }[] = [];
   const secretElements = new Set<string>();
   let violation: string | undefined;
@@ -134,7 +153,7 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
     // Clear stale evidence before checking: a failed latest check cannot reuse an earlier success.
     goalEvidence = undefined;
     try {
-      goalEvidence = await verifyPrototypeGoal(() => options.prototype!.checkGoal(runId), runId, hookTimeoutMs);
+      goalEvidence = await verifyPrototypeGoal(() => options.prototype!.checkGoal(runId, currentPage), runId, hookTimeoutMs, options.prototype.requiredChecks);
     } catch (error) {
       await rm(resolve(dir, 'goal-check.json'), { force: true });
       await appendFile(resolve(dir, 'goal-checks.jsonl'), JSON.stringify({ at: new Date().toISOString(),
@@ -153,12 +172,12 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
       registry = await bounded(() => options.prototype!.initialize(runId, signal), hookTimeoutMs, 'Run initialization', signal);
     }
     session = await openBrowserSession({ url, signal, headed: options.headed,
-      deviceScaleFactor: options.deviceScaleFactor,
-      allowRequest: options.prototype ? (requestUrl, navigation) => options.prototype!.allowRequest(requestUrl, navigation, runId) : undefined });
+      deviceScaleFactor: options.deviceScaleFactor, viewport: options.prototype?.viewport, discovery: discover,
+      allowRequest: options.prototype ? (requestUrl, navigation, resourceType) => options.prototype!.allowRequest(requestUrl, navigation, runId, resourceType) : undefined });
     page = session.page;
     const capture = async (): Promise<BrowserObservation> => {
       const observation = await captureObservation(page!, {
-        screenshotPath: resolve(dir, `${String(screenshots.length).padStart(3, '0')}.png`), registry,
+        screenshotPath: resolve(dir, `${String(screenshots.length).padStart(3, '0')}.png`), registry, discover,
         allowUrl: options.prototype ? currentUrl => options.prototype!.allowRequest(currentUrl, true, runId) : undefined,
       });
       const replay = options.publishScreenshot ? await bounded(() => options.publishScreenshot!(structuredClone(observation.screenshot)), hookTimeoutMs, 'Screenshot publication', signal) : observation.screenshot;
@@ -172,7 +191,8 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
       terminalScreen = observation.screenId;
       return observation;
     };
-    await waitForObservationReady(page, registry);
+    const ready = (p: Page) => discover ? waitForDiscoveryReady(p) : waitForObservationReady(p, registry);
+    await ready(page);
     let observation = await capture();
     if (!judging && await bounded(() => checkGoal(page!), hookTimeoutMs, 'Goal checker', signal)) outcome = 'goal';
     for (let step = 0; step < maxActions && outcome !== 'goal'; step++) {
@@ -210,11 +230,11 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
       let after: BrowserObservation | undefined;
       await appendFile(resolve(dir, 'execution.jsonl'), JSON.stringify({ step, action, status: 'started' }) + '\n');
       try {
-        pointer = await execute(page, action, registry, allowNavigation);
+        pointer = await execute(page, action, registry, allowNavigation, discover);
         executionStatus = 'executed';
         if (pointer) lastPointer = pointer;
         await appendFile(resolve(dir, 'execution.jsonl'), JSON.stringify({ step, action, status: 'executed', pointer }) + '\n');
-        await waitForObservationReady(page, registry);
+        await ready(page);
         after = await capture();
       } catch (error) {
         actionError = error;
@@ -311,7 +331,10 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
   catch (error) { sinkError = error instanceof Error ? error.message : 'Result sink failed'; }
   await writeFile(resolve(dir, 'metadata.json'), JSON.stringify({ provenance: options.provenance, model: options.provenance === 'live-bitdeer' ? process.env.BITDEER_MODEL || 'Qwen/Qwen3.8-27B' : null,
     configuration,
-    usage: usage(), usageError, stopReason, browserCleanupError, decisionCalls: inferenceCalls, error: errorMessage, sinkError, terminalCheckError, cleanupError, coordinateSpace: 'css-pixels', viewport, screenshotScale: 'css', note: options.prototype ? 'Prototype session; trusted checker supplied by C. Batch summaries, when applicable, are in the parent directory.' : 'Practice task only; not full onboarding or a batch adapter.' }, null, 2));
+    usage: usage(), usageError, stopReason, browserCleanupError, decisionCalls: inferenceCalls, error: errorMessage, sinkError, terminalCheckError, cleanupError, coordinateSpace: 'css-pixels', viewport: options.prototype?.viewport ?? viewport, screenshotScale: 'css',
+    integration: options.prototype?.kind ?? (options.prototype ? 'onboarding-prototype' : 'practice'),
+    note: options.prototype?.kind === 'imported-app' ? 'Imported app session; controls discovered from the rendered page; success decided only by the frozen page checks (UI evidence, not backend proof).'
+      : options.prototype ? 'Prototype session; trusted checker supplied by C. Batch summaries, when applicable, are in the parent directory.' : 'Practice task only; not full onboarding or a batch adapter.' }, null, 2));
   console.log(`${outcome}: ${result.stepCount} actions. Trace: ${resolve(dir, 'run.json')}`);
   if (errorMessage) console.error(errorMessage);
   return result;

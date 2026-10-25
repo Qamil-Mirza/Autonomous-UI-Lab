@@ -33,6 +33,7 @@ export function prototypeIntegration(baseUrl: string, versionId: string, adapter
     return response;
   }
   return {
+    kind: 'onboarding-prototype',
     versionId,
     url: runId => prototypeUrl(baseUrl, versionId, runId),
     initialize: async (runId, signal) => {

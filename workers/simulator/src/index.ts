@@ -1,6 +1,10 @@
 export { createSimulationAdapter, type BatchOptions } from './batch';
 export { controlledScenarios } from './scenarios';
-export { runOne, type RunOptions } from './run';
+export { runOne, type RunOptions, type AppIntegration } from './run';
+export { openBrowserSession, captureObservation, type BrowserObservation } from './browser';
+export { discoverControls, discoveryScreenId, waitForDiscoveryReady, type DiscoveredControl } from './discovery';
+export { bitdeerDecider, type Decider } from './bitdeer';
+export type { ObservedControl } from './actions';
 export type { RunUsage } from './lifecycle';
 export { exportReplay } from './replay';
 export { createIntegratedSimulationAdapter, type ReplayStore } from './integration';

@@ -5,6 +5,7 @@ import type { ControlRegistryEntry, ScreenshotRef } from '@ghostloop/contracts';
 import type { ObservedControl, Decision } from './actions';
 import { bounded } from './lifecycle';
 import { validateDecision } from './actions';
+import { discoverControls, discoveryAlerts, discoveryScreenId, refSelector } from './discovery';
 
 const actualPointers = new WeakMap<Page, { x: number; y: number }>();
 export const viewport = { width: 1280, height: 800 };
@@ -18,8 +19,18 @@ export interface OpenBrowserOptions {
   signal: AbortSignal;
   headed?: boolean;
   deviceScaleFactor?: number;
-  allowRequest?: (url: string, navigation: boolean) => boolean;
+  allowRequest?: (url: string, navigation: boolean, resourceType: string) => boolean;
+  /** CSS viewport; defaults to 1280×800. */
+  viewport?: { width: number; height: number };
+  /**
+   * Imported apps: accept a client-side redirect within the starting origin, and disable CSS animations and
+   * transitions so observations settle. The onboarding prototype keeps its exact-URL rule.
+   */
+  discovery?: boolean;
 }
+
+/** Turns off CSS motion so a screenshot and its control inventory describe the same, settled page. */
+const STILL_STYLE = `*,*::before,*::after{animation-duration:0s!important;animation-delay:0s!important;transition-duration:0s!important;transition-delay:0s!important;scroll-behavior:auto!important;caret-color:transparent!important}`;
 
 /** Owns an isolated browser/context and releases it on initialization failure or cancellation. */
 export async function openBrowserSession(options: OpenBrowserOptions): Promise<BrowserSession> {
@@ -33,13 +44,16 @@ export async function openBrowserSession(options: OpenBrowserOptions): Promise<B
     options.signal.throwIfAborted();
     browser = await chromium.launch({ timeout: 15000, headless: !options.headed, channel: process.env.SIMULATOR_BROWSER_CHANNEL || undefined });
     options.signal.throwIfAborted();
-    context = await browser.newContext({ viewport, deviceScaleFactor: options.deviceScaleFactor ?? 1, serviceWorkers: 'block', acceptDownloads: false });
+    context = await browser.newContext({ viewport: options.viewport ?? viewport, deviceScaleFactor: options.deviceScaleFactor ?? 1, serviceWorkers: 'block', acceptDownloads: false,
+      ...(options.discovery ? { reducedMotion: 'reduce' as const } : {}) });
     await context.route('**/*', route => {
       const request = route.request();
-      const allowed = options.allowRequest ? options.allowRequest(request.url(), request.isNavigationRequest()) : request.url() === options.url;
+      const allowed = options.allowRequest ? options.allowRequest(request.url(), request.isNavigationRequest(), request.resourceType()) : request.url() === options.url;
       return allowed ? route.continue() : route.abort();
     });
     const page = await context.newPage();
+    // A plain script string, not a function: tsx would wrap named helpers in a Node-only __name call.
+    if (options.discovery) await page.addInitScript({ content: `(function(){function add(){var s=document.createElement('style');s.setAttribute('data-ghostloop','still');s.textContent=${JSON.stringify(STILL_STYLE)};(document.head||document.documentElement).appendChild(s);}if(document.documentElement)add();else document.addEventListener('DOMContentLoaded',add,{once:true});})();` });
     await page.exposeBinding('__ghostloopPointer', ({ page: source }, x: number, y: number) => {
       actualPointers.set(source, { x, y });
     });
@@ -53,7 +67,8 @@ export async function openBrowserSession(options: OpenBrowserOptions): Promise<B
     options.signal.throwIfAborted();
     const response = await page.goto(options.url, { waitUntil: 'load', timeout: 15000 });
     if (response && !response.ok()) throw new Error(`Prototype navigation HTTP ${response.status()}`);
-    if (page.url() !== new URL(options.url).href) throw new Error('Prototype redirected away from the exact requested URL');
+    if (options.discovery ? new URL(page.url()).origin !== new URL(options.url).origin : page.url() !== new URL(options.url).href)
+      throw new Error(options.discovery ? 'Preview redirected to another origin' : 'Prototype redirected away from the exact requested URL');
     let closing: Promise<void> | undefined;
     return { page, context, close: () => closing ??= (async () => {
       options.signal.removeEventListener('abort', abort);
@@ -160,18 +175,27 @@ export async function captureObservation(page: Page, options: {
   screenshotPath: string;
   registry?: ControlRegistryEntry[];
   allowUrl?: (url: string) => boolean;
+  /** Imported apps: discover controls from the rendered page instead of test IDs. */
+  discover?: boolean;
 }): Promise<BrowserObservation> {
   async function sample() {
     const url = page.url();
-    if (options.allowUrl && !options.allowUrl(url)) throw new Error('Prototype navigated outside the expected version/run routes');
+    if (options.allowUrl && !options.allowUrl(url)) throw new Error(options.discover ? 'The app navigated outside the preview' : 'Prototype navigated outside the expected version/run routes');
     const dimensions = await page.evaluate(() => ({ viewport: { width: innerWidth, height: innerHeight }, scroll: { x: scrollX, y: scrollY } }));
+    if (options.discover) {
+      return { url, screenId: await discoveryScreenId(page), ...dimensions, coordinateSpace: 'css-pixels' as const,
+        controls: await discoverControls(page), alerts: await discoveryAlerts(page) };
+    }
     return { url, screenId: await screenId(page), ...dimensions, coordinateSpace: 'css-pixels' as const,
       controls: await observeControls(page, options.registry), alerts: await page.locator('[role="alert"]:visible').allTextContents() };
   }
-  for (let attempt = 0; attempt < 3; attempt++) {
+  // Arbitrary apps animate more than the prototype; give them a few more chances to settle.
+  const attempts = options.discover ? 5 : 3;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    if (attempt > 0 && options.discover) await page.waitForTimeout(200 * attempt);
     await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
     const before = await sample();
-    const png = await page.screenshot({ scale: 'css', fullPage: false, timeout: 5000 });
+    const png = await page.screenshot({ scale: 'css', fullPage: false, timeout: 5000, ...(options.discover ? { animations: 'disabled' as const } : {}) });
     const after = await sample();
     if (JSON.stringify(before) !== JSON.stringify(after)) continue;
     const observation = { ...after, screenshot: { uri: options.screenshotPath, ...after.viewport } };
@@ -180,14 +204,16 @@ export async function captureObservation(page: Page, options: {
     await writeFile(`${options.screenshotPath}.observation.json`, JSON.stringify(observation, null, 2));
     return observation;
   }
-  throw new Error('Page changed during all three observation attempts');
+  throw new Error(options.discover ? `Page changed during all ${attempts} observation attempts` : 'Page changed during all three observation attempts');
 }
 
-export async function execute(page: Page, action: Decision, registry?: ControlRegistryEntry[], allowNavigation?: (url: string) => boolean) {
-  validateDecision(action, await observeControls(page, registry), allowNavigation ?? (url => url === page.url()));
+export async function execute(page: Page, action: Decision, registry?: ControlRegistryEntry[], allowNavigation?: (url: string) => boolean, discover?: boolean) {
+  // Re-discover (and re-tag) right before acting: the model's choice must still name exactly one live control.
+  validateDecision(action, discover ? await discoverControls(page) : await observeControls(page, registry), allowNavigation ?? (url => url === page.url()));
   if (action.type === 'stop') return undefined;
-  const byTestId = page.getByTestId(action.elementId);
-  const target = await byTestId.count() ? byTestId : page.locator(`[data-agent-id="${action.elementId}"]`);
+  const byTestId = discover ? undefined : page.getByTestId(action.elementId);
+  const target = discover ? page.locator(refSelector(action.elementId))
+    : await byTestId!.count() ? byTestId! : page.locator(`[data-agent-id="${action.elementId}"]`);
   if (action.type === 'type') await target.fill(action.value);
   if (action.type === 'select') await target.selectOption(action.value);
   if (action.type === 'click') {
