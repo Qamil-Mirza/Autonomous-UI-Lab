@@ -232,6 +232,24 @@ describe("experimentView", () => {
     expect(model.baseline.runs[0]!.outcome).toBe("Gave up")
   })
 
+  it("flags steps that hit a validation error or failed, with the message, and counts them per trial", () => {
+    const v = experimentView(
+      snap({
+        actions: [
+          action("run_x", 0),
+          action("run_x", 1, { result: "validation_error", screenAfter: "invite", validationFeedback: ["Enter a valid email address"] }),
+          action("run_x", 2, { result: "no_effect", screenAfter: "invite" }),
+          action("run_x", 3, { result: "execution_error", error: "Element detached" }),
+        ],
+      }),
+      "exp_a",
+      {},
+    )!
+    const steps = v.baseline.runs[0]!.actions
+    expect(steps.map((a) => a.flag)).toEqual([undefined, "Enter a valid email address", "No visible change", "Element detached"])
+    expect(v.baseline.runs[0]!.issues).toBe(3)
+  })
+
   it("describes non-ok results and stop reasons", () => {
     const v = experimentView(
       snap({

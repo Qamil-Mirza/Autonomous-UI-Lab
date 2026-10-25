@@ -25,6 +25,8 @@ export interface ActionView {
   target: string
   result: string
   screenshot?: string
+  /** Set when the step hit a validation error or didn't work: the message the user saw, or what went wrong. */
+  flag?: string
 }
 
 export interface RunView {
@@ -38,6 +40,8 @@ export interface RunView {
   illustrative?: boolean
   /** The judge's explanation, on trials scored against the task as written. */
   verdict?: string
+  /** Steps in this trial that hit a validation error or didn't work. */
+  issues?: number
 }
 
 export interface BatchView {
@@ -236,7 +240,9 @@ export function actionView(e: AgentActionEvent, elements: Elements): ActionView 
   else if (e.result !== "ok") result = e.result === "execution_error" && e.error ? e.error : RESULT[e.result]
   else result = e.screenAfter !== e.screenBefore ? `Moved to ${e.screenAfter}` : `Done on ${e.screenAfter}`
   const shot = e.screenshot?.uri ?? e.screenshotBefore?.uri
-  return { action: VERB[action.type], target, result, ...(shot && isUrl(shot) ? { screenshot: shot } : {}) }
+  const alerts = (e.validationFeedback ?? []).filter((t) => t.trim())
+  const flag = e.result === "ok" ? undefined : alerts.join(" · ") || e.error || RESULT[e.result]
+  return { action: VERB[action.type], target, result, ...(shot && isUrl(shot) ? { screenshot: shot } : {}), ...(flag ? { flag } : {}) }
 }
 
 const pad = (n: number) => String(n).padStart(2, "0")
@@ -272,6 +278,7 @@ export function batchView(
 
   const actionsOf = (runId: string) =>
     (actionsByRun.get(runId) ?? []).sort((a, b) => a.seq - b.seq).map((a) => actionView(a, elements))
+  const issuesOf = (actions: ActionView[]) => actions.filter((a) => a.flag).length
 
   const runs: RunView[] = [
     ...finished.map((r: StoredRun) => {
@@ -292,7 +299,7 @@ export function batchView(
   ].map((r, i) => {
     const label = `Trial ${pad(i + 1)}`
     labels.set(r.id, label)
-    return { ...r, label }
+    return { ...r, label, issues: issuesOf(r.actions) }
   })
 
   const count = (pred: (r: StoredRun) => boolean) => finished.filter(pred).length

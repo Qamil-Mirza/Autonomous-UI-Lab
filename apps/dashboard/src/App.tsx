@@ -864,6 +864,11 @@ function Runs({
               <span>
                 <b>{r.label}</b>
                 <small>{r.id}</small>
+                {r.issues ? (
+                  <small className="issue-count">
+                    ⚑ {r.issues} step{r.issues === 1 ? "" : "s"} hit an error
+                  </small>
+                ) : null}
               </span>
               <Badge tone={r.tone}>{r.outcome}</Badge>
             </button>
@@ -895,13 +900,14 @@ function Runs({
             <h3>Action timeline</h3>
             <ol className="timeline">
               {selected.actions.map((a, i) => (
-                <li key={i}>
+                <li key={i} className={a.flag ? "flagged" : undefined}>
                   <span>{i + 1}</span>
                   <div>
                     <b>
                       {a.action} · {a.target}
                     </b>
                     <small>{a.result}</small>
+                    {a.flag && <em className="step-flag">⚑ {a.flag}</em>}
                   </div>
                 </li>
               ))}
