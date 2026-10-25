@@ -4,6 +4,7 @@ import { ApprovalId, BatchId, CandidateId, EvaluationId, ExperimentId, Observati
 import { ExperimentState, StoppingReason } from "./enums";
 import { ExperimentProtocol } from "./protocol";
 import { UsageReport } from "./simulation";
+import { JudgeInfo } from "./judge";
 
 const ts = z.string().datetime();
 
@@ -43,6 +44,7 @@ export const BatchRecord = z.object({
   cancelled: z.boolean(),
   usage: UsageReport,
   superseded: z.boolean(),
+  judge: JudgeInfo.optional(),
 });
 export type BatchRecord = z.infer<typeof BatchRecord>;
 

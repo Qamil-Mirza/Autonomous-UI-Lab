@@ -3,6 +3,7 @@ import { SchemaVersion } from "./version";
 import { BatchId, ExperimentId, ProtocolId, VersionId } from "./ids";
 import { Scenario } from "./protocol";
 import { AgentActionEvent, AgentRunResult } from "./agent";
+import { JudgeInfo } from "./judge";
 
 export const UsageReport = z.object({
   costKnown: z.boolean().optional(),
@@ -25,6 +26,8 @@ export const BatchRequest = z.object({
   maxActionsPerRun: z.number().int().positive(),
   maxConcurrency: z.number().int().positive(),
   hiddenGoalRef: z.string().min(1),
+  /** Protected rules that fail a trial when broken; absent means DEFAULT_VETO_RULES. */
+  vetoRules: z.array(z.string().min(1)).optional(),
 });
 export type BatchRequest = z.infer<typeof BatchRequest>;
 
@@ -36,6 +39,7 @@ export const BatchResult = z.object({
   usage: UsageReport,
   cancelled: z.boolean(),
   plannedRuns: z.number().int().positive(),
+  judge: JudgeInfo.optional(),
 });
 export type BatchResult = z.infer<typeof BatchResult>;
 
