@@ -12,3 +12,4 @@ export * from "./experiment";
 export * from "./commands";
 export * from "./prototype";
 export * from "./goal";
+export * from "./judge";

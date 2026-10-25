@@ -66,6 +66,7 @@ describe("buildCreatePayload", () => {
     expect(p.protocol.scenarios.find((s) => s.id === "scn_invalid_email")!.inputs.inviteEmail).toBe("teammate@examplecom")
     expect(p.protocol.protectedCategories.length).toBeGreaterThan(0)
     expect(p.protocol).not.toHaveProperty("provenance")
+    expect(p.protocol.vetoRules).toEqual(["no_paid_trial"])
   })
 
   it("drops scenarios left without runs and caps concurrency at the trial count", () => {

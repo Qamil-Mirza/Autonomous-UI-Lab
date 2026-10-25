@@ -1,4 +1,4 @@
-import { CreateExperiment, DesignManifest, ExperimentProtocolDraft } from "@ghostloop/contracts"
+import { CreateExperiment, DEFAULT_VETO_RULES, DesignManifest, ExperimentProtocolDraft } from "@ghostloop/contracts"
 import defaults from "@ghostloop/contracts/fixtures/protocol.default.json"
 
 /** What the setup form collects. */
@@ -94,6 +94,7 @@ export function buildCreatePayload(f: SetupForm, manifestHash: string): CreateEx
       maxWallClockMs: Math.round(f.maxMinutes * 60_000),
     },
     policy: { ...base.policy, minImprovementPp: f.minImprovementPp },
+    vetoRules: [...DEFAULT_VETO_RULES],
   })
   return CreateExperiment.parse({ protocol, baseVersionUrl: f.url, baseManifestHash: manifestHash })
 }

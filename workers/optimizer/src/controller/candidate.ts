@@ -10,7 +10,7 @@ import {
   type RunMetrics,
   type StoppingReason,
 } from "@ghostloop/contracts";
-import { compare, stoppingReasonFor, type Comparison } from "../evaluator";
+import { compare, judgeMismatch, stoppingReasonFor, type Comparison } from "../evaluator";
 import { adapter, IntegrationError, metricsFor, parsed, stop, transition, type StepContext } from "./context";
 
 /** `awaiting_approval`: parks until `ApprovePatches` records an approval; an empty approval ends the round. */
@@ -165,7 +165,10 @@ export async function comparing(ctx: StepContext, e: Experiment): Promise<boolea
   const { policy, budgets } = e.protocol;
   const baseline = await metricsFor(ctx, e, e.round.baselineBatchId);
   const candidate = await metricsFor(ctx, e, e.round.candidateBatchId);
-  const cmp = compare(baseline, candidate, guardrails, policy);
+  const [baseBatch, candBatch] = await Promise.all([e.round.baselineBatchId, e.round.candidateBatchId].map((id) => (id ? ctx.deps.store.getBatch(id) : undefined)));
+  // Rates scored by different judges aren't comparable, whatever they say.
+  const mismatch = judgeMismatch(baseBatch?.judge, candBatch?.judge);
+  const cmp = mismatch ? { decision: "inconclusive" as const, deltaPp: null, reasons: [mismatch] } : compare(baseline, candidate, guardrails, policy);
   const reason = stoppingReasonFor(cmp.decision, candidate.completionRate, policy, e.round.index, budgets.maxIterations);
   await decide(ctx, e, cand, baseline, candidate, guardrails, cmp, reason);
   return true;

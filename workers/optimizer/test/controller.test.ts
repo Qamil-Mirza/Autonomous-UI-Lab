@@ -259,6 +259,31 @@ describe("controller round on mocks", () => {
     expect(t.analysis.calls).toHaveLength(0);
   });
 
+  it("batch requests carry the protocol's veto rules (default no paid trial) and batches record their judge", async () => {
+    const t = await setup({ start: false });
+    const orig = t.simulation.runBatch.bind(t.simulation);
+    t.simulation.runBatch = async (req, onEvent, signal) => ({ ...(await orig(req, onEvent, signal)), judge: { model: "claude-opus-5-5", instructionVersion: "judge-v1" } });
+    await t.cmd.startExperiment({ experimentId: t.id });
+    await t.runtime.idle(t.id);
+    expect(t.simulation.calls[0]!.vetoRules).toEqual(["no_paid_trial"]);
+    const e = await t.exp();
+    expect((await t.store.getBatch(e.round.baselineBatchId!))!.judge).toEqual({ model: "claude-opus-5-5", instructionVersion: "judge-v1" });
+  });
+
+  it("baseline and candidate judged differently → inconclusive", async () => {
+    const t = await setup({ start: false, candidate: "batch.candidate-improved.json" });
+    const orig = t.simulation.runBatch.bind(t.simulation);
+    let n = 0;
+    t.simulation.runBatch = async (req, onEvent, signal) => ({ ...(await orig(req, onEvent, signal)), judge: { model: "claude-opus-5-5", instructionVersion: n++ === 0 ? "judge-v1" : "judge-v2" } });
+    await t.cmd.startExperiment({ experimentId: t.id });
+    await t.runtime.idle(t.id);
+    await t.approveAll();
+    const e = await t.exp();
+    const evaluation = (await t.store.getEvaluation(e.round.evaluationId!))!;
+    expect(evaluation.decision).toBe("inconclusive");
+    expect(evaluation.reasons).toEqual(["baseline and candidate were judged differently (claude-opus-5-5 judge-v1 vs claude-opus-5-5 judge-v2)"]);
+  });
+
   it("batch request carries experimentId; stored runs are owned by the experiment", async () => {
     const t = await setup({ start: false });
     const orig = t.simulation.runBatch.bind(t.simulation);

@@ -1,4 +1,4 @@
-import { AgentActionEvent, BatchResult, newId, type BatchRecord, type BatchRequest, type Experiment } from "@ghostloop/contracts";
+import { AgentActionEvent, BatchResult, DEFAULT_VETO_RULES, newId, type BatchRecord, type BatchRequest, type Experiment } from "@ghostloop/contracts";
 import { adapter, addUsage, IntegrationError, parsed, transition, update, type StepContext } from "./context";
 
 const ZERO_USAGE = { inferenceCalls: 0, inferenceUsd: 0, wallClockMs: 0 };
@@ -52,6 +52,7 @@ export async function runBatchPhase(ctx: StepContext, e: Experiment, phase: "bas
     maxActionsPerRun: protocol.budgets.maxActionsPerRun,
     maxConcurrency: protocol.budgets.maxConcurrency,
     hiddenGoalRef: protocol.hiddenGoalRef,
+    vetoRules: protocol.vetoRules ?? [...DEFAULT_VETO_RULES],
   };
   const streamed: Promise<boolean>[] = [];
   // Streamed events are untrusted: store only schema-valid events for the requested version. Run IDs are unknown until
@@ -71,7 +72,7 @@ export async function runBatchPhase(ctx: StepContext, e: Experiment, phase: "bas
 
   // B receives `experimentId` in the request; the controller still stamps the owner on stored runs as a defensive override.
   for (const run of result.runs) await store.putRun({ ...run, experimentId: e.id });
-  await store.putBatch({ ...record, cancelled: result.cancelled, usage: result.usage });
+  await store.putBatch({ ...record, cancelled: result.cancelled, usage: result.usage, ...(result.judge ? { judge: result.judge } : {}) });
   await update(ctx, (x) => ({ ...x, usage: addUsage(x.usage, result.usage) }));
   await transition(ctx, phase === "baseline" ? "observing" : "comparing", undefined, `${result.runs.length} of ${req.runsPerBatch} runs recorded${result.cancelled ? " (batch cancelled)" : ""}`);
   return true;
