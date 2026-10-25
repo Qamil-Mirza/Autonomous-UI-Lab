@@ -18,7 +18,8 @@
     "zod": "^3.25.0",
     "@ghostloop/prototype-adapter": "*",
     "@ghostloop/simulator": "*",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "@ghostloop/importer": "*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

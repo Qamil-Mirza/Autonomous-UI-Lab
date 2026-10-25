@@ -2,6 +2,8 @@ import { createCommandProcessor } from "./command-processor";
 import { createCommands } from "./commands";
 import { ExperimentRuntime, type ControllerDeps } from "./controller";
 import { createMockAdapters } from "./mocks";
+import { dispatchCandidates, dispatchSimulation, type Imports } from "./imported";
+import { startImportApi } from "@ghostloop/importer";
 import { recoverInterruptedApprovals } from "./recovery";
 import { openWriterStore } from "./spacetime-env";
 
@@ -18,6 +20,11 @@ export interface WorkerOptions {
    * The worker does not reconnect and its writes now fail: the owner should exit (a rerun resumes, spec §6).
    */
   onDisconnect?: (err: Error) => void;
+  /**
+   * Imported Figma Make apps: batches and candidates on imported versions go to these adapters (never to mocks),
+   * and the import HTTP API is served on `importPort` (loopback). Absent: onboarding only.
+   */
+  imports?: Imports & { port?: number; allowedOrigins?: string[] };
 }
 
 /**
@@ -40,15 +47,33 @@ export async function startWorker(opts: WorkerOptions) {
     const clock = () => new Date().toISOString();
     // An explicit `undefined` in `opts.adapters` keeps the default mock.
     const adapters = Object.fromEntries(Object.entries(opts.adapters ?? {}).filter(([, v]) => v !== undefined));
-    const runtime = new ExperimentRuntime({
-      store,
+    const base = {
       // Batch phase comes from the stored batch record, so a restarted mock replays the right fixture.
       ...createMockAdapters("improved", { phaseOf: async (req) => (await store.getBatch(req.batchId))?.phase }),
       ...adapters,
+    };
+    const imports = opts.imports;
+    const runtime = new ExperimentRuntime({
+      store,
+      ...base,
+      ...(imports
+        ? {
+            simulation: dispatchSimulation(imports.ownership, imports.simulation, base.simulation),
+            candidates: dispatchCandidates(imports.ownership, imports.candidates, base.candidates),
+          }
+        : {}),
       clock,
       now: Date.now,
     });
     const commands = createCommands(store, runtime, clock);
+    let importServer: Awaited<ReturnType<typeof startImportApi>> | undefined;
+    if (imports) {
+      imports.service.commands = commands;
+      await imports.service.init();
+      importServer = await startImportApi(imports.service, { port: imports.port, allowedOrigins: imports.allowedOrigins });
+      const a = importServer.address();
+      log(`import API on http://127.0.0.1:${a && typeof a === "object" ? a.port : imports.port}`);
+    }
     const processor = createCommandProcessor(store.connection, commands, log);
 
     const failed = await processor.failRunning();
@@ -69,6 +94,8 @@ export async function startWorker(opts: WorkerOptions) {
       processor,
       /** Disconnects. Drives are not aborted: an abort would record `USER_STOP`; the next worker resumes them. */
       async close(): Promise<void> {
+        await new Promise<void>((resolve) => (importServer ? importServer.close(() => resolve()) : resolve()));
+        await imports?.service.shutdown();
         await store.close();
       },
     };
