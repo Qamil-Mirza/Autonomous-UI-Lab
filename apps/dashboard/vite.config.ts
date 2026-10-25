@@ -56,10 +56,20 @@ function serveArtifacts(): Plugin {
   };
 }
 
+// The worker's import API (uploads, sandbox status, imported manifests). Previews themselves are served on their own
+// loopback origins (127.0.0.1:47xxx), never through the dashboard's origin.
+const importApi = process.env.GHOSTLOOP_IMPORT_API_URL ?? "http://127.0.0.1:5180";
+const proxy = {
+  "/designs": prototype,
+  "/api/imports": { target: importApi, timeout: 5 * 60_000, proxyTimeout: 5 * 60_000 },
+  "/api/import-versions": importApi,
+  "/api/import-runtime": importApi,
+};
+
 // Designer dashboard. 5174 so it runs beside the prototype (5173).
 export default defineConfig({
   plugins: [react(), tailwindcss(), serveArtifacts(), servePreviews()],
   resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
-  server: { port: 5174, strictPort: true, proxy: { "/designs": prototype } },
-  preview: { port: 5174, strictPort: true, proxy: { "/designs": prototype } },
+  server: { port: 5174, strictPort: true, proxy },
+  preview: { port: 5174, strictPort: true, proxy },
 });

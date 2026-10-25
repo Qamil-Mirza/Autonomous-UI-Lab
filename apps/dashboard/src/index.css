@@ -285,3 +285,26 @@ input:hover,textarea:hover,select:hover { border-color:#aeb8b1; }
 .run-list .issue-count { color:var(--bad) !important; font-weight:700; }
 .run-list .persona { color:var(--ink) !important; font-weight:650; margin-top:2px; }
 .persona-tag { display:inline-block; margin-left:8px; padding:2px 8px; border-radius:99px; background:#eff1ed; color:#56605c; font-size:10px; font-weight:800; vertical-align:middle; }
+
+/* Import a Figma Make app */
+.welcome-actions { display:flex; gap:10px; flex-wrap:wrap; }
+.optional { color:var(--muted); font-weight:500; font-size:11px; }
+.check-row { display:grid; gap:5px; padding:10px 0; border-bottom:1px solid var(--line); }
+.check-row:last-of-type { border-bottom:0; }
+.check-fields { display:grid; grid-template-columns:170px 170px 1fr auto; gap:8px; align-items:center; }
+.check-fields select, .check-fields input { min-width:0; }
+.check-desc { color:var(--muted); font-size:12px; }
+.log-tail { margin:10px 0 6px; max-height:260px; overflow:auto; padding:10px 12px; border-radius:var(--radius-sm); background:#171e1b; color:#e7ece8; font-size:11px; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
+.import-report { padding:16px 18px; margin-bottom:18px; }
+.import-report small { color:var(--muted); font-size:10px; font-weight:800; letter-spacing:.8px; }
+.import-report p { margin:6px 0 0; }
+.verify-grid { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:16px; align-items:start; }
+.verify-shot { width:100%; display:block; overflow:hidden; }
+.verify-list { padding:16px 18px; display:grid; gap:8px; }
+.verify-list p { margin:0; font-size:13px; }
+.control-list { margin:0; padding-left:18px; max-height:260px; overflow:auto; font-size:13px; }
+.control-list code { font-size:11px; color:var(--muted); margin-right:4px; }
+@media (max-width: 900px) {
+  .check-fields { grid-template-columns:1fr; }
+  .verify-grid { grid-template-columns:1fr; }
+}

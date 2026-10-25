@@ -7,8 +7,11 @@ import { useElements, useGhostloop, useNames, type LinkStatus } from "./live/use
 import { usePreview } from "./live/usePreview"
 import { experimentView, summaries, type BatchView, type ExperimentSummary, type ExperimentView, type RunView } from "./live/view"
 import { buildCreatePayload, DEFAULT_PROTOTYPE_URL, fetchManifest, LIMITS, parsePrototypeUrl, validateForm, type SetupForm } from "./live/setup"
+import { Badge, VersionPreview } from "./ui"
+import { ImportDetail, ImportsPage } from "./ImportApp"
+import { isImportedVersion } from "./live/imports"
 
-type View = "landing" | "overview" | "setup" | "runs" | "recommendations" | "review" | "results"
+type View = "landing" | "overview" | "setup" | "imports" | "import" | "runs" | "recommendations" | "review" | "results"
 
 function Logo() {
   return (
@@ -24,16 +27,6 @@ function Mascot({ small = false }: { small?: boolean }) {
       <img src="/assets/ghostloop-mascot.png" alt="GhostLoop ghost mascot" />
     </div>
   )
-}
-
-function Badge({
-  children,
-  tone = "muted",
-}: {
-  children: React.ReactNode
-  tone?: string
-}) {
-  return <span className={`badge ${tone}`}>{children}</span>
 }
 
 function Landing({ open }: { open: () => void }) {
@@ -155,6 +148,12 @@ function Sidebar({
           onClick={() => setView(hasExperiment ? "runs" : "setup")}
         >
           Tests
+        </button>
+        <button
+          className={view === "imports" || view === "import" ? "active" : ""}
+          onClick={() => setView("imports")}
+        >
+          Import app
         </button>
         {recommendationsAvailable && (
           <button
@@ -498,44 +497,6 @@ function LiveReplay({ run }: { run: RunView }) {
   )
 }
 
-const FRAME = { width: 1280, height: 800 }
-
-/** A live view of a prototype version, rendered at desktop size and scaled down to fit its column. */
-function VersionPreview({ url, title }: { url: string; title: string }) {
-  const box = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(0.5)
-  useEffect(() => {
-    const el = box.current
-    if (!el) return
-    const fit = () => setScale(el.clientWidth / FRAME.width)
-    fit()
-    const observer = new ResizeObserver(fit)
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
-  return (
-    <div className="subject version-preview">
-      <div className="subject-top">
-        <i />
-        <i />
-        <i />
-        <b>{new URL(url).pathname}</b>
-        <a href={url} target="_blank" rel="noreferrer">
-          Open ↗
-        </a>
-      </div>
-      <div className="frame-box" ref={box} style={{ height: FRAME.height * scale }}>
-        <iframe
-          src={url}
-          title={title}
-          sandbox="allow-scripts allow-same-origin allow-forms"
-          style={{ width: FRAME.width, height: FRAME.height, transform: `scale(${scale})` }}
-        />
-      </div>
-    </div>
-  )
-}
-
 /** Explains a batch the simulator stopped before every trial ran. */
 function StoppedEarlyNote({ batch, what }: { batch: BatchView; what: string }) {
   if (!batch.stoppedEarly) return null
@@ -557,11 +518,13 @@ function Overview({
   experiments,
   open,
   newTest,
+  importApp,
   live,
 }: {
   experiments: ExperimentSummary[]
   open: (id: string) => void
   newTest: () => void
+  importApp: () => void
   live: boolean
 }) {
   return (
@@ -574,9 +537,14 @@ function Overview({
             Set a goal, see where people may get stuck, and choose which
             improvements to try.
           </p>
-          <button className="btn primary" onClick={newTest}>
-            Start a new test
-          </button>
+          <div className="welcome-actions">
+            <button className="btn primary" onClick={newTest}>
+              Start a new test
+            </button>
+            <button className="btn secondary" onClick={importApp}>
+              Import Figma Make app
+            </button>
+          </div>
         </div>
         <Mascot small />
       </div>
@@ -926,6 +894,17 @@ function Runs({
                 <p>{selected.verdict}</p>
               </div>
             )}
+            {selected.checks && (
+              <div className="verdict">
+                <small>SUCCESS CHECKS · CHECKED BY GHOSTLOOP ON THE FINAL PAGE</small>
+                {selected.checks.map((c) => (
+                  <p key={c.name}>
+                    {c.passed ? "✓" : "✕"} {c.detail}
+                  </p>
+                ))}
+                <p className="quality-note">UI evidence only: a visible confirmation does not prove a backend action happened.</p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1208,13 +1187,21 @@ function Review({
                 <b>Why this might help · AI suggestion</b>
                 <p>{p.hypothesis}</p>
               </div>
-              <div className="artifact">
-                <span>{p.correspondence === "Not linked" ? "Design file not linked" : "Figma design"}</span>
-                <small>Design match</small>
-                <Badge tone={p.correspondence === "Verified" ? "good" : "warn"}>
-                  {p.correspondence}
-                </Badge>
-              </div>
+              {p.source ? (
+                <div className="artifact">
+                  <span>{p.source}</span>
+                  <small>Source location in the imported code</small>
+                  <Badge tone="muted">Code ZIP</Badge>
+                </div>
+              ) : (
+                <div className="artifact">
+                  <span>{p.correspondence === "Not linked" ? "Design file not linked" : "Figma design"}</span>
+                  <small>Design match</small>
+                  <Badge tone={p.correspondence === "Verified" ? "good" : "warn"}>
+                    {p.correspondence}
+                  </Badge>
+                </div>
+              )}
             </label>
           ))}
         </div>
@@ -1278,6 +1265,39 @@ function Review({
 
 /** The current version beside a preview of the selected patches, both opened on the screen the first change is on. */
 function LiveCompare({ view, selected }: { view: ExperimentView; selected: string[] }) {
+  if (isImportedVersion(view.incumbentVersionId)) return <ImportedCompare view={view} selected={selected} />
+  return <PrototypeCompare view={view} selected={selected} />
+}
+
+/**
+ * Imported apps are rebuilt from code, so the updated version only exists after approval: show the current preview
+ * and the exact text changes; the built candidate is previewed on Results.
+ */
+function ImportedCompare({ view, selected }: { view: ExperimentView; selected: string[] }) {
+  const chosen = view.patches.filter((p) => selected.includes(p.id))
+  return (
+    <div className="compare live-compare">
+      <div>
+        <b>Current · {view.incumbentVersionId}</b>
+        {view.incumbentUrl ? <VersionPreview url={view.incumbentUrl} title="Current version" /> : <div className="no-shot"><b>No preview URL</b></div>}
+      </div>
+      <div>
+        <b>Updated version to test</b>
+        <div className="no-shot preview-state">
+          <b>{chosen.length ? `${chosen.length} text change${chosen.length === 1 ? "" : "s"} selected` : "Choose a suggestion"}</b>
+          {chosen.map((p) => (
+            <span key={p.id}>
+              {p.source ?? p.target}: “{p.before}” → “{p.after}”
+            </span>
+          ))}
+          <span>After you approve, GhostLoop builds a separate version in the sandbox, checks it, and retests it. The original stays unchanged.</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PrototypeCompare({ view, selected }: { view: ExperimentView; selected: string[] }) {
   const chosen = view.patches.filter((p) => selected.includes(p.id) && p.raw)
   const preview = usePreview(view.incumbentVersionId, chosen.map((p) => p.raw!))
   if (!view.incumbentUrl) {
@@ -1355,6 +1375,17 @@ function Results({
             ? "This test stopped before an updated version was compared."
             : "Results appear here once the updated version has been tested."}
         </p>
+        {view.stopped && view.stopNote && <div className="alert warn">{view.stopNote}</div>}
+        {view.failedChecks && view.failedChecks.length > 0 && (
+          <div className="alert bad">
+            <b>The updated version failed its checks; the original is unchanged.</b>
+            {view.failedChecks.map((c) => (
+              <pre className="log-tail" key={c}>
+                {c}
+              </pre>
+            ))}
+          </div>
+        )}
       </div>
     )
   }
@@ -1521,6 +1552,26 @@ function Results({
           )}
         </div>
       )}
+      {live && candidate && isImportedVersion(view.incumbentVersionId) && (
+        <section className="section">
+          <div className="section-title">
+            <div>
+              <small>VISUAL CHECK · SEPARATE BUILDS</small>
+              <h2>Original and updated version</h2>
+            </div>
+          </div>
+          <div className="compare live-compare">
+            <div>
+              <b>Original · {view.incumbentVersionId}</b>
+              {view.incumbentUrl && <VersionPreview url={view.incumbentUrl} title="Original version" />}
+            </div>
+            <div>
+              <b>Updated · {candidate.id}</b>
+              <VersionPreview url={candidate.url} title="Updated version" />
+            </div>
+          </div>
+        </section>
+      )}
       {showOriginal && (
         <div className="preserved-original card">
           <div>
@@ -1569,6 +1620,7 @@ export default function App() {
   const [names, setName] = useNames()
   const [view, setView] = useState<View>("landing")
   const [selectedId, setSelectedId] = useState<string | undefined>()
+  const [importId, setImportId] = useState<string | undefined>()
   const [error, setError] = useState<string | undefined>()
 
   // Sample mode: the original demo flow, driven by timers.
@@ -1671,7 +1723,12 @@ export default function App() {
   }
 
   if (view === "landing") return <Landing open={() => setView(live && list.length ? "overview" : "setup")} />
-  const screen: View = view !== "setup" && view !== "overview" && !current ? "setup" : view
+  const screen: View = !["setup", "overview", "imports", "import"].includes(view) && !current ? "setup" : view === "import" && !importId ? "imports" : view
+  const importStarted = (experimentId: string, name: string) => {
+    if (!names[experimentId]) setName(experimentId, name)
+    setSelectedId(experimentId)
+    setView("runs")
+  }
   const sampleResultsLoading = !live && screen === "results" && candidateProgress < 100
   const liveResultsLoading = live && screen === "results" && current !== undefined && TESTING_UPDATE.has(current.state)
   return (
@@ -1708,6 +1765,7 @@ export default function App() {
               experiments={list}
               live={live}
               newTest={() => setView("setup")}
+              importApp={() => setView("imports")}
               open={(id) => {
                 if (!live) {
                   setProgress(100)
@@ -1718,6 +1776,15 @@ export default function App() {
             />
           )}
           {screen === "setup" && <Setup key={String(live)} start={start} live={live} />}
+          {screen === "imports" && (
+            <ImportsPage
+              open={(id) => {
+                setImportId(id)
+                setView("import")
+              }}
+            />
+          )}
+          {screen === "import" && importId && <ImportDetail key={importId} id={importId} back={() => setView("imports")} started={importStarted} />}
           {current && screen === "runs" && (
             <Runs key={current.id} view={current} cancel={cancel} review={() => setView("recommendations")} error={error} />
           )}
