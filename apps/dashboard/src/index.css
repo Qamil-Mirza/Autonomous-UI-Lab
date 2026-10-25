@@ -67,7 +67,7 @@ details { border-top:1px solid var(--line); border-bottom:1px solid var(--line);
 details[open] summary { margin-bottom:20px; }.check { display:flex!important; gap:10px; align-items:flex-start; }.check input,.patch>input { width:auto; margin:2px 0 0; accent-color:var(--coral-dark); }.check small { display:block; color:var(--muted); font-weight:400; margin-top:3px; }
 .protected { background:#f4f6f1; border-radius:9px; padding:17px 19px; }.protected p { margin:9px 0 0; font-size:13px; color:#4f5a55; }.protected p span { color:var(--green); font-weight:900; margin-right:9px; }
 .form-foot { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-top:22px; }.form-foot>span { color:var(--muted); font-size:12px; }
-.alert { padding:13px 16px; border-radius:9px; margin-bottom:18px; font-size:13px; }.alert.bad { color:var(--bad); background:var(--bad-bg); border:1px solid #f0c9ca; }
+.alert { padding:13px 16px; border-radius:9px; margin-bottom:18px; font-size:13px; }.alert.bad { color:var(--bad); background:var(--bad-bg); border:1px solid #f0c9ca; }.alert.warn { color:var(--amber); background:var(--amber-bg); border:1px solid #f1dcae; }
 .progress { display:grid; grid-template-columns:repeat(5,1fr); margin:26px 0 30px; }
 .progress>div { display:flex; align-items:center; position:relative; color:#8a938f; }.progress>div:after { content:""; height:2px; background:#dce1dc; flex:1; }.progress>div:last-child:after { display:none; }
 .progress span { display:grid; place-items:center; width:25px; height:25px; border-radius:50%; border:1px solid #cdd4cf; background:white; font-size:11px; font-weight:800; margin-right:7px; }.progress small { margin-right:8px; white-space:nowrap; font-size:11px; font-weight:700; }

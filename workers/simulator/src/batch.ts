@@ -5,7 +5,7 @@ import { BatchRequest, BatchResult, type SimulationAdapter, type PrototypeGoalAd
 import { runOne, type RunOptions } from './run';
 import { prototypeIntegration } from './prototype';
 import { bitdeerDecider, type Decider } from './bitdeer';
-import { scenarioPolicy } from './scenarios';
+import { ModelResponseError } from './decision';
 
 export interface BatchOptions {
   outputDir: string;
@@ -18,6 +18,17 @@ export interface BatchOptions {
   maxInferenceUsd?: number;
   estimatedUsdPerCall?: number;
   publishScreenshot?: RunOptions['publishScreenshot'];
+}
+
+/** Technical (model/browser) errors in a row that stop the batch; a single one is recorded and excluded instead. */
+export const MAX_CONSECUTIVE_INFRA_ERRORS = 3;
+
+/** Round-robin over scenarios, so a batch that stops early still covers every scenario. */
+export function interleave<T extends { runs: number }>(scenarios: readonly T[]): T[] {
+  const jobs: T[] = [];
+  for (let round = 0; jobs.length < scenarios.reduce((n, s) => n + s.runs, 0); round++)
+    for (const s of scenarios) if (round < s.runs) jobs.push(s);
+  return jobs;
 }
 
 /** Implements D's callback interface; every slot owns a fresh browser and app run. */
@@ -63,7 +74,8 @@ export function createSimulationAdapter(options: BatchOptions): SimulationAdapte
     let stopReason: string | undefined;
     const cancel = (reason: string) => { stopReason ??= reason; stop.abort(new Error(reason)); };
     const deadline = setTimeout(() => cancel('batch_wall_clock_limit'), maxMs);
-    const jobs = req.scenarios.flatMap(scenario => Array.from({ length: scenario.runs }, () => scenario));
+    const jobs = interleave(req.scenarios);
+    let infraStreak = 0;
     const results = new Map<number, AgentRunResult>();
     const failures: { slot: number; error: string }[] = [];
     let next = 0, calls = 0;
@@ -83,8 +95,15 @@ export function createSimulationAdapter(options: BatchOptions): SimulationAdapte
           const decide = options.createDecider?.() ?? bitdeerDecider();
           const run = await runOne({ url: base.origin, outputDir: dir, signal,
             prototype: prototypeIntegration(base.origin, req.versionId, options.goalAdapter),
-            decide: async (...args) => { reserve(); return decide(...args); },
-            decisionPolicy: scenarioPolicy(scenario),
+            decide: async (...args) => {
+              reserve();
+              try { return await decide(...args); }
+              catch (error) {
+                // Out of credits will not recover within this batch; stop admitting work instead of failing every run.
+                if (error instanceof ModelResponseError && error.message.includes('402')) cancel('model_credits_exhausted');
+                throw error;
+              }
+            },
             task: req.task, scenario, experimentId: req.experimentId, protocolId: req.protocolId, batchId: req.batchId,
             maxActions: req.maxActionsPerRun, maxWallClockMs: Math.max(1, Math.min(240_000, Math.ceil(maxMs - (performance.now() - started)))),
             provenance: options.provenance, headed: options.headed, estimatedUsdPerCall: price,
@@ -95,7 +114,9 @@ export function createSimulationAdapter(options: BatchOptions): SimulationAdapte
             },
           });
           results.set(slot, run);
-          if (run.outcome === 'model_error' || run.outcome === 'browser_error') cancel('run_infrastructure_error');
+          if (run.outcome === 'model_error' || run.outcome === 'browser_error') {
+            if (++infraStreak >= MAX_CONSECUTIVE_INFRA_ERRORS) cancel('repeated_infrastructure_errors');
+          } else if (run.outcome !== 'user_cancelled') infraStreak = 0;
         } catch (error) {
           failures.push({ slot, error: error instanceof Error ? error.message : 'Run startup failed' });
           cancel('run_startup_error');

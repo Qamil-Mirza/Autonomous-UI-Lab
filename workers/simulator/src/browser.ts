@@ -25,7 +25,9 @@ export interface OpenBrowserOptions {
 export async function openBrowserSession(options: OpenBrowserOptions): Promise<BrowserSession> {
   let browser: Browser | undefined;
   let context: BrowserContext | undefined;
-  const abort = () => { void browser?.close().catch(() => {}); };
+  // Cancellation closes the whole browser at once; close() then waits for that instead of closing a dead context.
+  let aborted: Promise<void> | undefined;
+  const abort = () => { aborted ??= browser?.close().catch(() => {}); };
   options.signal.addEventListener('abort', abort);
   try {
     options.signal.throwIfAborted();
@@ -55,6 +57,7 @@ export async function openBrowserSession(options: OpenBrowserOptions): Promise<B
     let closing: Promise<void> | undefined;
     return { page, context, close: () => closing ??= (async () => {
       options.signal.removeEventListener('abort', abort);
+      if (aborted) return void await bounded(() => aborted, 5000, 'Browser close');
       try { await bounded(() => context!.close(), 5000, 'Context close'); } finally { await bounded(() => browser!.close(), 5000, 'Browser close'); }
     })() };
   } catch (error) {

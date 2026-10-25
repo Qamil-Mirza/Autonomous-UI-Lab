@@ -38,7 +38,7 @@ export async function exportReplay(sourceDir: string, destinationDir: string) {
   const manifest = { schemaVersion: '1.0.0', provenance: metadata.provenance, model: metadata.model ?? null,
     sourceRunId: run.runId, versionId: run.versionId, outcome: run.outcome, goalVerified: run.goalVerified,
     decisionCalls: metadata.decisionCalls, controlledActions: run.events.filter(e => e.decisionSource === 'scenario').length,
-    note: 'Recorded run, not a synthetic fixture. Controlled scenario interventions are labeled in events. A single run does not establish A/B improvement.',
+    note: 'Recorded run, not a synthetic fixture. Older recordings may include labeled scripted scenario steps (decisionSource "scenario"). A single run does not establish A/B improvement.',
     screenshots: files.map(({ name, sha256 }) => ({ uri: name, sha256 })) };
   await writeFile(resolve(destinationDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
   return { run, manifest };

@@ -201,6 +201,25 @@ describe("experimentView", () => {
     expect(at("comparing")).toEqual({ progress: 97, label: "Comparing results" })
   })
 
+  it("labels trials stopped by the batch, not the designer, as stopped early, and flags the batch", () => {
+    const batch = { batchId: "batch_base", experimentId: "exp_a", versionId: "ver_baseline", phase: "baseline" as const, round: 1, plannedRuns: 4, cancelled: true, usage: { inferenceCalls: 0, inferenceUsd: 0, wallClockMs: 0 }, superseded: false }
+    const runs = [run("run_b", "goal", "2026-10-24T10:01:00.000Z"), run("run_c", "user_cancelled", "2026-10-24T10:02:00.000Z")]
+    const early = experimentView(snap({ batches: [batch as never], runs }), "exp_a", {})!
+    expect(early.baseline.runs.map((r) => r.outcome)).toEqual(["Goal verified", "Stopped early"])
+    expect(early.baseline.stoppedEarly).toBe(true)
+    const byDesigner = experimentView(snap({ experiments: [experiment({ cancelRequested: true })], batches: [batch as never], runs }), "exp_a", {})!
+    expect(byDesigner.baseline.runs[1]!.outcome).toBe("Cancelled")
+    expect(byDesigner.baseline.stoppedEarly).toBe(false)
+  })
+
+  it("labels a scripted scenario stop apart from the model giving up", () => {
+    const stop = (source: "model" | "scenario") => action("run_b", 0, { decisionSource: source, action: { type: "stop", reason: "done" } })
+    const scripted = experimentView(snap({ runs: [run("run_b", "agent_stop", "2026-10-24T10:01:00.000Z")], actions: [stop("scenario")] }), "exp_a", {})!
+    expect(scripted.baseline.runs[0]!.outcome).toBe("Gave up (scenario rule)")
+    const model = experimentView(snap({ runs: [run("run_b", "agent_stop", "2026-10-24T10:01:00.000Z")], actions: [stop("model")] }), "exp_a", {})!
+    expect(model.baseline.runs[0]!.outcome).toBe("Gave up")
+  })
+
   it("describes non-ok results and stop reasons", () => {
     const v = experimentView(
       snap({

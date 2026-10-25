@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import type { PublicAgentInput } from '@ghostloop/contracts';
 import { validateDecision, type ObservedControl } from '../src/actions';
 import { requestDecision, ModelResponseError } from '../src/decision';
-import { bitdeerDecider } from '../src/bitdeer';
+import { bitdeerDecider, retryAfterMs } from '../src/bitdeer';
 import { openBrowserSession, observeControls, execute } from '../src/browser';
 import { prototypeIntegration } from '../src/prototype';
 import { startFixture } from '../src/fixture';
@@ -15,7 +15,7 @@ const control: ObservedControl = { elementId: 'name', role: 'textbox', label: 'N
   allowedActions: ['type'], bounds: { x: 0, y: 0, width: 100, height: 30 } };
 const valid = { type: 'type', elementId: 'name', value: 'Demo' };
 const input = { screenshot: { uri: '', width: 1280, height: 800 } } as PublicAgentInput;
-const defaults = { input, controls: [control], signal: new AbortController().signal, retryDelayMs: 0 };
+const defaults = { input, controls: [control], signal: new AbortController().signal, retryDelayMs: 0, rateLimitDelayMs: 0 };
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe('strict action validation', () => {
@@ -64,6 +64,27 @@ describe('bounded decisions', () => {
       await expect(requestDecision({ ...defaults, decide: permanent })).rejects.toThrow(error.message);
       expect(permanent).toHaveBeenCalledTimes(1);
     }
+  });
+  it('waits out rate limits without spending attempts, honoring Retry-After', async () => {
+    const limited = new ModelResponseError('Bitdeer HTTP 429 (rate limited)', true, { limited: true, retryAfterMs: 5 });
+    const decide = vi.fn().mockRejectedValueOnce(limited).mockRejectedValueOnce(limited).mockRejectedValueOnce(limited).mockResolvedValue(valid);
+    const onAttempt = vi.fn();
+    const started = Date.now();
+    expect(await requestDecision({ ...defaults, maxAttempts: 1, decide, onAttempt })).toEqual(valid);
+    expect(decide).toHaveBeenCalledTimes(4);
+    expect(Date.now() - started).toBeGreaterThanOrEqual(15);
+    expect(onAttempt.mock.calls.slice(0, 3).every(c => c[0].feedback.includes('waiting 5ms'))).toBe(true);
+  });
+  it('falls back to ordinary attempts once the rate-limit waits are used up', async () => {
+    const decide = vi.fn().mockRejectedValue(new ModelResponseError('Bitdeer HTTP 429 (rate limited)', true, { limited: true }));
+    await expect(requestDecision({ ...defaults, maxRateLimitWaits: 2, decide })).rejects.toThrow('429');
+    expect(decide).toHaveBeenCalledTimes(2 + 3);
+  });
+  it('reads Retry-After as seconds or an HTTP date', () => {
+    expect(retryAfterMs('3')).toBe(3000);
+    expect(retryAfterMs('Sat, 25 Oct 2026 04:00:10 GMT', Date.parse('Sat, 25 Oct 2026 04:00:00 GMT'))).toBe(10000);
+    expect(retryAfterMs(null)).toBeUndefined();
+    expect(retryAfterMs('soon')).toBeUndefined();
   });
   it('cancels backoff without another request', async () => {
     const controller = new AbortController();

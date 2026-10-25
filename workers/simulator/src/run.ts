@@ -5,7 +5,7 @@ import type { Page } from 'playwright';
 import { AgentRunResult, AgentActionEvent, PublicAgentInput, Scenario, VersionId, ExperimentId, ProtocolId, BatchId, isBehaviorallyValid, type RunOutcome, type ControlRegistryEntry, type GoalCheckResult } from '@ghostloop/contracts';
 import { openBrowserSession, captureObservation, waitForObservationReady, execute, viewport, checkPracticeGoal, type BrowserSession, type BrowserObservation } from './browser';
 import { bounded, type RunUsage } from './lifecycle';
-import { ActionValidationError, validateDecision, type Decision, type ObservedControl } from './actions';
+import { ActionValidationError } from './actions';
 import { verifyPrototypeGoal } from './goal';
 import { requestDecision } from './decision';
 import { bitdeerConfig } from './bitdeer';
@@ -15,7 +15,6 @@ export interface RunOptions {
   url: string;
   outputDir: string;
   decide: Decider;
-  decisionPolicy?: (input: PublicAgentInput, controls: ObservedControl[]) => Decision | undefined;
   signal: AbortSignal;
   maxActions?: number;
   maxWallClockMs?: number;
@@ -168,8 +167,7 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
       phase = 'model_error';
       const allowNavigation = (destination: string) => options.prototype
         ? options.prototype.allowRequest(destination, true, runId) : destination === url;
-      const controlledAction = options.decisionPolicy?.(input, controls);
-      const action = controlledAction ? validateDecision(controlledAction, controls, allowNavigation) : await requestDecision({
+      const action = await requestDecision({
         decide: async (...args) => {
           await reportUsage();
           signal.throwIfAborted();
@@ -202,7 +200,7 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
       }
       const alerts = after?.alerts ?? [];
       const event = AgentActionEvent.parse({ runId, experimentId, protocolId, batchId, scenarioId: scenario.id,
-        decisionSource: controlledAction ? 'scenario' : 'model', seq: events.length, at: new Date().toISOString(), versionId,
+        decisionSource: 'model', seq: events.length, at: new Date().toISOString(), versionId,
         screenBefore: before.screenId, screenAfter: after?.screenId ?? 'unknown', action,
         result: actionError ? executionStatus === 'rejected' ? 'rejected_invalid'
           : executionStatus === 'executed' ? 'observation_error' : 'execution_error'

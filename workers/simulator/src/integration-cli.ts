@@ -86,7 +86,7 @@ try {
     eventStore: 'D InMemoryStore reference implementation', eventStoreVerified: true,
     runs: runs.map(({ run }) => ({ runId: run.runId, versionId: run.versionId, scenarioId: run.scenarioId, outcome: run.outcome, stepCount: run.stepCount })),
     fixtures: ['success/run.json', 'non-success/run.json'], inferenceCalls: used,
-    caveat: 'Low-persistence stop is a controlled scenario rule. This smoke test does not demonstrate an A/B improvement.' };
+    caveat: 'Scenarios differ only in persona text and input data; every action is the model\'s. This smoke test does not demonstrate an A/B improvement.' };
   await writeFile(resolve(fixtureRoot, 'integration.json'), JSON.stringify(summary, null, 2));
   if (!(await readFile(resolve(root, 'designs/versions/ver_baseline.json'))).equals(originalBaseline)) throw new Error('Baseline source changed');
   console.log(`${provenance} handoff exported: ${fixtureRoot}`);

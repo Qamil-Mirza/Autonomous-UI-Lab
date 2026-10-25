@@ -106,6 +106,16 @@ describe("aggregateObservations", () => {
     expect(obs[0]!.statement).toBe("0 of 0 valid runs reached the goal; 12 infrastructure errors; 0 cancelled");
   });
 
+  it("ignores scripted scenario steps, counting only the model's own actions", () => {
+    const scripted = args.runs.map((r) => ({
+      ...r,
+      events: r.events.map((e) => (e.result === "validation_error" ? { ...e, decisionSource: "scenario" as const } : e)),
+    }));
+    const fps = aggregateObservations({ ...args, runs: scripted }).map((o) => o.fingerprint);
+    expect(fps).not.toContain("validation_error|invite|invite.email");
+    expect(aggregateObservations(args).map((o) => o.fingerprint)).toContain("validation_error|invite|invite.email");
+  });
+
   it("duplicate runs and events do not change counts", () => {
     const dupRuns = [...args.runs, args.runs[6]!].map((r, i) => (i === 6 ? { ...r, events: [...r.events, ...r.events] } : r));
     const strip = (os: ObservationTrend[]) => os.map(({ id: _id, ...rest }) => rest);

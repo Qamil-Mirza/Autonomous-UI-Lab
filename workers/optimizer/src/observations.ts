@@ -109,7 +109,8 @@ export function aggregateObservations(input: AggregateObservationsInput): Observ
   const stepLimit: TraceRef[] = [];
 
   for (const r of valid) {
-    const events = dedupeEvents(r.events);
+    // Scripted scenario steps (decisionSource "scenario", e.g. an injected typo) are test setup, not user behavior.
+    const events = dedupeEvents(r.events).filter((e) => e.decisionSource !== "scenario");
 
     for (const [screen, seq] of screenRevisits(events)) addTo(revisits, screen, null, { runId: r.runId, seq });
 

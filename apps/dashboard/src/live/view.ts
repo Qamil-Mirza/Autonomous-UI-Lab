@@ -53,6 +53,8 @@ export interface BatchView {
   infraErrors: number
   cancelled: number
   medianStepsToSuccess: number | null
+  /** The simulator stopped the batch before all trials ran (error streak, time or call limit), not the designer. */
+  stoppedEarly: boolean
 }
 
 export interface ObservationView {
@@ -246,7 +248,7 @@ function median(xs: number[]): number | null {
 
 /** Finished runs from `agent_run`, plus runs still streaming actions, in start order. */
 export function batchView(
-  batch: { batchId?: string; planned: number; expectedSteps: number },
+  batch: { batchId?: string; planned: number; expectedSteps: number; cancelled?: boolean; cancelRequested?: boolean },
   snap: Snapshot,
   elements: Elements,
   labels: Map<string, string>,
@@ -271,7 +273,12 @@ export function batchView(
 
   const runs: RunView[] = [
     ...finished.map((r: StoredRun) => {
-      const [outcome, tone] = OUTCOME[r.outcome]
+      let [outcome, tone] = OUTCOME[r.outcome]
+      // Trials interrupted because the batch stopped were not cancelled by anyone.
+      if (r.outcome === "user_cancelled" && !batch.cancelRequested) outcome = "Stopped early"
+      // A scenario rule (e.g. low persistence) ended it, not the model's own decision.
+      const last = (actionsByRun.get(r.runId) ?? []).reduce<AgentActionEvent | undefined>((a, b) => (!a || b.seq > a.seq ? b : a), undefined)
+      if (r.outcome === "agent_stop" && last?.decisionSource === "scenario") outcome = "Gave up (scenario rule)"
       return { id: r.runId, label: "", outcome, tone, running: false, actions: actionsOf(r.runId) }
     }),
     ...streaming.map((runId) => ({ id: runId, label: "", outcome: "In progress", tone: "coral" as Tone, running: true, actions: actionsOf(runId) })),
@@ -296,6 +303,7 @@ export function batchView(
     infraErrors: count((r) => r.outcome === "model_error" || r.outcome === "browser_error"),
     cancelled: count((r) => r.outcome === "user_cancelled"),
     medianStepsToSuccess: median(finished.filter((r) => r.outcome === "goal").map((r) => r.stepCount)),
+    stoppedEarly: Boolean(batch.cancelled) && !batch.cancelRequested,
   }
 }
 
@@ -468,12 +476,23 @@ export function experimentView(
   const labels = new Map<string, string>()
   const baselineRecord = findBatch(r.baselineBatchId)
   const maxSteps = e.protocol.budgets.maxActionsPerRun
-  const baseline = batchView({ batchId: r.baselineBatchId, planned: plannedOf(baselineRecord, e), expectedSteps: maxSteps }, snap, elements, labels)
+  const baseline = batchView(
+    { batchId: r.baselineBatchId, planned: plannedOf(baselineRecord, e), expectedSteps: maxSteps, cancelled: baselineRecord?.cancelled, cancelRequested: e.cancelRequested },
+    snap,
+    elements,
+    labels,
+  )
   const candidateLabels = new Map<string, string>()
   const candidateRecord = findBatch(r.candidateBatchId)
   const candidateBatch = r.candidateBatchId
     ? batchView(
-        { batchId: r.candidateBatchId, planned: plannedOf(candidateRecord, e), expectedSteps: baseline.medianStepsToSuccess ?? maxSteps },
+        {
+          batchId: r.candidateBatchId,
+          planned: plannedOf(candidateRecord, e),
+          expectedSteps: baseline.medianStepsToSuccess ?? maxSteps,
+          cancelled: candidateRecord?.cancelled,
+          cancelRequested: e.cancelRequested,
+        },
         snap,
         elements,
         candidateLabels,

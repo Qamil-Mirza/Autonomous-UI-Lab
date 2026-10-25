@@ -10,7 +10,7 @@ import { controlledScenarios } from '../src/scenarios';
 import { checkGoal } from '../../../packages/prototype-adapter/src/check-goal';
 import type { AgentActionEvent, BatchRequest } from '@ghostloop/contracts';
 
-it('runs all four scenarios against C with isolated state, labeled interventions, and ordered events', async () => {
+it('runs all four scenarios against C with isolated state, model-only decisions, and ordered events', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'ghostloop-batch-'));
   const old = process.env.GHOSTLOOP_RUNS_DIR; process.env.GHOSTLOOP_RUNS_DIR = join(dir, 'state');
   const root = fileURLToPath(new URL('../../../apps/prototype/', import.meta.url));
@@ -36,11 +36,10 @@ it('runs all four scenarios against C with isolated state, labeled interventions
     const result = await adapter.runBatch(req, e => { events.push(e); }, new AbortController().signal);
     expect(result.cancelled).toBe(false); expect(result.runs).toHaveLength(4);
     expect(new Set(result.runs.map(r => r.runId)).size).toBe(4);
-    expect(result.runs.map(r => r.outcome)).toEqual(['goal', 'goal', 'goal', 'agent_stop']);
-    expect(result.runs[3]!.stepCount).toBe(6);
-    const recovery = result.runs[2]!;
-    expect(recovery.events.filter(e => e.decisionSource === 'scenario')).toHaveLength(2);
-    expect(recovery.events.some(e => e.validationFeedback?.length)).toBe(true);
+    // No scripted steps: every event is the decider's own, and low persistence finishes a clear path.
+    expect(result.runs.map(r => r.outcome)).toEqual(['goal', 'goal', 'goal', 'goal']);
+    expect(result.runs.flatMap(r => r.events).every(e => e.decisionSource === 'model')).toBe(true);
+    expect(result.runs[3]!.stepCount).toBeGreaterThan(6);
     for (const run of result.runs) {
       expect(events.filter(e => e.runId === run.runId)).toEqual(run.events);
       expect(await store.listActions(run.runId)).toEqual(run.events);

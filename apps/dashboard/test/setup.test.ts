@@ -56,12 +56,14 @@ describe("buildCreatePayload", () => {
       baseVersionId: "ver_baseline",
       task: "Create an account and a workspace on the Free plan.",
       mode: "manual",
-      budgets: { runsPerBatch: 10, maxActionsPerRun: 12, maxInferenceUsd: 3, maxWallClockMs: 1_200_000 },
+      budgets: { runsPerBatch: 10, maxActionsPerRun: 12, maxInferenceUsd: 3, maxWallClockMs: 1_200_000, maxConcurrency: 2 },
       policy: { minImprovementPp: 15 },
     })
     expect(p.protocol.scenarios.reduce((n, s) => n + s.runs, 0)).toBe(10)
     expect(p.protocol.scenarios.map((s) => s.id)).toEqual(["scn_cost_conscious", "scn_product_familiar", "scn_invalid_email", "scn_low_persistence"])
     expect(Object.keys(p.protocol.scenarios[0]!.inputs)).toContain("fullName")
+    // Same personas and data as workers/simulator/src/scenarios.ts: the typo is input data, not a scripted step.
+    expect(p.protocol.scenarios.find((s) => s.id === "scn_invalid_email")!.inputs.inviteEmail).toBe("teammate@examplecom")
     expect(p.protocol.protectedCategories.length).toBeGreaterThan(0)
     expect(p.protocol).not.toHaveProperty("provenance")
   })
@@ -69,7 +71,7 @@ describe("buildCreatePayload", () => {
   it("drops scenarios left without runs and caps concurrency at the trial count", () => {
     const p = buildCreatePayload(form({ trials: 2, manualReview: false }), "sha256:abc")
     expect(p.protocol.scenarios.map((s) => s.runs)).toEqual([1, 1])
-    expect(p.protocol.budgets.maxConcurrency).toBe(2)
+    expect(buildCreatePayload(form({ trials: 1 }), "sha256:abc").protocol.budgets.maxConcurrency).toBe(1)
     expect(p.protocol.mode).toBe("auto")
   })
 })
