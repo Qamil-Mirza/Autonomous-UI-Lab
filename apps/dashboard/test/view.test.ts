@@ -169,11 +169,36 @@ describe("experimentView", () => {
       ["Trial 03", "run_d", "Browser/model error", "muted"],
       ["Trial 04", "run_e", "In progress", "coral"],
     ])
-    expect(v.baseline).toMatchObject({ planned: 4, completed: 3, progress: 75, successes: 1, behavioralFailures: 1, infraErrors: 1, cancelled: 0, medianStepsToSuccess: 6 })
+    // 3 finished + 1 streaming run with 1 of 8 expected steps: (3 + 1/8) / 4
+    expect(v.baseline).toMatchObject({ planned: 4, completed: 3, progress: 78, successes: 1, behavioralFailures: 1, infraErrors: 1, cancelled: 0, medianStepsToSuccess: 6 })
     expect(v.baseline.runs[0]!.actions).toEqual([
       { action: "Typed into", target: "signup.email", result: "Done on plan" },
       { action: "Clicked", target: "Continue", result: "Moved to invite" },
     ])
+  })
+
+  it("estimates progress from streamed actions, capping a running trial below done", () => {
+    const acts = (runId: `run_${string}`, n: number) => Array.from({ length: n }, (_, i) => action(runId, i))
+    const v = experimentView(snap({ actions: [...acts("run_x", 2), ...acts("run_y", 20)] }), "exp_a", {})!
+    // planned 4, maxSteps 8: run_x 2/8, run_y capped at 0.95
+    expect(v.baseline.progress).toBe(Math.round(((2 / 8 + 0.95) / 4) * 100))
+    expect(v.baseline.completed).toBe(0)
+  })
+
+  it("maps the update phases onto one steadily advancing bar", () => {
+    const at = (state: Experiment["state"], over: Partial<Snapshot> = {}) =>
+      experimentView(snap({ experiments: [experiment({ state, round: { index: 1, baselineBatchId: "batch_base", candidateBatchId: "batch_cand", approvalId: "appr_1", analysisAttempts: 1 } })], ...over }), "exp_a", {})!.update
+    expect(at("awaiting_approval")).toBeUndefined()
+    expect(at("patching")).toEqual({ progress: 5, label: "Building the updated version" })
+    expect(at("validating")).toEqual({ progress: 12, label: "Checking the updated version" })
+    expect(at("candidate_running")).toEqual({ progress: 15, label: "Testing the update · 0 of 4 trials finished" })
+    // Candidate trials are judged against the baseline's median steps to success (6 here), not the step limit.
+    const running = at("candidate_running", {
+      runs: [run("run_b", "goal", "2026-10-24T10:01:00.000Z", 6)],
+      actions: [0, 1, 2].map((i) => action("run_c", i, { batchId: "batch_cand" })),
+    })
+    expect(running).toEqual({ progress: 15 + Math.round(0.8 * Math.round((3 / 6 / 4) * 100)), label: "Testing the update · 0 of 4 trials finished" })
+    expect(at("comparing")).toEqual({ progress: 97, label: "Comparing results" })
   })
 
   it("describes non-ok results and stop reasons", () => {

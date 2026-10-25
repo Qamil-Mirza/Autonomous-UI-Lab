@@ -118,6 +118,7 @@ export function sampleView(opts: {
       observationIds: [observations[i]?.id ?? ""],
     })),
     awaitingApproval: done && !opts.cancelled,
+    update: opts.candidateProgress < 100 ? { progress: opts.candidateProgress, label: "Testing the update" } : undefined,
     results: sampleResult(opts.scenario),
     candidate: {
       id: "cand_sample",

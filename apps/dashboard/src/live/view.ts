@@ -42,7 +42,10 @@ export interface BatchView {
   batchId?: string
   planned: number
   completed: number
-  /** 0-100, from finished runs over planned runs. */
+  /**
+   * 0-100. Finished runs count fully; a running one counts its actions over the steps a trial is expected to take,
+   * capped below done, so the bar moves while parallel trials are still going.
+   */
   progress: number
   runs: RunView[]
   successes: number
@@ -124,6 +127,8 @@ export interface ExperimentView {
   observations: ObservationView[]
   patches: PatchView[]
   awaitingApproval: boolean
+  /** While the approved update is built, checked, tested and compared: one bar across those phases. */
+  update?: { progress: number; label: string }
   results?: ResultView
   candidate?: CandidateView
 }
@@ -241,7 +246,7 @@ function median(xs: number[]): number | null {
 
 /** Finished runs from `agent_run`, plus runs still streaming actions, in start order. */
 export function batchView(
-  batch: { batchId?: string; planned: number },
+  batch: { batchId?: string; planned: number; expectedSteps: number },
   snap: Snapshot,
   elements: Elements,
   labels: Map<string, string>,
@@ -277,12 +282,14 @@ export function batchView(
   })
 
   const count = (pred: (r: StoredRun) => boolean) => finished.filter(pred).length
-  const planned = Math.max(batch.planned, finished.length)
+  const planned = Math.max(batch.planned, finished.length + streaming.length)
+  const expected = Math.max(1, batch.expectedSteps)
+  const done = finished.length + streaming.reduce((sum, runId) => sum + Math.min((actionsByRun.get(runId)?.length ?? 0) / expected, 0.95), 0)
   return {
     batchId: batch.batchId,
     planned,
     completed: finished.length,
-    progress: planned === 0 ? 0 : Math.min(100, Math.round((finished.length / planned) * 100)),
+    progress: planned === 0 ? 0 : Math.min(100, Math.round((done / planned) * 100)),
     runs,
     successes: count((r) => r.outcome === "goal"),
     behavioralFailures: count((r) => ["agent_stop", "step_limit", "flow_blocked"].includes(r.outcome)),
@@ -420,6 +427,25 @@ export function summaries(snap: Snapshot, names: Record<string, string>): Experi
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
 }
 
+/** Building and checking take a fixed slice; the retest fills 15-95% by its own progress; comparing tops it off. */
+function updateProgress(state: ExperimentState, batch: BatchView | undefined): ExperimentView["update"] {
+  switch (state) {
+    case "patching":
+      return { progress: 5, label: "Building the updated version" }
+    case "validating":
+      return { progress: 12, label: "Checking the updated version" }
+    case "candidate_running": {
+      const b = batch ?? { progress: 0, completed: 0, planned: 0 }
+      const label = b.planned ? `Testing the update · ${b.completed} of ${b.planned} trials finished` : "Testing the update"
+      return { progress: 15 + Math.round(0.8 * b.progress), label }
+    }
+    case "comparing":
+      return { progress: 97, label: "Comparing results" }
+    default:
+      return undefined
+  }
+}
+
 function plannedOf(batch: BatchRecord | undefined, e: Experiment) {
   return batch?.plannedRuns ?? e.protocol.budgets.runsPerBatch
 }
@@ -441,11 +467,17 @@ export function experimentView(
   const findBatch = (id?: string) => (id ? snap.batches.find((b) => b.batchId === id) : undefined)
   const labels = new Map<string, string>()
   const baselineRecord = findBatch(r.baselineBatchId)
-  const baseline = batchView({ batchId: r.baselineBatchId, planned: plannedOf(baselineRecord, e) }, snap, elements, labels)
+  const maxSteps = e.protocol.budgets.maxActionsPerRun
+  const baseline = batchView({ batchId: r.baselineBatchId, planned: plannedOf(baselineRecord, e), expectedSteps: maxSteps }, snap, elements, labels)
   const candidateLabels = new Map<string, string>()
   const candidateRecord = findBatch(r.candidateBatchId)
   const candidateBatch = r.candidateBatchId
-    ? batchView({ batchId: r.candidateBatchId, planned: plannedOf(candidateRecord, e) }, snap, elements, candidateLabels)
+    ? batchView(
+        { batchId: r.candidateBatchId, planned: plannedOf(candidateRecord, e), expectedSteps: baseline.medianStepsToSuccess ?? maxSteps },
+        snap,
+        elements,
+        candidateLabels,
+      )
     : undefined
 
   const observations = snap.observations
@@ -509,6 +541,7 @@ export function experimentView(
     observations,
     patches,
     awaitingApproval: e.state === "awaiting_approval" && !e.cancelRequested && !r.approvalId,
+    update: updateProgress(e.state, candidateBatch),
     results: evaluation ? resultView(evaluation) : undefined,
     candidate,
   }

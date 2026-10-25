@@ -107,27 +107,15 @@ function Landing({ open }: { open: () => void }) {
   )
 }
 
+/** Only the offline sample demo is labeled; a lost connection shows a banner in the page instead. */
 function LinkFoot({ link, retry }: { link: LinkStatus; retry: () => void }) {
-  if (link.kind === "live")
-    return (
-      <div className="sidebar-foot live">
-        <span className="pulse-dot" />
-        Live · GhostLoop database
-      </div>
-    )
-  if (link.kind === "connecting")
-    return (
-      <div className="sidebar-foot">
-        <span className="pulse-dot" />
-        Connecting…
-      </div>
-    )
+  if (link.kind !== "offline") return null
   return (
     <div className="sidebar-foot">
       <span className="pulse-dot" />
-      {link.kind === "lost" ? "Connection lost · Last live data" : "Offline · Sample data"}
+      Demo · Sample data
       <button className="text-btn foot-retry" onClick={retry}>
-        Reconnect
+        Connect to GhostLoop
       </button>
     </div>
   )
@@ -945,6 +933,12 @@ function Recommendations({
   const b = view.baseline
   const total = b.completed || 1
   const share = (n: number) => `${Math.round((n / total) * 1000) / 10}%`
+  // Only patterns with a suggested change are listed; prefer a suggestion that can actually be approved.
+  const suggested = view.observations.flatMap((o) => {
+    const cited = view.patches.filter((p) => p.observationIds.includes(o.id))
+    const suggestion = cited.find((p) => !p.blocked) ?? cited[0]
+    return suggestion ? [{ o, suggestion }] : []
+  })
   const breakdown: [string, number, string][] = [
     ["Goal completed", b.successes, "good"],
     ["Could not finish the journey", b.behavioralFailures, "warn"],
@@ -1023,15 +1017,13 @@ function Recommendations({
           </div>
         </div>
         <div className="recommendation-list">
-          {view.observations.length === 0 && (
+          {suggested.length === 0 && (
             <div className="card no-shot">
-              <b>No repeated patterns found</b>
-              <span>GhostLoop didn't find behavior that repeated across trials.</span>
+              <b>No suggested improvements this round</b>
+              <span>GhostLoop didn't find a change worth testing in these trials.</span>
             </div>
           )}
-          {view.observations.map((o, index) => {
-            const cited = view.patches.filter((p) => p.observationIds.includes(o.id))
-            const suggestion = cited.find((p) => !p.blocked) ?? cited[0]
+          {suggested.map(({ o, suggestion }, index) => {
             return (
               <article className="card recommendation-item" key={o.id}>
                 <div className="recommendation-number">{String(index + 1).padStart(2, "0")}</div>
@@ -1044,29 +1036,20 @@ function Recommendations({
                     </div>
                     {o.share && <Badge tone={index === 0 ? "warn" : "coral"}>{o.share}</Badge>}
                   </div>
-                  {suggestion ? (
-                    <div className="suggestion-box">
-                      <div>
-                        <small>SUGGESTED IMPROVEMENT</small>
-                        <b>{suggestion.target}</b>
-                        {suggestion.blocked && <Badge tone="bad">{suggestion.risk}</Badge>}
-                        <p>
-                          Change “{suggestion.before}” to “{suggestion.after}”.
-                        </p>
-                      </div>
-                      <div>
-                        <small>WHY THIS MIGHT HELP · AI SUGGESTION</small>
-                        <p>{suggestion.hypothesis}</p>
-                      </div>
+                  <div className="suggestion-box">
+                    <div>
+                      <small>SUGGESTED IMPROVEMENT</small>
+                      <b>{suggestion.target}</b>
+                      {suggestion.blocked && <Badge tone="bad">{suggestion.risk}</Badge>}
+                      <p>
+                        Change “{suggestion.before}” to “{suggestion.after}”.
+                      </p>
                     </div>
-                  ) : (
-                    <div className="suggestion-box">
-                      <div>
-                        <small>SUGGESTED IMPROVEMENT</small>
-                        <p>No change was suggested for this pattern.</p>
-                      </div>
+                    <div>
+                      <small>WHY THIS MIGHT HELP · AI SUGGESTION</small>
+                      <p>{suggestion.hypothesis}</p>
                     </div>
-                  )}
+                  </div>
                   <label className="recommendation-disposition">
                     How should GhostLoop treat this pattern?
                     <select
@@ -1517,14 +1500,14 @@ function Results({
   )
 }
 
-/** Shown while the approved update is built and tested; progress comes from the candidate batch. */
+/** Shown while the approved update is built, checked, retested and compared. */
 function CandidateLoading({ view }: { view: ExperimentView }) {
-  const progress = view.candidateBatch?.progress ?? 0
+  const { progress, label } = view.update ?? { progress: 0, label: "Preparing the update" }
   return (
     <div className="loading card">
       <Mascot small />
       <Badge tone="coral">
-        {view.statusLabel} · {progress}%
+        {label} · {progress}%
       </Badge>
       <h1>Testing your selected improvements</h1>
       <p>Running the same task again so the comparison stays fair.</p>
@@ -1704,7 +1687,7 @@ export default function App() {
           )}
           {current && screen === "results" &&
             (sampleResultsLoading || liveResultsLoading ? (
-              <CandidateLoading view={sampleResultsLoading ? { ...current, statusLabel: "Testing the update" } : current} />
+              <CandidateLoading view={current} />
             ) : (
               <Results view={current} live={live} scenario={scenario} setScenario={setScenario} review={finalReview} error={error} />
             ))}
