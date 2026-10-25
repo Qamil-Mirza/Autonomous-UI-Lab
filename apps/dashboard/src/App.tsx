@@ -7,7 +7,7 @@ import { useElements, useGhostloop, useNames, type LinkStatus } from "./live/use
 import { usePreview } from "./live/usePreview"
 import { experimentView, summaries, type BatchView, type ExperimentSummary, type ExperimentView, type RunView } from "./live/view"
 import { buildCreatePayload, DEFAULT_PROTOTYPE_URL, fetchManifest, LIMITS, parsePrototypeUrl, validateForm, type SetupForm } from "./live/setup"
-import { Badge, VersionPreview } from "./ui"
+import { Badge, formatWhen, VersionPreview } from "./ui"
 import { ImportDetail, ImportsPage } from "./ImportApp"
 import { isImportedVersion } from "./live/imports"
 
@@ -582,14 +582,6 @@ function Overview({
       </section>
     </>
   )
-}
-
-function formatWhen(iso: string) {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  const today = new Date().toDateString() === d.toDateString()
-  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  return today ? `Today, ${time}` : `${d.toLocaleDateString()}, ${time}`
 }
 
 const DEFAULT_FORM: SetupForm = {

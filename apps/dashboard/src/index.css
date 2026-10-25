@@ -59,7 +59,7 @@
 .welcome { min-height:270px; padding:38px 46px; display:flex; justify-content:space-between; align-items:center; overflow:hidden; background:linear-gradient(125deg,#fff 60%,#f9e8e3); }
 .welcome h1 { font-size:39px; margin:12px 0 8px; letter-spacing:-1.8px; }.welcome p { color:var(--muted); margin:0 0 22px; max-width:570px; }
 .section { margin-top:38px; }.section-title { display:flex; justify-content:space-between; align-items:end; gap:20px; margin-bottom:16px; }.section-title h2 { margin:0; font-size:25px; }.section-title p { margin:5px 0 0; color:var(--muted); font-size:14px; }
-.table { overflow:hidden; }.table-row { width:100%; display:grid; grid-template-columns:2fr 1fr 1fr auto; align-items:center; text-align:left; gap:20px; border:0; border-bottom:1px solid var(--line); background:white; padding:17px 20px; color:var(--ink); }.table-row:last-child { border:0; }.table-row small { display:block; color:var(--muted); margin-top:4px; }.table-head { font-size:11px; font-weight:800; color:var(--muted); letter-spacing:.8px; background:#fafaf7; }
+.table { display:block; overflow:hidden; }.table-row { width:100%; display:grid; grid-template-columns:2fr 1fr 1fr 64px; align-items:center; text-align:left; gap:20px; border:0; border-bottom:1px solid var(--line); background:white; padding:17px 20px; color:var(--ink); }.table-row:last-child { border:0; }.table-row small { display:block; color:var(--muted); margin-top:4px; }.table-head { font-size:11px; font-weight:800; color:var(--muted); letter-spacing:.8px; background:#fafaf7; }
 .form { padding:28px; }.form label { display:block; font-size:13px; font-weight:750; margin-bottom:20px; }
 input,textarea,select { width:100%; margin-top:8px; border:1px solid #cfd6cf; border-radius:8px; background:white; padding:10px 12px; color:var(--ink); font-size:14px; }
 textarea { resize:vertical; line-height:1.5; }.field-row { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
@@ -286,6 +286,7 @@ input:hover,textarea:hover,select:hover { border-color:#aeb8b1; }
 .run-list .persona { color:var(--ink) !important; font-weight:650; margin-top:2px; }
 .persona-tag { display:inline-block; margin-left:8px; padding:2px 8px; border-radius:99px; background:#eff1ed; color:#56605c; font-size:10px; font-weight:800; vertical-align:middle; }
 
+/* `.table` also matches Tailwind's display:table utility; the rows are a grid, so keep the container a block. */
 /* Import a Figma Make app */
 .welcome-actions { display:flex; gap:10px; flex-wrap:wrap; }
 .optional { color:var(--muted); font-weight:500; font-size:11px; }
@@ -308,3 +309,28 @@ input:hover,textarea:hover,select:hover { border-color:#aeb8b1; }
   .check-fields { grid-template-columns:1fr; }
   .verify-grid { grid-template-columns:1fr; }
 }
+.sr-only { position:absolute!important; width:1px!important; height:1px!important; min-height:0!important; margin:-1px!important; padding:0!important; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0!important; }
+.dropzone-field { position:relative; }
+.dropzone { margin-top:8px; display:flex; align-items:center; gap:12px; min-height:42px; padding:8px 12px; border:1px dashed #b9c3bb; border-radius:var(--radius-sm); background:#fafaf7; cursor:pointer; font-weight:500; transition-property:border-color,background-color,box-shadow; transition-duration:150ms; }
+.dropzone b { display:block; font-weight:700; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dropzone small { display:block; color:var(--muted); font-size:12px; margin-top:1px; }
+.dropzone>span:last-child { min-width:0; }
+.dropzone-icon { display:grid; place-items:center; flex:none; width:28px; height:28px; border-radius:50%; background:white; border:1px solid var(--line); color:var(--coral-dark); font-size:14px; }
+.dropzone-field:hover .dropzone,.dropzone-field.over .dropzone { border-color:var(--coral-dark); background:#fdf2ef; }
+.dropzone-field:focus-within .dropzone { border-color:var(--coral-dark); box-shadow:0 0 0 3px #ee737533; }
+@media (max-width: 900px) {
+  /* The top bar holds four destinations: let them scroll instead of widening the page, and keep labels on one line. */
+  .sidebar nav { min-width:0; overflow-x:auto; scrollbar-width:none; }
+  .sidebar nav button { white-space:nowrap; flex:none; width:auto; }
+}
+@media (max-width: 620px) {
+  .form-foot { flex-direction:column; align-items:stretch; }
+  .form-foot .btn { width:100%; }
+}
+.task-todo ul { margin:6px 0 0; padding-left:18px; }
+.task-todo li { margin:2px 0; }
+.form-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+@media (max-width: 620px) { .form-actions { flex-direction:column; } }
+/* Placeholders are examples, not values: lighter and regular weight so they never read as filled in. */
+input::placeholder,textarea::placeholder { color:#9aa39e; font-weight:400; opacity:1; }
+.check-fields input[aria-invalid="true"] { border-color:#d9a441; background:#fffbf1; }

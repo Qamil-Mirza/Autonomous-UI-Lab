@@ -10,6 +10,15 @@ export function Badge({
   return <span className={`badge ${tone}`}>{children}</span>
 }
 
+/** "Today, 11:50 PM" or "10/24/2026, 11:50 PM". */
+export function formatWhen(iso: string) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  const today = new Date().toDateString() === d.toDateString()
+  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  return today ? `Today, ${time}` : `${d.toLocaleDateString()}, ${time}`
+}
+
 export const FRAME = { width: 1280, height: 800 }
 
 /** A live view of a prototype version, rendered at its real size (desktop by default) and scaled down to fit its column. */
