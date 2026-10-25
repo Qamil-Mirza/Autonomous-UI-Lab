@@ -5,7 +5,7 @@ import { sampleAdapter } from "./mockService"
 import { sampleSummaries, sampleView, type SampleScenario } from "./sample"
 import { useElements, useGhostloop, useNames, type LinkStatus } from "./live/useGhostloop"
 import { usePreview } from "./live/usePreview"
-import { experimentView, summaries, type ExperimentSummary, type ExperimentView, type RunView } from "./live/view"
+import { experimentView, summaries, type BatchView, type ExperimentSummary, type ExperimentView, type RunView } from "./live/view"
 import { buildCreatePayload, DEFAULT_PROTOTYPE_URL, fetchManifest, LIMITS, parsePrototypeUrl, validateForm, type SetupForm } from "./live/setup"
 
 type View = "landing" | "overview" | "setup" | "runs" | "recommendations" | "review" | "results"
@@ -536,6 +536,19 @@ function VersionPreview({ url, title }: { url: string; title: string }) {
   )
 }
 
+/** Explains a batch the simulator stopped before every trial ran. */
+function StoppedEarlyNote({ batch, what }: { batch: BatchView; what: string }) {
+  if (!batch.stoppedEarly) return null
+  return (
+    <div className="alert warn">
+      <b>{what} stopped early: {batch.completed} of {batch.planned} trials ran.</b> The simulator stops a batch after
+      several technical errors in a row (for example, the AI model provider rate-limiting requests) or when a time or
+      call limit is reached.{batch.infraErrors > 0 && ` ${batch.infraErrors} trial${batch.infraErrors === 1 ? "" : "s"} hit a technical error.`}{" "}
+      Results only include the trials that ran.
+    </div>
+  )
+}
+
 function ErrorNote({ error }: { error?: string }) {
   return error ? <div className="alert bad">{error}</div> : null
 }
@@ -799,6 +812,7 @@ function Runs({
       </div>
       <Progress active={view.stage} />
       <ErrorNote error={error} />
+      <StoppedEarlyNote batch={batch} what="The first test" />
       {cancelled && (
         <div className="alert bad">
           <b>Test stopped.</b> Completed trials are still available. No
@@ -811,7 +825,7 @@ function Runs({
           [String(batch.successes), "Verified successes"],
           [String(batch.behavioralFailures), "Behavioral failures"],
           [String(batch.infraErrors), `Infrastructure error${batch.infraErrors === 1 ? "" : "s"}`],
-          [String(batch.cancelled), "Cancellations"],
+          [String(batch.cancelled), batch.stoppedEarly ? "Stopped early" : "Cancellations"],
         ].map((x) => (
           <div className="card" key={x[1]}>
             <strong>{x[0]}</strong>
@@ -1334,6 +1348,8 @@ function Results({
         <Badge tone={s.tone}>{s.label}</Badge>
       </div>
       <ErrorNote error={error} />
+      <StoppedEarlyNote batch={view.baseline} what="The first test" />
+      {view.candidateBatch && <StoppedEarlyNote batch={view.candidateBatch} what="The retest" />}
       {!live && (
         <div className="scenario card">
           <label>
@@ -1433,7 +1449,7 @@ function Results({
             <b>{s.infraErrors}</b>
           </div>
           <div className="quality-row">
-            <span>Cancelled trials</span>
+            <span>Cancelled or stopped early</span>
             <b>{s.cancelled}</b>
           </div>
           <p className="quality-note">

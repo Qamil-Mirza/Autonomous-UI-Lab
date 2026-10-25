@@ -85,6 +85,7 @@ export function sampleView(opts: {
       infraErrors: 1,
       cancelled: opts.cancelled ? 1 : 0,
       medianStepsToSuccess: 14,
+      stoppedEarly: false,
     },
     candidateBatch: {
       planned: 12,
@@ -96,6 +97,7 @@ export function sampleView(opts: {
       infraErrors: 0,
       cancelled: 0,
       medianStepsToSuccess: null,
+      stoppedEarly: false,
     },
     observations: observations.map((o, i) => ({
       id: o.id,

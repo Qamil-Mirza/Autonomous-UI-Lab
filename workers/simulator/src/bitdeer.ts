@@ -16,6 +16,14 @@ export function bitdeerConfig(env: NodeJS.ProcessEnv = process.env) {
     throw new Error('BITDEER_TIMEOUT_MS must be an integer between 1 and 240000');
   return { apiKey, model, baseUrl: base.href.replace(/\/$/, ''), timeoutMs };
 }
+/** Retry-After as milliseconds (delta-seconds or an HTTP date); undefined when absent or unreadable. */
+export function retryAfterMs(header: string | null, now = Date.now()): number | undefined {
+  if (!header) return undefined;
+  const seconds = Number(header);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.round(seconds * 1000);
+  const at = Date.parse(header);
+  return Number.isNaN(at) ? undefined : Math.max(0, at - now);
+}
 export function bitdeerDecider(): Decider {
   const config = bitdeerConfig();
   return async (input, controls, signal, retryFeedback) => {
@@ -40,6 +48,9 @@ export function bitdeerDecider(): Decider {
     }
     if (!response.ok) {
       await response.body?.cancel();
+      if (response.status === 429) {
+        throw new ModelResponseError('Bitdeer HTTP 429 (rate limited)', true, { limited: true, retryAfterMs: retryAfterMs(response.headers.get('retry-after')) });
+      }
       throw new ModelResponseError(response.status === 402 ? 'Bitdeer 402: Model Studio credits are needed' : `Bitdeer HTTP ${response.status}`,
         [408, 429, 500, 502, 503, 504].includes(response.status));
     }

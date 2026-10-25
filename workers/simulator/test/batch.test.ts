@@ -36,8 +36,9 @@ it('runs all four scenarios against C with isolated state, labeled interventions
     const result = await adapter.runBatch(req, e => { events.push(e); }, new AbortController().signal);
     expect(result.cancelled).toBe(false); expect(result.runs).toHaveLength(4);
     expect(new Set(result.runs.map(r => r.runId)).size).toBe(4);
-    expect(result.runs.map(r => r.outcome)).toEqual(['goal', 'goal', 'goal', 'agent_stop']);
-    expect(result.runs[3]!.stepCount).toBe(6);
+    // Low persistence gives up on friction, not on length: a clear path longer than six actions still succeeds.
+    expect(result.runs.map(r => r.outcome)).toEqual(['goal', 'goal', 'goal', 'goal']);
+    expect(result.runs[3]!.stepCount).toBeGreaterThan(6);
     const recovery = result.runs[2]!;
     expect(recovery.events.filter(e => e.decisionSource === 'scenario')).toHaveLength(2);
     expect(recovery.events.some(e => e.validationFeedback?.length)).toBe(true);

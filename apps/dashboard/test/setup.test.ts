@@ -56,7 +56,7 @@ describe("buildCreatePayload", () => {
       baseVersionId: "ver_baseline",
       task: "Create an account and a workspace on the Free plan.",
       mode: "manual",
-      budgets: { runsPerBatch: 10, maxActionsPerRun: 12, maxInferenceUsd: 3, maxWallClockMs: 1_200_000 },
+      budgets: { runsPerBatch: 10, maxActionsPerRun: 12, maxInferenceUsd: 3, maxWallClockMs: 1_200_000, maxConcurrency: 2 },
       policy: { minImprovementPp: 15 },
     })
     expect(p.protocol.scenarios.reduce((n, s) => n + s.runs, 0)).toBe(10)
@@ -69,7 +69,7 @@ describe("buildCreatePayload", () => {
   it("drops scenarios left without runs and caps concurrency at the trial count", () => {
     const p = buildCreatePayload(form({ trials: 2, manualReview: false }), "sha256:abc")
     expect(p.protocol.scenarios.map((s) => s.runs)).toEqual([1, 1])
-    expect(p.protocol.budgets.maxConcurrency).toBe(2)
+    expect(buildCreatePayload(form({ trials: 1 }), "sha256:abc").protocol.budgets.maxConcurrency).toBe(1)
     expect(p.protocol.mode).toBe("auto")
   })
 })

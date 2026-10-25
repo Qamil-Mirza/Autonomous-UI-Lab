@@ -250,7 +250,9 @@ This is a guard for the controlled prototype, not a sandbox for hostile page scr
 
 `src/decision.ts` retries malformed JSON, invalid actions, transport failures,
 timeouts, HTTP 408/429 and selected transient 5xx responses. There are at most three
-attempts per decision, under the existing overall CLI deadline. Permanent failures
+attempts per decision, under the existing overall CLI deadline. HTTP 429 (rate limited)
+is handled separately: the decision waits, honoring `Retry-After` or backing off 2, 4, 8
+and 16 s (at most 30 s per wait), up to four times without using an attempt. Permanent failures
 such as HTTP 401/402/403 are not retried. The next request receives validation
 feedback, and cancellation interrupts backoff. Browser actions themselves are never
 retried automatically, avoiding duplicate submissions. Exhausted model retries end
@@ -428,14 +430,17 @@ SIMULATOR_BROWSER_CHANNEL=chrome npm run batch -w @ghostloop/simulator -- \
   --max-calls 120 --max-ms 900000 --headed
 ```
 
-This uses live Bitdeer credits. It runs four sessions, at most two at once:
+This uses live Bitdeer credits. It runs four sessions, at most two at once. Sessions are
+queued round-robin across scenarios, so a batch that stops early still covers each one:
 
 - First-time/cost-conscious: cautious public persona instructions.
 - Returning/product-familiar: confident persona instructions, still with fresh app state.
 - Invalid-email recovery: two labeled controlled actions type and submit an invalid
   invitation email. The model then observes the error and chooses how to recover.
-- Low persistence: a labeled controlled stop after six actions or two submissions
-  with validation errors. This is a fixed experimental rule, not spontaneous AI behavior.
+- Low persistence: a labeled controlled stop when the user is stuck: two submissions with
+  validation errors, three actions in a row that get nowhere (failed, no effect, or back to
+  an earlier screen), or 14 actions in total. A clear path still succeeds. This is a fixed
+  experimental rule, not spontaneous AI behavior.
 
 Each session owns an isolated browser and a unique initialized server run. Events
 carry `decisionSource: "model"` or `"scenario"`; controlled interventions do not
@@ -445,8 +450,10 @@ consume model calls. Every new session gets a fresh intervention policy instance
 concurrent sessions, and 20 actions per session. Ctrl+C stops new admissions,
 cancels active runs and waits for cleanup. Call budgets reserve requests synchronously
 before sending, so concurrent sessions cannot overshoot the cap. The deadline stops
-active and queued work; bounded cleanup may continue after it. Infrastructure faults
-stop the remaining batch; behavioral non-success continues to the next session.
+active and queued work; bounded cleanup may continue after it. A single infrastructure
+fault (`model_error`/`browser_error`) is recorded and the batch continues; three in a row
+stop the remaining batch (`repeated_infrastructure_errors`), and HTTP 402 (out of credits)
+stops it at once (`model_credits_exhausted`). Behavioral non-success always continues.
 
 Results are saved under `workers/simulator/artifacts/batches/<batchId>/`:
 `batch.json`, `request.json`, `metadata.json`, per-slot usage logs, and each run's

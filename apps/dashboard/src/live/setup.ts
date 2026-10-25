@@ -23,8 +23,11 @@ export const SCENARIOS = [
   { id: "scn_cost_conscious", name: "First-time / cost-conscious", description: "You are new to this product. Read labels carefully and avoid spending money or starting a trial." },
   { id: "scn_product_familiar", name: "Returning / product-familiar", description: "You have used similar products before and move confidently through familiar forms. This is a fresh account and workspace." },
   { id: "scn_invalid_email", name: "Invalid-email recovery", description: "You make an email typo when inviting a teammate. After submitting it, read any validation message and correct the address using inviteEmail." },
-  { id: "scn_low_persistence", name: "Low persistence", description: "You have little patience. Give up after six actions or after two submissions produce validation errors." },
+  { id: "scn_low_persistence", name: "Low persistence", description: "You have little patience. You give up when you get stuck: after two submissions produce validation errors, or after a few actions in a row get you nowhere." },
 ].map((s) => ({ ...s, inputs: { ...INPUTS } }))
+
+// Simulated users running at once. Each step is one model call, so higher values hit the provider's rate limit.
+export const DEFAULT_CONCURRENCY = 2
 
 export const DEFAULT_PROTOTYPE_URL = "http://localhost:5173/v/ver_baseline/signup"
 
@@ -81,7 +84,7 @@ export function buildCreatePayload(f: SetupForm, manifestHash: string): CreateEx
       ...base.budgets,
       runsPerBatch: f.trials,
       maxActionsPerRun: f.maxSteps,
-      maxConcurrency: Math.min(base.budgets.maxConcurrency, f.trials),
+      maxConcurrency: Math.min(DEFAULT_CONCURRENCY, f.trials),
       maxInferenceUsd: f.maxUsd,
       maxWallClockMs: Math.round(f.maxMinutes * 60_000),
     },
