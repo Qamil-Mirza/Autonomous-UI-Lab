@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { GoalCheckResult, type CandidateAdapter, type ScreenshotRef, type SimulationAdapter } from "@ghostloop/contracts";
 import { checkGoal, createCandidateAdapter } from "@ghostloop/prototype-adapter";
 import { createSimulationAdapter } from "@ghostloop/simulator";
+import { createClaudeJudge } from "./claude/judge";
 
 export type AdapterChoice = "mock" | "real";
 
@@ -35,7 +36,7 @@ export function screenshotPublisher(artifactsDir: string) {
   };
 }
 
-/** Jaclyn's simulator (Group B): real browsers on the prototype, Bitdeer choosing actions, C's trusted goal check. */
+/** Jaclyn's simulator (Group B): real browsers on the prototype, Bitdeer choosing actions, Claude judging each trial. */
 export function createRealSimulation(opts: { prototypeUrl?: string; artifactsDir?: string } = {}): SimulationAdapter {
   const baseUrl = opts.prototypeUrl ?? DEFAULT_PROTOTYPE_URL;
   const artifactsDir = opts.artifactsDir ?? DEFAULT_ARTIFACTS_DIR;
@@ -44,6 +45,7 @@ export function createRealSimulation(opts: { prototypeUrl?: string; artifactsDir
     provenance: "live-bitdeer",
     goalAdapter: { checkGoal: async (runId) => GoalCheckResult.parse(await checkGoal(runId, { baseUrl })) },
     publishScreenshot: screenshotPublisher(artifactsDir),
+    judge: createClaudeJudge(),
   });
 }
 

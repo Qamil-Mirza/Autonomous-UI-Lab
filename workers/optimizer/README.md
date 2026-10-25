@@ -99,6 +99,11 @@ npm run dev -w @ghostloop/dashboard         # terminal 4: dashboard on :5174; cr
 - Screenshots land in `workers/simulator/artifacts/` and are published as `/artifacts/...` URLs, which the dashboard
   serves for the replay. `GHOSTLOOP_PROTOTYPE_URL` (default `http://localhost:5173`) moves the prototype.
 - Real simulation needs real candidates: the prototype does not serve mock candidate versions.
+- **Success is judged.** The real simulator scores each trial with a Claude judge (`src/claude/judge.ts`,
+  `claude-opus-5-5`, instructions `judge-v1`) against the protocol's task as written, from the trial's final state.
+  Breaking a protected rule (`protocol.vetoRules`, default `["no_paid_trial"]`) always fails a trial. Judge costs count
+  toward the experiment's cost budget. If the baseline and candidate batches were scored by different judges, the
+  comparison is `inconclusive`. Without `ANTHROPIC_API_KEY`, every trial ends as a model error.
 
 ## Module map
 
