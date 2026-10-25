@@ -13,3 +13,4 @@ designs/versions/*
 designs/candidates/
 designs/figma/*
 !designs/figma/ver_baseline.json
+packages/importer/fixtures/*.zip

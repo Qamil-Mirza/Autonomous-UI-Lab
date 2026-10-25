@@ -1,0 +1,33 @@
+:root {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #1f1a17;
+  background: #faf6f1;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+.shell { max-width: 880px; margin: 0 auto; padding: 0 24px 48px; }
+.top { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid #eadfd3; }
+.brand { display: flex; gap: 8px; align-items: center; font-weight: 700; font-size: 18px; background: none; border: 0; cursor: pointer; color: inherit; }
+.bag-icon { position: relative; background: #fff; border: 1px solid #eadfd3; border-radius: 999px; width: 40px; height: 40px; display: grid; place-items: center; cursor: pointer; }
+.dot { position: absolute; top: -4px; right: -4px; background: #b4532a; color: #fff; border-radius: 999px; font-size: 11px; min-width: 18px; height: 18px; display: grid; place-items: center; }
+h1 { font-size: 28px; margin: 28px 0 8px; }
+.lede { color: #6b5d52; margin: 0 0 20px; }
+.menu { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.card { background: #fff; border: 1px solid #eadfd3; border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+.card h3 { margin: 0 0 4px; font-size: 16px; }
+.price { color: #6b5d52; }
+.hint { color: #6b5d52; font-size: 13px; }
+.btn { border-radius: 10px; padding: 10px 16px; font-size: 15px; cursor: pointer; border: 1px solid #b4532a; }
+.btn-default { background: #b4532a; color: #fff; }
+.btn-outline { background: #fff; color: #b4532a; }
+.lines { list-style: none; padding: 0; }
+.lines li { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; padding: 10px 0; border-bottom: 1px solid #eadfd3; }
+.link { background: none; border: 0; color: #b4532a; cursor: pointer; text-decoration: underline; }
+.total { font-weight: 700; }
+.actions { display: flex; gap: 12px; }
+.form { display: grid; gap: 14px; max-width: 420px; }
+.form label { display: grid; gap: 6px; font-size: 14px; }
+.form input, .form select { padding: 10px 12px; border: 1px solid #d8c9bb; border-radius: 10px; font-size: 15px; background: #fff; }
+.error { color: #a42020; margin: 0; }
+.empty { color: #6b5d52; }
+.done h1 { color: #2f6b3a; }
