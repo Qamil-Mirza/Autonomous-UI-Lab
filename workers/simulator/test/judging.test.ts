@@ -20,7 +20,7 @@ describe('buildJudgeInput', () => {
         event(1, { action: { type: 'type', elementId: 'invite.email', value: 'teammate@example.com', reason: 'invite' } }),
         event(2, { action: { type: 'click', elementId: 'unknown.thing', reason: 'try' } }),
       ],
-      labels: new Map([['invite.email', 'Teammate email'], ['signup.password', 'Password']]),
+      labels: new Map([['invite.email', 'Teammate email'], ['signup.password', 'Password']]), secretElements: new Set(),
       localShots: [{ path: '/tmp/0.png', screen: 'signup' }], finalScreen: 'signup', appState: undefined });
     expect(input.steps.map(s => [s.target, s.value])).toEqual([['Password', '[redacted]'], ['Teammate email', 'teammate@example.com'], ['unknown.thing', undefined]]);
     expect(input.steps[0]!.reason).toBe('enter password');
@@ -28,11 +28,25 @@ describe('buildJudgeInput', () => {
     expect(input.scenario).toEqual({ description: scenario.description, inputs: { ...scenario.inputs, password: '[redacted]' } });
   });
 
+  it('redacts anything typed into a password field and scrubs the password from values and reasons', () => {
+    const secret = scenario.inputs.password!;
+    const input = buildJudgeInput({ task: 'Do it', scenario,
+      events: [
+        event(0, { action: { type: 'type', elementId: 'signup.password', value: 'Typo-Pass9!', reason: 'retype the password' } }),
+        event(1, { action: { type: 'type', elementId: 'signup.name', value: `${secret} `, reason: `typing ${secret} by mistake` } }),
+      ],
+      labels: new Map(), secretElements: new Set(['signup.password']), localShots: [], finalScreen: 'signup', appState: undefined });
+    expect(input.steps[0]!.value).toBe('[redacted]');
+    expect(JSON.stringify(input)).not.toContain(secret);
+    expect(JSON.stringify(input)).not.toContain('Typo-Pass9!');
+    expect(input.steps[1]!.reason).toBe('typing [redacted] by mistake');
+  });
+
   it('lists screens visited in order without repeats and carries the final app state', () => {
     const screens = ['signup', 'workspace', 'plan', 'workspace', 'plan'];
     const input = buildJudgeInput({ task: 'Do it', scenario,
       events: screens.slice(1).map((s, i) => event(i, { screenBefore: screens[i]!, screenAfter: s })),
-      labels: new Map(), localShots: [], finalScreen: 'plan', appState: state([['invite_sent', false], ['no_paid_trial', true]]) });
+      labels: new Map(), secretElements: new Set(), localShots: [], finalScreen: 'plan', appState: state([['invite_sent', false], ['no_paid_trial', true]]) });
     expect(input.screens).toEqual(['signup', 'workspace', 'plan']);
     expect(input.finalScreen).toBe('plan');
     expect(input.appState).toEqual([{ name: 'invite_sent', passed: false, detail: 'failed' }, { name: 'no_paid_trial', passed: true, detail: 'ok' }]);
@@ -82,6 +96,12 @@ describe('scoreTrial', () => {
     ['user_cancelled', { verdict: v(true) }, 'user_cancelled', false],
     ['flow_blocked', { verdict: v(true) }, 'goal', true],
   ])('%s with %o → %s', (ended, extra, outcome, goalVerified) => {
-    expect(scoreTrial({ ended, ...extra })).toEqual({ outcome, goalVerified });
+    expect(scoreTrial({ ended, ...extra })).toMatchObject({ outcome, goalVerified });
+  });
+
+  it('reports a protected violation only when it is what failed the trial', () => {
+    expect(scoreTrial({ ended: 'agent_stop', violation: 'no_paid_trial' }).protectedViolation).toBe('no_paid_trial');
+    expect(scoreTrial({ ended: 'user_cancelled', violation: 'no_paid_trial' }).protectedViolation).toBeUndefined();
+    expect(scoreTrial({ ended: 'browser_error', violation: 'no_paid_trial' }).protectedViolation).toBeUndefined();
   });
 });

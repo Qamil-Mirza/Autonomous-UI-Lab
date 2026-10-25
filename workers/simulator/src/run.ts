@@ -48,8 +48,16 @@ export interface RunOptions {
    * Prototype runs only. The trial runs until the user stops or runs out of actions; protected rules are checked
    * after every action; at the end the judge scores the final state against the task as written.
    */
-  judging?: { judge: TrialJudge; vetoRules: readonly string[] };
+  judging?: {
+    judge: TrialJudge;
+    vetoRules: readonly string[];
+    /** Cancels an in-flight judgment; defaults to `signal`. Batches pass their external cancel, not their deadline. */
+    signal?: AbortSignal;
+  };
 }
+/** The judge's own time limit, independent of the run's and batch's remaining budget (above the client's 120 s). */
+export const JUDGE_TIMEOUT_MS = 150_000;
+
 export async function runOne(options: RunOptions): Promise<AgentRunResult> {
   const maxActions = options.maxActions ?? (options.prototype ? 16 : 6);
   if (!Number.isInteger(maxActions) || maxActions < 1 || maxActions > 20) throw new Error('maxActions must be between 1 and 20');
@@ -101,6 +109,7 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
   let stopReason: string | undefined;
   const judging = options.prototype ? options.judging : undefined;
   const localShots: { path: string; screen: string }[] = [];
+  const secretElements = new Set<string>();
   let violation: string | undefined;
   let judgeRecord: JudgeRecord | undefined;
   let judgeError: string | undefined;
@@ -159,6 +168,7 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
       replayRefs.set(observation.screenshot.uri, validated);
       screenshots.push(validated);
       localShots.push({ path: observation.screenshot.uri, screen: observation.screenId });
+      for (const c of observation.controls) if (c.inputType === 'password') secretElements.add(c.elementId);
       terminalScreen = observation.screenId;
       return observation;
     };
@@ -272,18 +282,20 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
   if (judging) {
     if (!violation && ['agent_stop', 'step_limit', 'flow_blocked'].includes(outcome)) {
       const labels = new Map((registry ?? []).map(e => [e.elementId, e.label]));
-      const input = buildJudgeInput({ task, scenario, events, labels, localShots, finalScreen: terminalScreen, appState: goalEvidence });
+      const input = buildJudgeInput({ task, scenario, events, labels, secretElements, localShots, finalScreen: terminalScreen, appState: goalEvidence });
       try {
-        // A finished trial is always judged: only an external cancel stops it, not this run's own budget or deadline.
-        const { verdict, usd } = await bounded(() => judging.judge.judge(input, options.signal), maxWallClockMs, 'Judge', options.signal);
+        // A finished trial is always judged: only an external cancel stops it, not the run's or batch's budget or deadline.
+        const judgeSignal = judging.signal ?? options.signal;
+        const { verdict, usd } = await bounded(() => judging.judge.judge(input, judgeSignal), JUDGE_TIMEOUT_MS, 'Judge', judgeSignal);
         judgeRecord = { ...verdict, ...judging.judge.info, usd };
         await writeFile(resolve(dir, 'judge.json'), JSON.stringify({ input, verdict: judgeRecord }, null, 2));
       } catch (error) {
-        if (options.signal.aborted) { outcome = 'user_cancelled'; stopReason ??= 'external_cancel'; }
+        if ((judging.signal ?? options.signal).aborted) { outcome = 'user_cancelled'; stopReason ??= 'external_cancel'; }
         else { judgeError = error instanceof Error ? error.message : 'Judge failed'; errorMessage = `Judge failed: ${judgeError}`; }
       }
     }
-    ({ outcome, goalVerified } = scoreTrial({ ended: outcome, violation, verdict: judgeRecord, judgeError }));
+    // A violation is reported only when it is what failed the trial, not on a cancelled or crashed run.
+    ({ outcome, goalVerified, protectedViolation: violation } = scoreTrial({ ended: outcome, violation, verdict: judgeRecord, judgeError }));
   }
   try { await reportUsage(true); }
   catch (error) { usageError = error instanceof Error ? error.message : 'Usage reporting failed'; }

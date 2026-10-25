@@ -64,13 +64,13 @@ function fakeJudge(verdict: JudgeVerdict | (() => Promise<JudgeVerdict>)) {
   return { judge, calls };
 }
 
-async function runOneTrial(decider: Decider, judge: TrialJudge, opts: { task?: string; signal?: AbortSignal } = {}) {
+async function runOneTrial(decider: Decider, judge: TrialJudge, opts: { task?: string; signal?: AbortSignal; batchMs?: number } = {}) {
   const scenario = controlledScenarios().find(s => s.id === 'scn_cost_conscious')!;
   const req: BatchRequest = { batchId: `batch_${Math.random().toString(36).slice(2, 10)}`, experimentId: 'exp_test', protocolId: `proto_${Math.random().toString(36).slice(2, 10)}`,
     versionId: 'ver_baseline', versionUrl: baseUrl, task: opts.task ?? 'Create a Free workspace, invite a teammate, then go to the dashboard',
     scenarios: [{ ...scenario, runs: 1 }], runsPerBatch: 1, maxActionsPerRun: 20, maxConcurrency: 1, hiddenGoalRef: 'hidden' };
   const adapter = createSimulationAdapter({ outputDir: join(dir, 'out'), provenance: 'mock-decisions', goalAdapter: { checkGoal: id => checkGoal(id, { baseUrl }) },
-    createDecider: () => decider, judge });
+    createDecider: () => decider, judge, ...(opts.batchMs ? { maxWallClockMs: opts.batchMs } : {}) });
   return adapter.runBatch(req, () => {}, opts.signal ?? new AbortController().signal);
 }
 
@@ -137,6 +137,14 @@ describe('judged trials', () => {
     const run = (await runOneTrial(scripted(), judge)).runs[0]!;
     expect(run.outcome).toBe('model_error');
     expect(run.goalVerified).toBe(false);
+  }, 60000);
+
+  it('judges a trial that finishes late in the batch, even past the batch deadline', async () => {
+    // The judge needs longer than the batch has left; a finished trial is still judged.
+    const { judge } = fakeJudge(async () => { await new Promise(r => setTimeout(r, 9000)); return reached(true); });
+    const run = (await runOneTrial(scripted(), judge, { batchMs: 8000 })).runs[0]!;
+    expect(run.outcome).toBe('goal');
+    expect(run.judge?.reached).toBe(true);
   }, 60000);
 
   it('never judges infrastructure errors or cancellations', async () => {

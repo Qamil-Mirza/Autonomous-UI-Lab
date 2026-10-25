@@ -12,12 +12,16 @@ export function buildJudgeInput(args: {
   scenario: Scenario;
   events: AgentActionEvent[];
   labels: Map<string, string>;
+  /** Elements observed as password fields; anything typed into them is hidden. */
+  secretElements: ReadonlySet<string>;
   localShots: { path: string; screen: string }[];
   finalScreen: string;
   appState: GoalCheckResult | undefined;
 }): JudgeInput {
   const secret = args.scenario.inputs.password;
-  const hide = (value: string | undefined) => (value !== undefined && secret && value === secret ? REDACTED : value);
+  // The scenario password never reaches the judge, wherever it appears (a value, a reason, with stray whitespace).
+  const scrub = (text: string) => (secret ? text.split(secret).join(REDACTED) : text);
+  const hide = (value: string | undefined) => (value === undefined ? undefined : scrub(value));
   const screens: string[] = [];
   for (const e of args.events) for (const s of [e.screenBefore, e.screenAfter]) if (!screens.includes(s)) screens.push(s);
   return {
@@ -30,8 +34,10 @@ export function buildJudgeInput(args: {
       seq: e.seq,
       action: e.action.type,
       target: e.action.type === 'stop' ? 'session' : e.action.elementId ? (args.labels.get(e.action.elementId) || e.action.elementId) : 'page',
-      ...(e.action.value !== undefined ? { value: hide(e.action.value) } : {}),
-      ...(e.action.reason ? { reason: e.action.reason } : {}),
+      ...(e.action.value !== undefined
+        ? { value: e.action.elementId && args.secretElements.has(e.action.elementId) ? REDACTED : hide(e.action.value) }
+        : {}),
+      ...(e.action.reason ? { reason: scrub(e.action.reason) } : {}),
       result: e.result,
       screenBefore: e.screenBefore,
       screenAfter: e.screenAfter,
@@ -60,9 +66,9 @@ export function vetoViolation(state: GoalCheckResult | undefined, rules: readonl
  * Final outcome of a judged trial: infrastructure errors and cancellations stand; a broken protected rule fails it;
  * a failed judge call is a model error; only a confident "reached" is a goal; otherwise the trial keeps how it ended.
  */
-export function scoreTrial(args: { ended: RunOutcome; violation?: string; verdict?: JudgeVerdict; judgeError?: string }): { outcome: RunOutcome; goalVerified: boolean } {
+export function scoreTrial(args: { ended: RunOutcome; violation?: string; verdict?: JudgeVerdict; judgeError?: string }): { outcome: RunOutcome; goalVerified: boolean; protectedViolation?: string } {
   if (NOT_JUDGED.includes(args.ended)) return { outcome: args.ended, goalVerified: false };
-  if (args.violation) return { outcome: 'flow_blocked', goalVerified: false };
+  if (args.violation) return { outcome: 'flow_blocked', goalVerified: false, protectedViolation: args.violation };
   if (args.judgeError) return { outcome: 'model_error', goalVerified: false };
   if (args.verdict?.reached === true) return { outcome: 'goal', goalVerified: true };
   return { outcome: args.ended === 'goal' ? 'agent_stop' : args.ended, goalVerified: false };

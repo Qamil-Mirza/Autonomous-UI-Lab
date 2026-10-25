@@ -110,7 +110,7 @@ export function createSimulationAdapter(options: BatchOptions): SimulationAdapte
             maxActions: req.maxActionsPerRun, maxWallClockMs: Math.max(1, Math.min(240_000, Math.ceil(maxMs - (performance.now() - started)))),
             provenance: options.provenance, headed: options.headed, estimatedUsdPerCall: price,
             publishScreenshot: options.publishScreenshot,
-            ...(options.judge ? { judging: { judge: options.judge, vetoRules: req.vetoRules ?? DEFAULT_VETO_RULES } } : {}),
+            ...(options.judge ? { judging: { judge: options.judge, vetoRules: req.vetoRules ?? DEFAULT_VETO_RULES, signal: externalSignal } } : {}),
             onEvent: async event => { await onEvent(event); },
             onUsage: async usage => {
               await appendFile(resolve(dir, `usage-${slot}.jsonl`), JSON.stringify(usage) + '\n');
