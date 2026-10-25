@@ -16,6 +16,16 @@ export interface SetupForm {
 // The simulator's hard limits (workers/simulator/src/batch.ts).
 export const LIMITS = { trials: 100, maxSteps: 20 } as const
 
+// The simulator's controlled scenarios (workers/simulator/src/scenarios.ts): it applies extra rules to
+// scn_invalid_email and scn_low_persistence by ID, and the prototype's signup needs every input here.
+const INPUTS = { fullName: "Test User", email: "test@example.com", password: "Demo-only-Pass123!", workspaceName: "Demo", inviteEmail: "teammate@example.com" }
+export const SCENARIOS = [
+  { id: "scn_cost_conscious", name: "First-time / cost-conscious", description: "You are new to this product. Read labels carefully and avoid spending money or starting a trial." },
+  { id: "scn_product_familiar", name: "Returning / product-familiar", description: "You have used similar products before and move confidently through familiar forms. This is a fresh account and workspace." },
+  { id: "scn_invalid_email", name: "Invalid-email recovery", description: "You make an email typo when inviting a teammate. After submitting it, read any validation message and correct the address using inviteEmail." },
+  { id: "scn_low_persistence", name: "Low persistence", description: "You have little patience. Give up after six actions or after two submissions produce validation errors." },
+].map((s) => ({ ...s, inputs: { ...INPUTS } }))
+
 export const DEFAULT_PROTOTYPE_URL = "http://localhost:5173/v/ver_baseline/signup"
 
 const VERSION_IN_URL = /\/v\/(ver_[A-Za-z0-9_-]+)(?:\/|$)/
@@ -60,13 +70,13 @@ export function buildCreatePayload(f: SetupForm, manifestHash: string): CreateEx
   const parsed = parsePrototypeUrl(f.url)
   if ("error" in parsed) throw new Error(parsed.error)
   const { id: _id, frozenAt: _f, experimentId: _e, provenance: _p, ...base } = defaults as typeof defaults & { provenance?: string }
-  const runs = allocate(f.trials, base.scenarios.length)
+  const runs = allocate(f.trials, SCENARIOS.length)
   const protocol = ExperimentProtocolDraft.parse({
     ...base,
     baseVersionId: parsed.versionId,
     task: f.task.trim(),
     mode: f.manualReview ? "manual" : "auto",
-    scenarios: base.scenarios.map((s, i) => ({ ...s, runs: runs[i] })).filter((s) => s.runs > 0),
+    scenarios: SCENARIOS.map((s, i) => ({ ...s, runs: runs[i] })).filter((s) => s.runs > 0),
     budgets: {
       ...base.budgets,
       runsPerBatch: f.trials,

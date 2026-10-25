@@ -60,6 +60,8 @@ describe("buildCreatePayload", () => {
       policy: { minImprovementPp: 15 },
     })
     expect(p.protocol.scenarios.reduce((n, s) => n + s.runs, 0)).toBe(10)
+    expect(p.protocol.scenarios.map((s) => s.id)).toEqual(["scn_cost_conscious", "scn_product_familiar", "scn_invalid_email", "scn_low_persistence"])
+    expect(Object.keys(p.protocol.scenarios[0]!.inputs)).toContain("fullName")
     expect(p.protocol.protectedCategories.length).toBeGreaterThan(0)
     expect(p.protocol).not.toHaveProperty("provenance")
   })
