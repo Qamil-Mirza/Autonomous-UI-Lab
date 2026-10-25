@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BatchResult, ExperimentProtocol } from "@ghostloop/contracts";
 import { loadFixture } from "@ghostloop/contracts/fixtures";
-import { compare, computeMetrics, stoppingReasonFor } from "../src/evaluator";
+import { compare, computeMetrics, judgeMismatch, stoppingReasonFor } from "../src/evaluator";
 
 const protocol = loadFixture("protocol.default.json", ExperimentProtocol);
 const { scenarios, policy } = protocol;
@@ -88,5 +88,17 @@ describe("stoppingReasonFor", () => {
     expect(stoppingReasonFor("accepted", 0.75, { ...policy, targetCompletionRate: 0.8 }, 1, 3)).toBeNull();
     expect(stoppingReasonFor("rejected", 0.4, policy, 1, 3)).toBe("NO_MEASURED_IMPROVEMENT");
     expect(stoppingReasonFor("inconclusive", null, policy, 1, 3)).toBe("INCONCLUSIVE");
+  });
+});
+
+describe("judgeMismatch", () => {
+  const v1 = { model: "claude-opus-5-5", instructionVersion: "judge-v1" };
+  it("is undefined when both batches used the same judge or neither was judged", () => {
+    expect(judgeMismatch(v1, { ...v1 })).toBeUndefined();
+    expect(judgeMismatch(undefined, undefined)).toBeUndefined();
+  });
+  it("explains any difference, including one side judged and the other not", () => {
+    expect(judgeMismatch(v1, { ...v1, instructionVersion: "judge-v2" })).toBe("baseline and candidate were judged differently (claude-opus-5-5 judge-v1 vs claude-opus-5-5 judge-v2)");
+    expect(judgeMismatch(v1, undefined)).toBe("baseline and candidate were judged differently (claude-opus-5-5 judge-v1 vs the fixed checker)");
   });
 });

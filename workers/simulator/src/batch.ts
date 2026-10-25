@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile, rename, appendFile, link, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
-import { BatchRequest, BatchResult, type SimulationAdapter, type PrototypeGoalAdapter, type AgentRunResult } from '@ghostloop/contracts';
+import { BatchRequest, BatchResult, DEFAULT_VETO_RULES, type SimulationAdapter, type PrototypeGoalAdapter, type AgentRunResult, type TrialJudge } from '@ghostloop/contracts';
 import { runOne, type RunOptions } from './run';
 import { prototypeIntegration } from './prototype';
 import { bitdeerDecider, type Decider } from './bitdeer';
@@ -18,6 +18,8 @@ export interface BatchOptions {
   maxInferenceUsd?: number;
   estimatedUsdPerCall?: number;
   publishScreenshot?: RunOptions['publishScreenshot'];
+  /** Scores each trial against the task as written; without it, C's fixed checker decides success. */
+  judge?: TrialJudge;
 }
 
 /** Technical (model/browser) errors in a row that stop the batch; a single one is recorded and excluded instead. */
@@ -108,6 +110,7 @@ export function createSimulationAdapter(options: BatchOptions): SimulationAdapte
             maxActions: req.maxActionsPerRun, maxWallClockMs: Math.max(1, Math.min(240_000, Math.ceil(maxMs - (performance.now() - started)))),
             provenance: options.provenance, headed: options.headed, estimatedUsdPerCall: price,
             publishScreenshot: options.publishScreenshot,
+            ...(options.judge ? { judging: { judge: options.judge, vetoRules: req.vetoRules ?? DEFAULT_VETO_RULES, signal: externalSignal } } : {}),
             onEvent: async event => { await onEvent(event); },
             onUsage: async usage => {
               await appendFile(resolve(dir, `usage-${slot}.jsonl`), JSON.stringify(usage) + '\n');
@@ -125,9 +128,13 @@ export function createSimulationAdapter(options: BatchOptions): SimulationAdapte
     };
     try { await Promise.all(Array.from({ length: Math.min(req.maxConcurrency, jobs.length) }, worker)); }
     finally { clearTimeout(deadline); }
+    const runs = [...results.entries()].sort(([a], [b]) => a - b).map(([, run]) => run);
+    // Judge calls are priced from their real token usage and count toward D's cost budget with the simulator's calls.
+    const judged = runs.filter(r => r.judge);
+    const judgeUsd = judged.reduce((sum, r) => sum + r.judge!.usd, 0);
     const result = BatchResult.parse({ schemaVersion: '1.0.0', batchId: req.batchId, versionId: req.versionId,
-      runs: [...results.entries()].sort(([a], [b]) => a - b).map(([, run]) => run),
-      usage: { inferenceCalls: calls, inferenceUsd: calls * (price ?? 0), costKnown: price !== undefined,
+      runs, ...(options.judge ? { judge: options.judge.info } : {}),
+      usage: { inferenceCalls: calls + judged.length, inferenceUsd: calls * (price ?? 0) + judgeUsd, costKnown: price !== undefined,
         costEstimated: options.provenance === 'live-bitdeer' && price !== undefined, wallClockMs: performance.now() - started },
       cancelled: signal.aborted, plannedRuns: jobs.length });
     await writeFile(resolve(dir, 'batch.json.tmp'), JSON.stringify(result, null, 2));

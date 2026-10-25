@@ -1,6 +1,8 @@
 import path from "node:path";
-import { describe, expect, it } from "vitest";
-import { parseAdapterFlag, screenshotPublisher } from "../src/real-adapters";
+import { describe, expect, it, vi } from "vitest";
+const simulator = vi.hoisted(() => ({ options: undefined as undefined | Record<string, unknown> }));
+vi.mock("@ghostloop/simulator", () => ({ createSimulationAdapter: (options: Record<string, unknown>) => { simulator.options = options; return { runBatch: async () => { throw new Error("unused"); } }; } }));
+import { createRealSimulation, parseAdapterFlag, screenshotPublisher } from "../src/real-adapters";
 
 describe("parseAdapterFlag", () => {
   it("defaults to mock, and --real makes every adapter real", () => {
@@ -34,5 +36,12 @@ describe("screenshotPublisher", () => {
     await expect(publish(outside)).resolves.toEqual(outside);
     const sibling = { uri: `${root}-other/000.png`, width: 1, height: 1 };
     await expect(publish(sibling)).resolves.toEqual(sibling);
+  });
+});
+
+describe("createRealSimulation", () => {
+  it("scores trials with the Claude judge", () => {
+    createRealSimulation();
+    expect((simulator.options!.judge as { info: unknown }).info).toEqual({ model: "claude-opus-5-5", instructionVersion: "judge-v1" });
   });
 });

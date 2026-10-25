@@ -22,6 +22,7 @@ async function main(): Promise<void> {
   console.log(`candidates: ${candidates === "real" ? "real (prototype-adapter patch engine)" : "mock fixtures"}`);
   console.log(`analysis: ${analysisLabel(choice)}`);
   if (simulation === "real" && !process.env.BITDEER_API_KEY) console.warn("BITDEER_API_KEY is not set; real simulation runs will fail");
+  if (simulation === "real" && !process.env.ANTHROPIC_API_KEY) console.warn("ANTHROPIC_API_KEY is not set; the Claude judge will fail and every trial will be a model error");
   if (simulation === "real" && candidates === "mock") {
     console.warn("real simulation with mock candidates: the prototype does not serve mock candidate versions, so candidate batches will fail");
   }

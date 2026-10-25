@@ -49,6 +49,8 @@ export const ExperimentProtocol = z.object({
   scenarios: z.array(Scenario).min(1),
   budgets: Budgets,
   policy: EvaluationPolicy,
+  /** Protected rules that fail a trial when broken; absent means DEFAULT_VETO_RULES. */
+  vetoRules: z.array(z.string().min(1)).optional(),
   frozenAt: z.string().datetime(),
 });
 export type ExperimentProtocol = z.infer<typeof ExperimentProtocol>;

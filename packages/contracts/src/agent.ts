@@ -3,6 +3,7 @@ import { SchemaVersion } from "./version";
 import { BatchId, ExperimentId, ProtocolId, RunId, ScenarioId, VersionId } from "./ids";
 import { ActionResult, ActionType, BEHAVIORAL_OUTCOMES, RunOutcome } from "./enums";
 import { Scenario } from "./protocol";
+import { JudgeRecord } from "./judge";
 
 export const ScreenshotRef = z.object({
   uri: z.string().min(1),
@@ -101,6 +102,10 @@ export const AgentRunResultObject = z.object({
   lastPointer: Point.optional(),
   screenshots: z.array(ScreenshotRef),
   behaviorallyValid: z.boolean(),
+  /** Set when a judge scored the trial against the task as written. */
+  judge: JudgeRecord.optional(),
+  /** The protected rule the trial broke, which always fails it. */
+  protectedViolation: z.string().min(1).optional(),
   startedAt: z.string().datetime(),
   endedAt: z.string().datetime(),
 });

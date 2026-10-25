@@ -11,6 +11,7 @@ import {
   type Scenario,
   type ScenarioMetrics,
   type StoppingReason,
+  type JudgeInfo,
 } from "@ghostloop/contracts";
 
 export interface ComputeMetricsInput {
@@ -251,4 +252,11 @@ export function stoppingReasonFor(
     case "inconclusive":
       return "INCONCLUSIVE";
   }
+}
+
+/** Why a baseline and candidate can't be compared fairly: they were scored by different judges. */
+export function judgeMismatch(baseline: JudgeInfo | undefined, candidate: JudgeInfo | undefined): string | undefined {
+  const name = (j: JudgeInfo | undefined) => (j ? `${j.model} ${j.instructionVersion}` : "the fixed checker");
+  if (name(baseline) === name(candidate)) return undefined;
+  return `baseline and candidate were judged differently (${name(baseline)} vs ${name(candidate)})`;
 }
