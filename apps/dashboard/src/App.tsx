@@ -1,16 +1,13 @@
-import { useEffect, useRef, useState } from "react"
-import {
-  experiment,
-  observations,
-  patches,
-  runs,
-  scenarios,
-} from "./sampleData"
-import type { Run } from "./sampleData"
+import { useEffect, useMemo, useRef, useState } from "react"
+import type { ObservationDisposition } from "@ghostloop/contracts"
+import { experiment } from "./sampleData"
 import { sampleAdapter } from "./mockService"
+import { sampleSummaries, sampleView, type SampleScenario } from "./sample"
+import { useElements, useGhostloop, useNames, type LinkStatus } from "./live/useGhostloop"
+import { experimentView, summaries, type ExperimentSummary, type ExperimentView, type RunView } from "./live/view"
+import { buildCreatePayload, DEFAULT_PROTOTYPE_URL, fetchManifest, LIMITS, parsePrototypeUrl, validateForm, type SetupForm } from "./live/setup"
 
 type View = "landing" | "overview" | "setup" | "runs" | "recommendations" | "review" | "results"
-type Scenario = keyof typeof scenarios
 
 function Logo() {
   return (
@@ -109,14 +106,46 @@ function Landing({ open }: { open: () => void }) {
   )
 }
 
+function LinkFoot({ link, retry }: { link: LinkStatus; retry: () => void }) {
+  if (link.kind === "live")
+    return (
+      <div className="sidebar-foot live">
+        <span className="pulse-dot" />
+        Live · GhostLoop database
+      </div>
+    )
+  if (link.kind === "connecting")
+    return (
+      <div className="sidebar-foot">
+        <span className="pulse-dot" />
+        Connecting…
+      </div>
+    )
+  return (
+    <div className="sidebar-foot">
+      <span className="pulse-dot" />
+      {link.kind === "lost" ? "Connection lost · Last live data" : "Offline · Sample data"}
+      <button className="text-btn foot-retry" onClick={retry}>
+        Reconnect
+      </button>
+    </div>
+  )
+}
+
 function Sidebar({
   view,
   setView,
   recommendationsAvailable,
+  hasExperiment,
+  link,
+  retry,
 }: {
   view: View
   setView: (v: View) => void
   recommendationsAvailable: boolean
+  hasExperiment: boolean
+  link: LinkStatus
+  retry: () => void
 }) {
   return (
     <aside className="sidebar">
@@ -134,7 +163,7 @@ function Sidebar({
               ? "active"
               : ""
           }
-          onClick={() => setView(recommendationsAvailable ? "runs" : "setup")}
+          onClick={() => setView(hasExperiment ? "runs" : "setup")}
         >
           Tests
         </button>
@@ -147,10 +176,7 @@ function Sidebar({
           </button>
         )}
       </nav>
-      <div className="sidebar-foot">
-        <span className="pulse-dot" />
-        Demo · Sample data
-      </div>
+      <LinkFoot link={link} retry={retry} />
     </aside>
   )
 }
@@ -210,7 +236,7 @@ function SubjectPreview({ selected = [] }: { selected?: string[] }) {
   )
 }
 
-function SessionReplay({ run }: { run: Run }) {
+function SessionReplay({ run }: { run: RunView }) {
   const secondsPerAction = 3
   const duration = run.actions.length * secondsPerAction
   const [time, setTime] = useState(0)
@@ -453,12 +479,68 @@ function formatTime(value: number) {
   return `0:${Math.floor(value).toString().padStart(2, "0")}`
 }
 
+/** Steps through a real run's screenshots alongside its actions. */
+function LiveReplay({ run }: { run: RunView }) {
+  const shots = run.actions.map((a, i) => ({ ...a, step: i + 1 })).filter((a) => a.screenshot)
+  const [index, setIndex] = useState(0)
+  const shot = shots[Math.min(index, shots.length - 1)]
+  if (!shot) return null
+  return (
+    <div className="replay live-replay">
+      <div className="replay-stage">
+        <div className="replay-label">
+          <span className="record-dot" />
+          Recorded screenshots · {run.id}
+        </div>
+        <img src={shot.screenshot} alt={`Screen before step ${shot.step}: ${shot.action} ${shot.target}`} />
+      </div>
+      <div className="replay-controls">
+        <button type="button" disabled={index === 0} onClick={() => setIndex(index - 1)}>
+          Previous
+        </button>
+        <span>
+          Step {shot.step} · {shot.action} · {shot.target}
+        </span>
+        <button type="button" disabled={index >= shots.length - 1} onClick={() => setIndex(index + 1)}>
+          Next
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/** A live view of a prototype version. */
+function VersionPreview({ url, title }: { url: string; title: string }) {
+  return (
+    <div className="subject version-preview">
+      <div className="subject-top">
+        <i />
+        <i />
+        <i />
+        <b>{new URL(url).pathname}</b>
+        <a href={url} target="_blank" rel="noreferrer">
+          Open ↗
+        </a>
+      </div>
+      <iframe src={url} title={title} sandbox="allow-scripts allow-same-origin allow-forms" />
+    </div>
+  )
+}
+
+function ErrorNote({ error }: { error?: string }) {
+  return error ? <div className="alert bad">{error}</div> : null
+}
+
 function Overview({
-  setView,
-  openRecent,
+  experiments,
+  open,
+  newTest,
+  live,
 }: {
-  setView: (v: View) => void
-  openRecent: () => void
+  experiments: ExperimentSummary[]
+  open: (id: string) => void
+  newTest: () => void
+  live: boolean
 }) {
   return (
     <>
@@ -470,7 +552,7 @@ function Overview({
             Set a goal, see where people may get stuck, and choose which
             improvements to try.
           </p>
-          <button className="btn primary" onClick={() => setView("setup")}>
+          <button className="btn primary" onClick={newTest}>
             Start a new test
           </button>
         </div>
@@ -490,30 +572,81 @@ function Overview({
             <span>Last updated</span>
             <span />
           </div>
-          <button className="table-row" onClick={openRecent}>
-            <span>
-              <b>Free plan onboarding</b>
-              <small>exp_ghostloop_01</small>
-            </span>
-            <Badge tone="good">First test complete</Badge>
-            <span>Today, 10:42</span>
-            <span>View →</span>
-          </button>
+          {experiments.length === 0 && (
+            <div className="table-row empty-row">
+              <span>{live ? "No tests yet. Start one to see it here." : "No tests."}</span>
+            </div>
+          )}
+          {experiments.map((x) => (
+            <button className="table-row" key={x.id} onClick={() => open(x.id)}>
+              <span>
+                <b>{x.name}</b>
+                <small>{x.id}</small>
+              </span>
+              <Badge tone={x.statusTone}>{x.statusLabel}</Badge>
+              <span>{live ? formatWhen(x.updatedAt) : x.updatedAt}</span>
+              <span>View →</span>
+            </button>
+          ))}
         </div>
       </section>
     </>
   )
 }
 
-function Setup({ start }: { start: (name: string) => void }) {
+function formatWhen(iso: string) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  const today = new Date().toDateString() === d.toDateString()
+  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  return today ? `Today, ${time}` : `${d.toLocaleDateString()}, ${time}`
+}
+
+const DEFAULT_FORM: SetupForm = {
+  url: DEFAULT_PROTOTYPE_URL,
+  task: experiment.task,
+  trials: 12,
+  maxSteps: 20,
+  minImprovementPp: 10,
+  maxUsd: 20,
+  maxMinutes: 15,
+  manualReview: true,
+}
+
+function Setup({
+  start,
+  live,
+}: {
+  start: (name: string, form: SetupForm) => Promise<string | undefined>
+  live: boolean
+}) {
   const [name, setName] = useState(experiment.name)
-  const [url, setUrl] = useState(experiment.prototypeUrl)
+  const [form, setForm] = useState<SetupForm>({
+    ...DEFAULT_FORM,
+    url: live ? DEFAULT_FORM.url : experiment.prototypeUrl,
+  })
   const [error, setError] = useState("")
-  const submit = (e: React.FormEvent) => {
+  const [busy, setBusy] = useState(false)
+  const set = <K extends keyof SetupForm>(key: K, value: SetupForm[K]) =>
+    setForm((f) => ({ ...f, [key]: value }))
+  const num = (key: "trials" | "maxSteps" | "minImprovementPp" | "maxUsd" | "maxMinutes") => ({
+    value: Number.isNaN(form[key]) ? "" : String(form[key]),
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => set(key, e.target.valueAsNumber),
+  })
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim() || !/^https?:\/\//.test(url))
+    if (!name.trim()) return setError("Add a test name.")
+    if (live) {
+      const invalid = validateForm(form)
+      if (invalid) return setError(invalid)
+    } else if (!/^https?:\/\//.test(form.url)) {
       return setError("Add a test name and a valid website or prototype URL.")
-    start(name)
+    }
+    setError("")
+    setBusy(true)
+    const failure = await start(name.trim(), form)
+    setBusy(false)
+    if (failure) setError(failure)
   }
   return (
     <div className="narrow">
@@ -537,44 +670,48 @@ function Setup({ start }: { start: (name: string) => void }) {
           </label>
           <label>
             Prototype URL
-            <input value={url} onChange={(e) => setUrl(e.target.value)} />
+            <input value={form.url} onChange={(e) => set("url", e.target.value)} />
           </label>
         </div>
         <label>
           Task description
-          <textarea rows={4} defaultValue={experiment.task} />
+          <textarea rows={4} value={form.task} onChange={(e) => set("task", e.target.value)} />
         </label>
         <div className="field-row">
           <label>
             Number of test trials
-            <input type="number" defaultValue="12" min="1" />
+            <input type="number" min="1" max={LIMITS.trials} {...num("trials")} />
           </label>
           <label>
             Maximum steps per trial
-            <input type="number" defaultValue="25" min="1" />
+            <input type="number" min="1" max={LIMITS.maxSteps} {...num("maxSteps")} />
           </label>
         </div>
         <details>
           <summary>
-            Advanced settings <span>Completion, margins, and limits</span>
+            Advanced settings <span>Margins and limits</span>
           </summary>
           <div className="field-row">
             <label>
-              Completion target
-              <input defaultValue="Workspace created + invite sent" />
+              Minimum improvement (percentage points)
+              <input type="number" min="0" step="1" {...num("minImprovementPp")} />
             </label>
             <label>
-              Minimum improvement
-              <input defaultValue="10 percentage points" />
+              Cost limit (USD)
+              <input type="number" min="0" step="1" {...num("maxUsd")} />
             </label>
           </div>
           <label>
-            Time / cost limit
-            <input defaultValue="15 min / $20" />
+            Time limit (minutes)
+            <input type="number" min="1" step="1" {...num("maxMinutes")} />
           </label>
         </details>
         <label className="check">
-          <input type="checkbox" defaultChecked />
+          <input
+            type="checkbox"
+            checked={form.manualReview}
+            onChange={(e) => set("manualReview", e.target.checked)}
+          />
           <span>
             <b>Manual review enabled</b>
             <small>Ask me before testing any suggested improvements.</small>
@@ -595,8 +732,14 @@ function Setup({ start }: { start: (name: string) => void }) {
           ))}
         </div>
         <div className="form-foot">
-          <span>Test trials use labeled sample data in this demo.</span>
-          <button className="btn primary">Start the first test</button>
+          <span>
+            {live
+              ? "Simulated users will run against this prototype version."
+              : "Test trials use labeled sample data in this demo."}
+          </span>
+          <button className="btn primary" disabled={busy}>
+            {busy ? "Starting…" : "Start the first test"}
+          </button>
         </div>
       </form>
     </div>
@@ -604,60 +747,62 @@ function Setup({ start }: { start: (name: string) => void }) {
 }
 
 function Runs({
-  progress,
-  cancelled,
+  view,
   cancel,
   review,
+  error,
 }: {
-  progress: number
-  cancelled: boolean
+  view: ExperimentView
   cancel: () => void
   review: () => void
+  error?: string
 }) {
-  const [selected, setSelected] = useState(runs[0])
+  const batch = view.baseline
+  const [selectedId, setSelectedId] = useState<string | undefined>(undefined)
+  const selected = batch.runs.find((r) => r.id === selectedId) ?? batch.runs[0]
+  const running = view.state === "created" || view.state === "baseline_running"
+  const cancelled = view.cancelRequested || (view.stopped && view.stage === 0)
+  const ready = view.stage >= 1 && !cancelled
   return (
     <>
       <div className="page-head">
         <div>
-          <small>TEST · {experiment.id}</small>
-          <h1>{experiment.name}</h1>
+          <small>TEST · {view.id}</small>
+          <h1>{view.name}</h1>
           <p>
             {cancelled
               ? "Stopped by user"
-              : progress < 100
-                ? "Your first test is running with sample trials…"
+              : running
+                ? `Your first test is running · ${batch.completed} of ${batch.planned} trials finished`
                 : "First test complete · findings are ready"}
           </p>
         </div>
         <div>
-          <Badge tone={cancelled ? "bad" : progress === 100 ? "good" : "coral"}>
-            {cancelled
-              ? "Cancelled"
-              : progress === 100
-                ? "First test complete"
-                : `Running · ${progress}%`}
+          <Badge tone={running && !cancelled ? "coral" : view.statusTone}>
+            {running && !cancelled ? `Running · ${batch.progress}%` : view.statusLabel}
           </Badge>
-          {!cancelled && progress < 100 && (
+          {!cancelled && !view.stopped && (
             <button className="btn danger ghost" onClick={cancel}>
               Stop test
             </button>
           )}
         </div>
       </div>
-      <Progress active={progress === 100 ? 1 : 0} />
+      <Progress active={view.stage} />
+      <ErrorNote error={error} />
       {cancelled && (
         <div className="alert bad">
-          <b>Test stopped.</b> Completed sample trials are still available. No
+          <b>Test stopped.</b> Completed trials are still available. No
           updated version was created.
         </div>
       )}
       <div className="metrics">
         {[
-          ["12", "Completed trials"],
-          ["6", "Verified successes"],
-          ["5", "Behavioral failures"],
-          ["1", "Infrastructure error"],
-          [cancelled ? "1" : "0", "Cancellations"],
+          [String(batch.completed), "Completed trials"],
+          [String(batch.successes), "Verified successes"],
+          [String(batch.behavioralFailures), "Behavioral failures"],
+          [String(batch.infraErrors), `Infrastructure error${batch.infraErrors === 1 ? "" : "s"}`],
+          [String(batch.cancelled), "Cancellations"],
         ].map((x) => (
           <div className="card" key={x[1]}>
             <strong>{x[0]}</strong>
@@ -669,13 +814,19 @@ function Runs({
         <div className="run-list card">
           <div className="card-head">
             <b>Test trials</b>
-            <Badge>12 total</Badge>
+            <Badge>{batch.planned} total</Badge>
           </div>
-          {runs.map((r) => (
+          {batch.runs.length === 0 && (
+            <div className="no-shot">
+              <b>Waiting for the first trial</b>
+              <span>Trials appear here as simulated users start.</span>
+            </div>
+          )}
+          {batch.runs.map((r) => (
             <button
               key={r.id}
-              className={selected.id === r.id ? "selected" : ""}
-              onClick={() => setSelected(r)}
+              className={selected?.id === r.id ? "selected" : ""}
+              onClick={() => setSelectedId(r.id)}
             >
               <span>
                 <b>{r.label}</b>
@@ -685,54 +836,66 @@ function Runs({
             </button>
           ))}
         </div>
-        <div className="run-detail card">
-          <div className="card-head">
-            <div>
-              <b>{selected.label}</b>
-              <small>{selected.id}</small>
+        {selected && (
+          <div className="run-detail card">
+            <div className="card-head">
+              <div>
+                <b>{selected.label}</b>
+                <small>{selected.id}</small>
+              </div>
+              <Badge tone={selected.tone}>{selected.outcome}</Badge>
             </div>
-            <Badge tone={selected.tone}>{selected.outcome}</Badge>
-          </div>
-          {selected.screenshot ? (
-            <SessionReplay key={selected.id} run={selected} />
-          ) : (
-            <div className="no-shot">
-              <b>No screenshot available</b>
-              <span>This trial ended before a replay was captured.</span>
+            {selected.illustrative ? (
+              <SessionReplay key={selected.id} run={selected} />
+            ) : selected.actions.some((a) => a.screenshot) ? (
+              <LiveReplay key={selected.id} run={selected} />
+            ) : (
+              <div className="no-shot">
+                <b>No screenshot available</b>
+                <span>
+                  {selected.running
+                    ? "This trial is still running."
+                    : "No replay was captured for this trial."}
+                </span>
+              </div>
+            )}
+            <h3>Action timeline</h3>
+            <ol className="timeline">
+              {selected.actions.map((a, i) => (
+                <li key={i}>
+                  <span>{i + 1}</span>
+                  <div>
+                    <b>
+                      {a.action} · {a.target}
+                    </b>
+                    <small>{a.result}</small>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className={`outcome ${selected.tone}`}>
+              <b>{selected.running ? "Status" : "Final outcome"}</b>
+              <span>{selected.outcome}</span>
             </div>
-          )}
-          <h3>Action timeline</h3>
-          <ol className="timeline">
-            {selected.actions.map((a, i) => (
-              <li key={i}>
-                <span>{i + 1}</span>
-                <div>
-                  <b>
-                    {a.action} · {a.target}
-                  </b>
-                  <small>{a.result}</small>
-                </div>
-              </li>
-            ))}
-          </ol>
-          <div className={`outcome ${selected.tone}`}>
-            <b>Final outcome</b>
-            <span>{selected.outcome}</span>
           </div>
-        </div>
+        )}
       </div>
-      {progress === 100 && !cancelled && (
+      {ready && (
         <div className="next-step card">
           <div>
             <small>NEXT STEP</small>
-            <h3>See the patterns across all 12 trials</h3>
+            <h3>
+              {view.stage === 1
+                ? "GhostLoop is analyzing the trials"
+                : `See the patterns across all ${batch.completed} trials`}
+            </h3>
             <p>
               Recommendations combines the trial results and suggests focused
               improvements.
             </p>
           </div>
-          <button className="btn primary" onClick={review}>
-            View recommendations
+          <button className="btn primary" onClick={review} disabled={view.stage === 1}>
+            {view.stage === 1 ? "Analyzing…" : "View recommendations"}
           </button>
         </div>
       )}
@@ -740,44 +903,68 @@ function Runs({
   )
 }
 
-function Recommendations({ review }: { review: () => void }) {
-  const [disp, setDisp] = useState<Record<string, string>>({})
-  const breakdown = [
-    ["Goal completed", "6", "50%", "good"],
-    ["Could not finish the journey", "5", "41.7%", "warn"],
-    ["Technical error", "1", "8.3%", "muted"],
+const DISPOSITIONS: [ObservationDisposition, string][] = [
+  ["unreviewed", "Not reviewed yet"],
+  ["confirmed", "Worth testing"],
+  ["intentional", "Expected behavior"],
+  ["not_relevant", "Not relevant"],
+]
+
+function Recommendations({
+  view,
+  review,
+  setDisposition,
+  error,
+}: {
+  view: ExperimentView
+  review: () => void
+  setDisposition: (observationId: string, d: ObservationDisposition) => void
+  error?: string
+}) {
+  const b = view.baseline
+  const total = b.completed || 1
+  const share = (n: number) => `${Math.round((n / total) * 1000) / 10}%`
+  const breakdown: [string, number, string][] = [
+    ["Goal completed", b.successes, "good"],
+    ["Could not finish the journey", b.behavioralFailures, "warn"],
+    ["Technical error", b.infraErrors, "muted"],
   ]
   return (
     <>
       <div className="page-head">
         <div>
-          <small>RECOMMENDATIONS · {experiment.id}</small>
+          <small>RECOMMENDATIONS · {view.id}</small>
           <h1>What the test trials tell us</h1>
           <p>
             A combined view of trial performance, repeated behavior, and what
             may be worth trying next.
           </p>
         </div>
-        <Badge tone="coral">12 sample trials</Badge>
+        <Badge tone="coral">{b.completed} trials</Badge>
       </div>
+      <ErrorNote error={error} />
       <div className="recommendation-summary">
         <div className="card completion-card">
           <small>OVERALL COMPLETION</small>
           <div className="completion-value">
-            <strong>50%</strong>
-            <span>6 of 12 trials reached the goal</span>
+            <strong>{share(b.successes)}</strong>
+            <span>
+              {b.successes} of {b.completed} trials reached the goal
+            </span>
           </div>
           <div className="breakdown-bar" aria-label="Trial outcome breakdown">
-            <span className="success" style={{ width: "50%" }} />
-            <span className="failure" style={{ width: "41.7%" }} />
-            <span className="error" style={{ width: "8.3%" }} />
+            <span className="success" style={{ width: share(b.successes) }} />
+            <span className="failure" style={{ width: share(b.behavioralFailures) }} />
+            <span className="error" style={{ width: share(b.infraErrors) }} />
           </div>
           <div className="breakdown-list">
-            {breakdown.map(([label, count, rate, tone]) => (
+            {breakdown.map(([label, count, tone]) => (
               <div key={label}>
-                <Badge tone={tone}>{rate}</Badge>
+                <Badge tone={tone}>{share(count)}</Badge>
                 <span>{label}</span>
-                <b>{count} trials</b>
+                <b>
+                  {count} trial{count === 1 ? "" : "s"}
+                </b>
               </div>
             ))}
           </div>
@@ -786,16 +973,16 @@ function Recommendations({ review }: { review: () => void }) {
           <small>TRIAL PERFORMANCE</small>
           <div>
             <span>
-              <b>14</b>
+              <b>{b.medianStepsToSuccess ?? "N/A"}</b>
               <small>Median steps to success</small>
             </span>
             <span>
-              <b>25</b>
+              <b>{view.maxSteps}</b>
               <small>Maximum allowed steps</small>
             </span>
             <span>
-              <b>1</b>
-              <small>Technical error</small>
+              <b>{b.infraErrors}</b>
+              <small>Technical error{b.infraErrors === 1 ? "" : "s"}</small>
             </span>
           </div>
           <p>
@@ -815,11 +1002,18 @@ function Recommendations({ review }: { review: () => void }) {
           </div>
         </div>
         <div className="recommendation-list">
-          {observations.map((o, index) => {
-            const suggestion = patches[index]
+          {view.observations.length === 0 && (
+            <div className="card no-shot">
+              <b>No repeated patterns found</b>
+              <span>GhostLoop didn't find behavior that repeated across trials.</span>
+            </div>
+          )}
+          {view.observations.map((o, index) => {
+            const cited = view.patches.filter((p) => p.observationIds.includes(o.id))
+            const suggestion = cited.find((p) => !p.blocked) ?? cited[0]
             return (
               <article className="card recommendation-item" key={o.id}>
-                <div className="recommendation-number">0{index + 1}</div>
+                <div className="recommendation-number">{String(index + 1).padStart(2, "0")}</div>
                 <div className="recommendation-body">
                   <div className="recommendation-heading">
                     <div>
@@ -827,34 +1021,42 @@ function Recommendations({ review }: { review: () => void }) {
                       <h3>{o.text}</h3>
                       <p>{o.refs}</p>
                     </div>
-                    <Badge tone={index === 0 ? "warn" : "coral"}>
-                      {index === 0 ? "42% of trials" : "33% of trials"}
-                    </Badge>
+                    {o.share && <Badge tone={index === 0 ? "warn" : "coral"}>{o.share}</Badge>}
                   </div>
-                  <div className="suggestion-box">
-                    <div>
-                      <small>SUGGESTED IMPROVEMENT</small>
-                      <b>{suggestion.target}</b>
-                      <p>
-                        Change “{suggestion.before}” to “{suggestion.after}”.
-                      </p>
+                  {suggestion ? (
+                    <div className="suggestion-box">
+                      <div>
+                        <small>SUGGESTED IMPROVEMENT</small>
+                        <b>{suggestion.target}</b>
+                        {suggestion.blocked && <Badge tone="bad">{suggestion.risk}</Badge>}
+                        <p>
+                          Change “{suggestion.before}” to “{suggestion.after}”.
+                        </p>
+                      </div>
+                      <div>
+                        <small>WHY THIS MIGHT HELP · AI SUGGESTION</small>
+                        <p>{suggestion.hypothesis}</p>
+                      </div>
                     </div>
-                    <div>
-                      <small>WHY THIS MIGHT HELP · AI SUGGESTION</small>
-                      <p>{suggestion.hypothesis}</p>
+                  ) : (
+                    <div className="suggestion-box">
+                      <div>
+                        <small>SUGGESTED IMPROVEMENT</small>
+                        <p>No change was suggested for this pattern.</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <label className="recommendation-disposition">
                     How should GhostLoop treat this pattern?
                     <select
-                      value={disp[o.id] || "Worth testing"}
-                      onChange={(event) =>
-                        setDisp({ ...disp, [o.id]: event.target.value })
-                      }
+                      value={o.disposition}
+                      onChange={(event) => setDisposition(o.id, event.target.value as ObservationDisposition)}
                     >
-                      <option>Worth testing</option>
-                      <option>Expected behavior</option>
-                      <option>Not relevant</option>
+                      {DISPOSITIONS.map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
                     </select>
                   </label>
                 </div>
@@ -869,7 +1071,7 @@ function Recommendations({ review }: { review: () => void }) {
           <h3>Choose which improvements to test</h3>
           <p>Nothing changes until you review and approve it.</p>
         </div>
-        <button className="btn primary" onClick={review}>
+        <button className="btn primary" onClick={review} disabled={view.patches.length === 0}>
           Review suggested improvements
         </button>
       </div>
@@ -878,53 +1080,71 @@ function Recommendations({ review }: { review: () => void }) {
 }
 
 function Review({
+  view,
   approve,
   decline,
+  live,
+  error,
 }: {
-  approve: (ids: string[]) => void
-  decline: () => void
+  view: ExperimentView
+  approve: (ids: string[]) => Promise<void>
+  decline: () => Promise<void>
+  live: boolean
+  error?: string
 }) {
-  const [selected, setSelected] = useState<string[]>([patches[0].id])
+  const patches = view.patches
+  const [selected, setSelected] = useState<string[]>(() => {
+    const first = patches.find((p) => !p.blocked)
+    return first ? [first.id] : []
+  })
+  const [busy, setBusy] = useState(false)
   const toggle = (id: string) =>
     setSelected((s) =>
       s.includes(id) ? s.filter((x) => x !== id) : [...s, id],
     )
+  const act = async (f: () => Promise<void>) => {
+    setBusy(true)
+    await f()
+    setBusy(false)
+  }
   return (
     <>
       <div className="page-head">
         <div>
-          <small>TEST · {experiment.id}</small>
+          <small>TEST · {view.id}</small>
           <h1>Review suggested improvements</h1>
           <p>
             Each suggestion is tied to something that happened in the test.
             Choose one or more for the updated version.
           </p>
         </div>
-        <Badge tone="warn">Waiting for your review</Badge>
+        <Badge tone={view.awaitingApproval ? "warn" : view.statusTone}>
+          {view.awaitingApproval ? "Waiting for your review" : view.statusLabel}
+        </Badge>
       </div>
       <Progress active={2} />
+      <ErrorNote error={error} />
       <div className="review-grid">
         <div>
-          {patches.map((p) => (
+          {patches.map((p, i) => (
             <label
               className={`card patch ${
                 selected.includes(p.id) ? "selected" : ""
-              }`}
+              } ${p.blocked ? "blocked" : ""}`}
               key={p.id}
             >
               <input
                 type="checkbox"
                 checked={selected.includes(p.id)}
+                disabled={p.blocked || !view.awaitingApproval}
                 onChange={() => toggle(p.id)}
               />
               <div className="patch-title">
                 <div>
-                  <small>SUGGESTION {patches.indexOf(p) + 1}</small>
+                  <small>SUGGESTION {i + 1}</small>
                   <h3>{p.target}</h3>
                 </div>
-                <Badge tone={p.risk.startsWith("Low") ? "good" : "warn"}>
-                  {p.risk}
-                </Badge>
+                <Badge tone={p.tone}>{p.risk}</Badge>
               </div>
               <div className="diff">
                 <span>
@@ -945,7 +1165,7 @@ function Review({
                 <p>{p.hypothesis}</p>
               </div>
               <div className="artifact">
-                <span>Design file not linked</span>
+                <span>{p.correspondence === "Not linked" ? "Design file not linked" : "Figma design"}</span>
                 <small>Design match</small>
                 <Badge tone={p.correspondence === "Verified" ? "good" : "warn"}>
                   {p.correspondence}
@@ -976,12 +1196,12 @@ function Review({
           </p>
           <button
             className="btn primary full"
-            disabled={!selected.length}
-            onClick={() => approve(selected)}
+            disabled={!selected.length || busy || !view.awaitingApproval}
+            onClick={() => act(() => approve(selected))}
           >
-            Test the selected improvements
+            {busy ? "Sending…" : "Test the selected improvements"}
           </button>
-          <button className="btn secondary full" onClick={decline}>
+          <button className="btn secondary full" disabled={busy || view.stopped} onClick={() => act(decline)}>
             Keep the current design
           </button>
         </aside>
@@ -990,134 +1210,109 @@ function Review({
         <div className="section-title">
           <div>
             <small>VISUAL CHECK</small>
-            <h2>Current and updated version</h2>
+            <h2>{live ? "Current version" : "Current and updated version"}</h2>
           </div>
         </div>
-        <div className="compare">
-          <div>
-            <b>Original · v1</b>
-            <SubjectPreview />
+        {live ? (
+          view.incumbentUrl ? (
+            <VersionPreview url={view.incumbentUrl} title="Current version" />
+          ) : (
+            <div className="no-shot">
+              <b>No preview available</b>
+              <span>The current version has no URL.</span>
+            </div>
+          )
+        ) : (
+          <div className="compare">
+            <div>
+              <b>Original · v1</b>
+              <SubjectPreview />
+            </div>
+            <div>
+              <b>Updated version to test</b>
+              <SubjectPreview selected={selected} />
+            </div>
           </div>
-          <div>
-            <b>Updated version to test</b>
-            <SubjectPreview selected={selected} />
-          </div>
-        </div>
+        )}
       </section>
     </>
   )
 }
 
-function Results({ selectedPatches }: { selectedPatches: string[] }) {
-  const [scenario, setScenario] = useState<Scenario>("accepted")
+const SAMPLE_OPTIONS: [SampleScenario, string][] = [
+  ["accepted", "Accepted"],
+  ["inconclusive", "Inconclusive"],
+  ["rejected", "Rejected · protected requirement failed"],
+  ["empty", "No valid sessions"],
+]
+
+function Results({
+  view,
+  live,
+  scenario,
+  setScenario,
+  review,
+  error,
+}: {
+  view: ExperimentView
+  live: boolean
+  scenario: SampleScenario
+  setScenario: (s: SampleScenario) => void
+  review: (status: "promoted_measured" | "discarded") => Promise<void>
+  error?: string
+}) {
   const [showOriginal, setShowOriginal] = useState(false)
-  const s = scenarios[scenario]
-  const applied = selectedPatches
-    .map((id) => patches.find((p) => p.id === id)?.after)
-    .filter(Boolean)
-  const behaviorRows =
-    scenario === "accepted"
-      ? [
-          ["Reached the goal", "6 of 12", "8 of 12", "2 more", "good"],
-          [
-            "Went back to compare plans",
-            "5 trials",
-            "2 trials",
-            "3 fewer",
-            "good",
-          ],
-          [
-            "Opened the paid-trial dialog",
-            "4 trials",
-            "1 trial",
-            "3 fewer",
-            "good",
-          ],
-          ["Steps needed when successful", "14", "11", "3 fewer", "good"],
-        ]
-      : scenario === "inconclusive"
-        ? [
-            ["Reached the goal", "6 of 12", "7 of 12", "1 more", "warn"],
-            [
-              "Went back to compare plans",
-              "5 trials",
-              "4 trials",
-              "1 fewer",
-              "warn",
-            ],
-            [
-              "Opened the paid-trial dialog",
-              "4 trials",
-              "3 trials",
-              "1 fewer",
-              "warn",
-            ],
-            ["Steps needed when successful", "14", "13", "1 fewer", "warn"],
-          ]
-        : scenario === "rejected"
-          ? [
-              ["Reached the goal", "6 of 12", "9 of 12", "3 more", "good"],
-              [
-                "Started a paid trial by mistake",
-                "0 trials",
-                "3 trials",
-                "Unsafe",
-                "bad",
-              ],
-              [
-                "Went back to compare plans",
-                "5 trials",
-                "2 trials",
-                "3 fewer",
-                "good",
-              ],
-              ["Steps needed when successful", "14", "10", "4 fewer", "good"],
-            ]
-          : [
-              ["Reached the goal", "6 of 12", "N/A", "No data", "muted"],
-              [
-                "Went back to compare plans",
-                "5 trials",
-                "N/A",
-                "No data",
-                "muted",
-              ],
-              [
-                "Opened the paid-trial dialog",
-                "4 trials",
-                "N/A",
-                "No data",
-                "muted",
-              ],
-              ["Steps needed when successful", "14", "N/A", "No data", "muted"],
-            ]
+  const [busy, setBusy] = useState(false)
+  const s = view.results
+  const candidate = view.candidate
+  if (!s) {
+    return (
+      <div className="loading card">
+        <Mascot small />
+        <Badge tone={view.statusTone}>{view.statusLabel}</Badge>
+        <h1>No comparison yet</h1>
+        <p>
+          {view.stopped
+            ? "This test stopped before an updated version was compared."
+            : "Results appear here once the updated version has been tested."}
+        </p>
+      </div>
+    )
+  }
+  const decide = async (status: "promoted_measured" | "discarded") => {
+    setBusy(true)
+    await review(status)
+    setBusy(false)
+  }
   return (
     <>
       <div className="page-head">
         <div>
-          <small>SAMPLE COMPARISON</small>
+          <small>{live ? `COMPARISON · ${view.id}` : "SAMPLE COMPARISON"}</small>
           <h1>How behavior changed</h1>
           <p>Original test compared with the updated version.</p>
         </div>
         <Badge tone={s.tone}>{s.label}</Badge>
       </div>
-      <div className="scenario card">
-        <label>
-          Show sample outcome
-          <select
-            value={scenario}
-            onChange={(e) => setScenario(e.target.value as Scenario)}
-          >
-            <option value="accepted">Accepted</option>
-            <option value="inconclusive">Inconclusive</option>
-            <option value="rejected">
-              Rejected · protected requirement failed
-            </option>
-            <option value="empty">No valid sessions</option>
-          </select>
-        </label>
-        <span>Illustrative data</span>
-      </div>
+      <ErrorNote error={error} />
+      {!live && (
+        <div className="scenario card">
+          <label>
+            Show sample outcome
+            <select
+              value={scenario}
+              onChange={(e) => setScenario(e.target.value as SampleScenario)}
+            >
+              {SAMPLE_OPTIONS.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span>Illustrative data</span>
+        </div>
+      )}
       <div className={`decision-card card ${s.tone}`}>
         <div>
           <small>RESULT</small>
@@ -1127,11 +1322,11 @@ function Results({ selectedPatches }: { selectedPatches: string[] }) {
         <div className="decision-stats">
           <span>
             <small>Original</small>
-            <b>50%</b>
+            <b>{s.baselineRate}</b>
           </span>
           <span>
             <small>Updated</small>
-            <b>{s.rate}</b>
+            <b>{s.candidateRate}</b>
           </span>
           <span>
             <small>Change</small>
@@ -1145,7 +1340,7 @@ function Results({ selectedPatches }: { selectedPatches: string[] }) {
             <small>SIMULATED USER BEHAVIOR</small>
             <h2>What people did differently</h2>
           </div>
-          <span>12 valid trials per version</span>
+          <span>{s.validTrials}</span>
         </div>
         <div className="behavior-table behavior-head">
           <span>Behavior</span>
@@ -1153,7 +1348,7 @@ function Results({ selectedPatches }: { selectedPatches: string[] }) {
           <span>Updated</span>
           <span>Difference</span>
         </div>
-        {behaviorRows.map(([label, original, updated, difference, tone]) => (
+        {s.rows.map(([label, original, updated, difference, tone]) => (
           <div className="behavior-table" key={label}>
             <b>{label}</b>
             <span>{original}</span>
@@ -1166,10 +1361,10 @@ function Results({ selectedPatches }: { selectedPatches: string[] }) {
         <div className="card compact-result">
           <small>WHAT WAS TESTED</small>
           <h3>
-            {applied.length} selected improvement
-            {applied.length === 1 ? "" : "s"}
+            {candidate?.applied.length ?? 0} selected improvement
+            {candidate?.applied.length === 1 ? "" : "s"}
           </h3>
-          {applied.map((change) => (
+          {candidate?.applied.map((change) => (
             <p key={change}>✓ {change}</p>
           ))}
           <button
@@ -1185,129 +1380,278 @@ function Results({ selectedPatches }: { selectedPatches: string[] }) {
           <small>QUALITY CHECK</small>
           <div className="quality-row">
             <span>Protected requirements</span>
-            <Badge tone={s.guardrail === "Passed" ? "good" : "bad"}>
+            <Badge tone={s.guardrail === "Passed" ? "good" : s.guardrail === "Failed" ? "bad" : "muted"}>
               {s.guardrail}
             </Badge>
           </div>
+          {s.failedGuardrails.map((g) => (
+            <p className="quality-note" key={g}>
+              ✕ {g}
+            </p>
+          ))}
           <div className="quality-row">
             <span>Technical errors</span>
-            <b>{scenario === "empty" ? "9" : "1"}</b>
+            <b>{s.infraErrors}</b>
           </div>
           <div className="quality-row">
             <span>Cancelled trials</span>
-            <b>{scenario === "empty" ? "3" : "0"}</b>
+            <b>{s.cancelled}</b>
           </div>
           <p className="quality-note">
             Errors and cancellations are not counted as user behavior.
           </p>
         </div>
       </div>
+      {candidate && (
+        <div className="final-review card">
+          <div>
+            <small>YOUR DECISION</small>
+            {candidate.reviewStatus === "pending" ? (
+              <>
+                <h3>Keep the updated version?</h3>
+                <p>
+                  {candidate.canPromote
+                    ? "The update measured better. Promoting it makes it the version future tests start from."
+                    : "Only a version that measured better can be promoted. You can keep the original."}
+                </p>
+              </>
+            ) : (
+              <>
+                <h3>
+                  {candidate.reviewStatus === "promoted_measured"
+                    ? "Updated version promoted"
+                    : candidate.reviewStatus === "discarded"
+                      ? "Original design kept"
+                      : "Updated version kept for reference"}
+                </h3>
+                <p>{candidate.id}</p>
+              </>
+            )}
+          </div>
+          {candidate.reviewStatus === "pending" && (
+            <div className="final-actions">
+              <button className="btn secondary" disabled={busy || !candidate.canDiscard} onClick={() => decide("discarded")}>
+                Keep the original
+              </button>
+              <button className="btn primary" disabled={busy || !candidate.canPromote} onClick={() => decide("promoted_measured")}>
+                Promote this version
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       {showOriginal && (
         <div className="preserved-original card">
           <div>
-            <small>PRESERVED ORIGINAL · ver_original_01</small>
+            <small>PRESERVED ORIGINAL · {view.incumbentVersionId}</small>
             <h3>The starting design remains unchanged</h3>
             <p>
               You can return to this version at any time, regardless of the
               comparison result.
             </p>
           </div>
-          <SubjectPreview />
+          {live && view.incumbentUrl ? (
+            <VersionPreview url={view.incumbentUrl} title="Original version" />
+          ) : (
+            <SubjectPreview />
+          )}
         </div>
       )}
     </>
   )
 }
 
+/** Shown while the approved update is built and tested; progress comes from the candidate batch. */
+function CandidateLoading({ view }: { view: ExperimentView }) {
+  const progress = view.candidateBatch?.progress ?? 0
+  return (
+    <div className="loading card">
+      <Mascot small />
+      <Badge tone="coral">
+        {view.statusLabel} · {progress}%
+      </Badge>
+      <h1>Testing your selected improvements</h1>
+      <p>Running the same task again so the comparison stays fair.</p>
+      <div className="bar">
+        <span style={{ width: `${progress}%` }} />
+      </div>
+    </div>
+  )
+}
+
+const TESTING_UPDATE = new Set(["patching", "validating", "candidate_running", "comparing"])
+
 export default function App() {
+  const ghost = useGhostloop()
+  // After a lost connection keep showing the last live data (with a banner); sample data is only for never-connected.
+  const live = ghost.status.kind === "live" || ghost.status.kind === "lost"
+  const [names, setName] = useNames()
   const [view, setView] = useState<View>("landing")
+  const [selectedId, setSelectedId] = useState<string | undefined>()
+  const [error, setError] = useState<string | undefined>()
+
+  // Sample mode: the original demo flow, driven by timers.
   const [progress, setProgress] = useState(0)
   const [cancelled, setCancelled] = useState(false)
-  const [hasCompletedTest, setHasCompletedTest] = useState(false)
   const [selectedPatches, setSelectedPatches] = useState<string[]>([])
   const [candidateProgress, setCandidateProgress] = useState(0)
+  const [scenario, setScenario] = useState<SampleScenario>("accepted")
   const stopBaseline = useRef<(() => void) | null>(null)
+
+  const list = useMemo(() => (live ? summaries(ghost.snapshot, names) : sampleSummaries), [live, ghost.snapshot, names])
+  const currentId = selectedId ?? list[0]?.id
+  const incumbent = live ? ghost.snapshot.experiments.find((e) => e.id === currentId)?.incumbentVersionId : undefined
+  const elements = useElements(incumbent)
+  const current: ExperimentView | undefined = useMemo(() => {
+    if (!live) return sampleView({ progress, cancelled, selectedPatches, candidateProgress, scenario })
+    return currentId ? experimentView(ghost.snapshot, currentId, names, elements) : undefined
+  }, [live, ghost.snapshot, currentId, names, elements, progress, cancelled, selectedPatches, candidateProgress, scenario])
+
   useEffect(() => {
-    if (view !== "results") return
+    if (live || view !== "results") return
     return sampleAdapter.testCandidate(setCandidateProgress)
-  }, [view])
-  const start = () => {
-    setProgress(0)
-    setCancelled(false)
-    setHasCompletedTest(false)
+  }, [view, live])
+  useEffect(() => setError(undefined), [view, currentId])
+
+  const run = async (kind: Parameters<typeof ghost.submit>[0], payload: unknown) => {
+    const result = await ghost.submit(kind, payload)
+    if (!result.ok) setError(`${result.code}: ${result.message}`)
+    return result
+  }
+
+  const start = async (name: string, form: SetupForm): Promise<string | undefined> => {
+    if (!live) {
+      setProgress(0)
+      setCancelled(false)
+      setView("runs")
+      stopBaseline.current = sampleAdapter.startBaseline(setProgress)
+      return undefined
+    }
+    const parsed = parsePrototypeUrl(form.url)
+    if ("error" in parsed) return parsed.error
+    let manifestHash: string
+    try {
+      manifestHash = (await fetchManifest(parsed.versionId)).manifestHash
+    } catch (e) {
+      return e instanceof Error ? e.message : String(e)
+    }
+    const created = await ghost.submit("createExperiment", buildCreatePayload(form, manifestHash))
+    if (!created.ok) return `${created.code}: ${created.message}`
+    const { experimentId } = created.value as { experimentId: string }
+    setName(experimentId, name)
+    setSelectedId(experimentId)
+    const started = await ghost.submit("startExperiment", { experimentId })
+    if (!started.ok) return `${started.code}: ${started.message}`
     setView("runs")
-    stopBaseline.current = sampleAdapter.startBaseline((value) => {
-      setProgress(value)
-      if (value === 100) setHasCompletedTest(true)
+    return undefined
+  }
+
+  const cancel = async () => {
+    if (!live) {
+      stopBaseline.current?.()
+      setCancelled(true)
+      return
+    }
+    if (current) await run("cancelExperiment", { experimentId: current.id, reason: "Stopped from the dashboard" })
+  }
+
+  const approve = async (ids: string[]) => {
+    if (!live) {
+      setSelectedPatches(ids)
+      setCandidateProgress(0)
+      setView("results")
+      return
+    }
+    if (!current) return
+    const result = await run("approvePatches", {
+      experimentId: current.id,
+      sourceVersionId: current.incumbentVersionId,
+      round: current.round,
+      patchIds: ids,
+      approvedBy: "designer",
     })
+    if (result.ok) setView("results")
   }
-  const approve = (ids: string[]) => {
-    setSelectedPatches(ids)
-    setCandidateProgress(0)
-    setView("results")
+
+  const decline = async () => {
+    if (!live) return setView("runs")
+    if (!current) return
+    const result = await run("cancelExperiment", { experimentId: current.id, reason: "Designer kept the current design" })
+    if (result.ok) setView("runs")
   }
-  if (view === "landing") return <Landing open={() => setView("setup")} />
+
+  const finalReview = async (status: "promoted_measured" | "discarded") => {
+    if (!live || !current?.candidate) return
+    await run("recordFinalReview", { experimentId: current.id, candidateId: current.candidate.id, status })
+  }
+
+  const setDisposition = (observationId: string, disposition: ObservationDisposition) => {
+    if (live && current) void run("setObservationDisposition", { experimentId: current.id, observationId, disposition })
+  }
+
+  if (view === "landing") return <Landing open={() => setView(live && list.length ? "overview" : "setup")} />
+  const screen: View = view !== "setup" && view !== "overview" && !current ? "setup" : view
+  const sampleResultsLoading = !live && screen === "results" && candidateProgress < 100
+  const liveResultsLoading = live && screen === "results" && current !== undefined && TESTING_UPDATE.has(current.state)
   return (
     <div className="app-shell">
       <Sidebar
-        view={view}
+        view={screen}
         setView={setView}
-        recommendationsAvailable={hasCompletedTest}
+        recommendationsAvailable={current !== undefined && current.stage >= 2 && (live || progress === 100)}
+        hasExperiment={live ? current !== undefined : progress > 0}
+        link={ghost.status}
+        retry={ghost.retry}
       />
       <main className="dashboard">
+        {ghost.status.kind === "lost" && (
+          <div className="alert bad">
+            <b>Connection to the GhostLoop database lost.</b> Showing the last data received; actions won't go through
+            until you reconnect. ({ghost.status.message}){" "}
+            <button className="text-btn" onClick={ghost.retry}>
+              Reconnect
+            </button>
+          </div>
+        )}
+        {live && ghost.snapshot.invalid.length > 0 && (
+          <div className="alert bad">
+            {ghost.snapshot.invalid.length} record{ghost.snapshot.invalid.length === 1 ? "" : "s"} could not be read and are not shown.
+          </div>
+        )}
         <div
           className="view-enter"
-          key={
-            view === "results" && candidateProgress < 100
-              ? "results-loading"
-              : view
-          }
+          key={sampleResultsLoading || liveResultsLoading ? "results-loading" : screen}
         >
-          {view === "overview" && (
+          {screen === "overview" && (
             <Overview
-              setView={setView}
-              openRecent={() => {
-                setProgress(100)
-                setCancelled(false)
-                setHasCompletedTest(true)
+              experiments={list}
+              live={live}
+              newTest={() => setView("setup")}
+              open={(id) => {
+                if (!live) {
+                  setProgress(100)
+                  setCancelled(false)
+                } else setSelectedId(id)
                 setView("runs")
               }}
             />
           )}
-          {view === "setup" && <Setup start={start} />}
-          {view === "runs" && (
-            <Runs
-              progress={progress}
-              cancelled={cancelled}
-              cancel={() => {
-                stopBaseline.current?.()
-                setCancelled(true)
-                setHasCompletedTest(false)
-              }}
-              review={() => setView("recommendations")}
-            />
+          {screen === "setup" && <Setup key={String(live)} start={start} live={live} />}
+          {current && screen === "runs" && (
+            <Runs key={current.id} view={current} cancel={cancel} review={() => setView("recommendations")} error={error} />
           )}
-          {view === "recommendations" && (
-            <Recommendations review={() => setView("review")} />
+          {current && screen === "recommendations" && (
+            <Recommendations view={current} review={() => setView("review")} setDisposition={setDisposition} error={error} />
           )}
-          {view === "review" && (
-            <Review approve={approve} decline={() => setView("runs")} />
+          {current && screen === "review" && (
+            <Review key={`${current.id}:${current.round}`} view={current} approve={approve} decline={decline} live={live} error={error} />
           )}
-          {view === "results" && candidateProgress < 100 ? (
-            <div className="loading card">
-              <Mascot small />
-              <Badge tone="coral">
-                Testing the update · {candidateProgress}%
-              </Badge>
-              <h1>Testing your selected improvements</h1>
-              <p>Running the same task again so the comparison stays fair.</p>
-              <div className="bar">
-                <span style={{ width: `${candidateProgress}%` }} />
-              </div>
-            </div>
-          ) : (
-            view === "results" && <Results selectedPatches={selectedPatches} />
-          )}
+          {current && screen === "results" &&
+            (sampleResultsLoading || liveResultsLoading ? (
+              <CandidateLoading view={sampleResultsLoading ? { ...current, statusLabel: "Testing the update" } : current} />
+            ) : (
+              <Results view={current} live={live} scenario={scenario} setScenario={setScenario} review={finalReview} error={error} />
+            ))}
         </div>
       </main>
     </div>
