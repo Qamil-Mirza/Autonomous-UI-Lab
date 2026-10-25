@@ -36,6 +36,8 @@ export interface RunView {
   actions: ActionView[]
   /** Sample data only: plays the illustrative replay instead of real screenshots. */
   illustrative?: boolean
+  /** The judge's explanation, on trials scored against the task as written. */
+  verdict?: string
 }
 
 export interface BatchView {
@@ -279,7 +281,12 @@ export function batchView(
       // A scenario rule (e.g. low persistence) ended it, not the model's own decision.
       const last = (actionsByRun.get(r.runId) ?? []).reduce<AgentActionEvent | undefined>((a, b) => (!a || b.seq > a.seq ? b : a), undefined)
       if (r.outcome === "agent_stop" && last?.decisionSource === "scenario") outcome = "Gave up (scenario rule)"
-      return { id: r.runId, label: "", outcome, tone, running: false, actions: actionsOf(r.runId) }
+      // Judged trials: the verdict, not how the session ended, is what the designer needs to see.
+      if (r.protectedViolation) [outcome, tone] = [`Broke a protected rule (${r.protectedViolation.replace(/_/g, " ")})`, "bad"]
+      else if (r.judge && r.outcome === "goal") outcome = "Goal verified"
+      else if (r.judge?.reached === "uncertain") [outcome, tone] = ["Judge unsure", "warn"]
+      else if (r.judge && ["agent_stop", "step_limit", "flow_blocked"].includes(r.outcome)) [outcome, tone] = ["Goal not reached", "warn"]
+      return { id: r.runId, label: "", outcome, tone, running: false, actions: actionsOf(r.runId), ...(r.judge ? { verdict: r.judge.explanation } : {}) }
     }),
     ...streaming.map((runId) => ({ id: runId, label: "", outcome: "In progress", tone: "coral" as Tone, running: true, actions: actionsOf(runId) })),
   ].map((r, i) => {

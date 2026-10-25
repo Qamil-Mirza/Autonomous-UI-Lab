@@ -274,3 +274,7 @@ input:hover,textarea:hover,select:hover { border-color:#aeb8b1; }
 @media (max-width: 720px) { .final-review { flex-direction:column; align-items:stretch; } .final-actions { flex-direction:column; } }
 .live-compare .version-preview { margin:10px 0 0; }
 .preview-state { margin:10px 0 0; height:auto; aspect-ratio:1280/832; }
+.verdict { margin:12px 17px 17px; padding:12px 14px; border-left:3px solid var(--coral); background:#fdf3f1; border-radius:6px; }
+.verdict small { display:block; color:var(--coral-dark); font-size:10px; font-weight:800; letter-spacing:1.2px; margin-bottom:4px; }
+.verdict p { margin:0; font-size:13px; }
+.protected .judged-note { display:block; color:var(--muted); font-size:12px; line-height:1.5; }

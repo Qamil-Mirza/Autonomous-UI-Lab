@@ -212,6 +212,18 @@ describe("experimentView", () => {
     expect(byDesigner.baseline.stoppedEarly).toBe(false)
   })
 
+  it("shows the judge's verdict and explanation on judged trials", () => {
+    const judged = (outcome: StoredRun["outcome"], judge: { reached: boolean | "uncertain" }, extra: object = {}) =>
+      ({ ...run("run_b", outcome, "2026-10-24T10:01:00.000Z"), judge: { explanation: "No dashboard page exists.", evidence: [], model: "m", instructionVersion: "v", usd: 0.03, ...judge }, ...extra }) as StoredRun
+    const view = (r: StoredRun) => experimentView(snap({ runs: [r] }), "exp_a", {})!.baseline.runs[0]!
+    expect(view(judged("goal", { reached: true }))).toMatchObject({ outcome: "Goal verified", tone: "good", verdict: "No dashboard page exists." })
+    expect(view(judged("agent_stop", { reached: false }))).toMatchObject({ outcome: "Goal not reached", tone: "warn" })
+    expect(view(judged("step_limit", { reached: "uncertain" }))).toMatchObject({ outcome: "Judge unsure", tone: "warn" })
+    const blocked = view({ ...run("run_b", "flow_blocked", "2026-10-24T10:01:00.000Z"), protectedViolation: "no_paid_trial" } as StoredRun)
+    expect(blocked).toMatchObject({ outcome: "Broke a protected rule (no paid trial)", tone: "bad" })
+    expect(view(run("run_b", "agent_stop", "2026-10-24T10:01:00.000Z")).verdict).toBeUndefined()
+  })
+
   it("labels a scripted scenario stop apart from the model giving up", () => {
     const stop = (source: "model" | "scenario") => action("run_b", 0, { decisionSource: source, action: { type: "stop", reason: "done" } })
     const scripted = experimentView(snap({ runs: [run("run_b", "agent_stop", "2026-10-24T10:01:00.000Z")], actions: [stop("scenario")] }), "exp_a", {})!

@@ -740,12 +740,22 @@ function Setup({
           </span>
         </label>
         <div className="protected">
-          <strong>Protected requirements</strong>
+          <strong>How success is judged</strong>
+          <p className="judged-note">
+            Each trial is judged against your task as written, from where it ended up. A judge model checks the
+            evidence (actions, screens, screenshots and the app's saved state) and doesn't take the simulated user's
+            word for it. Breaking a protected rule always fails a trial:
+          </p>
+          <p>
+            <span>✕</span>
+            Starting a paid trial.
+          </p>
+          <strong>Also locked in the prototype</strong>
           {[
             "Account creation and authentication stay intact.",
             "Prices and plan rules stay intact.",
             "Required consent and validation stay intact.",
-            "Success is independently verified from application state.",
+            "The app state the judge reads can't be changed by design patches.",
           ].map((x) => (
             <p key={x}>
               <span>✓</span>
@@ -900,6 +910,12 @@ function Runs({
               <b>{selected.running ? "Status" : "Final outcome"}</b>
               <span>{selected.outcome}</span>
             </div>
+            {selected.verdict && (
+              <div className="verdict">
+                <small>JUDGE'S VERDICT</small>
+                <p>{selected.verdict}</p>
+              </div>
+            )}
           </div>
         )}
       </div>
