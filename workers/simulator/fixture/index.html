@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>GhostLoop practice workspace</title>
+<style>
+body { font: 18px system-ui; background:#eef2ff; color:#172033; margin:0; padding:70px 24px }
+main { max-width:520px; margin:auto; background:white; padding:40px; border-radius:20px }
+h1 { margin-top:0 } label,input,button { display:block; margin-top:18px }
+input { box-sizing:border-box; width:100%; padding:14px; font:inherit; border:1px solid #64748b; border-radius:8px }
+button { font:inherit; padding:14px 22px; background:#4338ca; color:white; border:0; border-radius:8px }
+#feedback { min-height:26px } small { color:#526077 }
+</style>
+<main data-screen="workspace-form">
+<small>GhostLoop · practice app · fictional data</small>
+<h1>Create your workspace</h1>
+<p>Give your new workspace a name.</p>
+<form id="create-form">
+<label for="workspace-name">Workspace name</label>
+<input id="workspace-name" data-agent-id="workspace-name" aria-label="Workspace name" autocomplete="off" maxlength="80" required>
+<button data-agent-id="create-workspace" type="submit">Create workspace</button>
+</form>
+<p id="feedback" role="status"></p>
+</main>
+<script>
+// Each fresh browser context gets separate session storage.
+const workspaces = [];
+sessionStorage.setItem('practice-workspaces', JSON.stringify(workspaces));
+document.querySelector('form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const name = document.querySelector('input').value.trim();
+  if (!name) { document.querySelector('#feedback').textContent = 'Enter a workspace name.'; return; }
+  workspaces.push({ id: crypto.randomUUID(), name });
+  sessionStorage.setItem('practice-workspaces', JSON.stringify(workspaces));
+  document.querySelector('main').dataset.screen = 'workspace-created';
+  document.querySelector('#feedback').textContent = `Workspace ${name} created.`;
+  document.querySelector('button').disabled = true;
+  document.querySelector('input').disabled = true;
+});
+</script>
+</html>

@@ -21,7 +21,7 @@ export function createMockCandidates(opts: MockCandidatesOptions = {}): MockCand
   const mock: MockCandidates = {
     created: [],
     async getManifest(versionId) {
-      const m = loadFixture("manifest.base.json", DesignManifest);
+      const m = loadFixture("manifest.legacy.json", DesignManifest);
       return m.versionId === versionId ? m : { ...m, versionId, manifestHash: `sha256:mock-${versionId}` };
     },
     async createCandidate(sourceVersionId, approvedPatches) {

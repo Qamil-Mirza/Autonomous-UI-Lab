@@ -74,6 +74,15 @@ describe("applyPatches", () => {
     expect(JSON.stringify(source)).toBe(before);
   });
 
+  it("ignores object key insertion order but detects content changes", () => {
+    const m = baseline();
+    const reordered = m.elements.map(e => Object.fromEntries(Object.entries(e).reverse())) as typeof m.elements;
+    expect(computeManifestHash(reordered)).toBe(computeManifestHash(m.elements));
+    const changed = structuredClone(m.elements);
+    changed[0]!.label = "Changed label";
+    expect(computeManifestHash(changed)).not.toBe(computeManifestHash(m.elements));
+  });
+
   it("matches the baseline's own hash rule", () => {
     const m = baseline();
     expect(computeManifestHash(m.elements)).toBe(m.manifestHash);

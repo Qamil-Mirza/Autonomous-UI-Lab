@@ -44,12 +44,28 @@ export const PublicAgentInput = z
     screenshot: ScreenshotRef,
     controls: z.array(Control),
     previousActions: z.array(AgentAction),
+    // Optional additions preserve existing consumers and fixtures.
+    visibleUI: z.object({ screenId: z.string(), alerts: z.array(z.string()) }).strict().optional(),
+    history: z.array(z.object({
+      seq: z.number().int().nonnegative(), action: AgentAction,
+      screenBefore: z.string(), screenAfter: z.string(), result: ActionResult,
+      alerts: z.array(z.string()),
+    }).strict()).optional(),
     remainingActions: z.number().int().nonnegative(),
   })
   .strict();
 export type PublicAgentInput = z.infer<typeof PublicAgentInput>;
 
 export const AgentActionEvent = z.object({
+  decisionSource: z.enum(['model', 'scenario']).optional(),
+  experimentId: ExperimentId.optional(),
+  protocolId: ProtocolId.optional(),
+  scenarioId: ScenarioId.optional(),
+  batchId: BatchId.optional(),
+  screenshotBefore: ScreenshotRef.optional(),
+  validationFeedback: z.array(z.string()).optional(),
+  executionStatus: z.enum(['executed', 'rejected', 'unknown']).optional(),
+  error: z.string().optional(),
   runId: RunId,
   seq: z.number().int().nonnegative(),
   at: z.string().datetime(),

@@ -69,11 +69,12 @@ export async function checkGoal(runId: string, options: CheckGoalOptions = {}): 
   if (!isRunId(runId)) throw new InvalidRunIdError(runId);
   const state = options.baseUrl ? await fetchState(options.baseUrl, runId) : await createRunStore(options.dir ?? defaultRunsDir()).get(runId);
   if (!state) throw new RunNotFoundError(runId);
+  if (state.runId !== runId) throw new Error("Goal state belongs to another run");
   return evaluateGoal(state);
 }
 
 async function fetchState(baseUrl: string, runId: string): Promise<RunState | null> {
-  const res = await fetch(new URL(`/api/runs/${runId}/state`, baseUrl), { cache: "no-store" });
+  const res = await fetch(new URL(`/api/runs/${runId}/state`, baseUrl), { cache: "no-store", signal: AbortSignal.timeout(10_000) });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GET /api/runs/${runId}/state failed: ${res.status}`);
   return RunState.parse(await res.json());

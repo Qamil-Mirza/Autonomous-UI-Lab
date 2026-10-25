@@ -22,7 +22,7 @@ async function waitFor(check: () => boolean, timeoutMs = 4000): Promise<void> {
 }
 
 const { id: _id, frozenAt: _f, experimentId: _e, ...protocol } = loadFixture("protocol.default.json", ExperimentProtocol);
-const manifest = loadFixture("manifest.base.json", DesignManifest);
+const manifest = loadFixture("manifest.legacy.json", DesignManifest);
 const createPayload = { protocol, baseVersionUrl: "http://localhost:5173/v/ver_base0001", baseManifestHash: manifest.manifestHash };
 
 /** A simulation whose batch never finishes: the worker is closed while the baseline is in flight. */

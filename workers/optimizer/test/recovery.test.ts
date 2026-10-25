@@ -12,7 +12,7 @@ import { InMemoryStore } from "../src/store";
 const NOW = "2026-10-24T10:00:00.000Z";
 const BASE = "ver_base0001";
 const fixtureProtocol = loadFixture("protocol.default.json", ExperimentProtocol);
-const baseManifest = loadFixture("manifest.base.json", DesignManifest);
+const baseManifest = loadFixture("manifest.legacy.json", DesignManifest);
 const { id: _id, frozenAt: _f, experimentId: _e, ...draft } = fixtureProtocol;
 
 /** Drives a fresh experiment on the mock adapters until it parks at `awaiting_approval`. */

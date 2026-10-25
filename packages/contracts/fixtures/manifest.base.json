@@ -1,8 +1,8 @@
 {
   "provenance": "synthetic-fixture",
   "schemaVersion": "1.0.0",
-  "versionId": "ver_base0001",
-  "manifestHash": "sha256:fixture-base-0001",
+  "versionId": "ver_baseline",
+  "manifestHash": "sha256:fixture-baseline-handoff",
   "elements": [
     {
       "elementId": "signup.email",
@@ -60,7 +60,7 @@
       ]
     },
     {
-      "elementId": "workspace.submit",
+      "elementId": "workspace.continue",
       "screen": "workspace",
       "role": "button",
       "label": "Continue",
@@ -75,7 +75,7 @@
       "elementId": "plan.free.cta",
       "screen": "plan",
       "role": "button",
-      "label": "Choose Free",
+      "label": "Continue",
       "protected": false,
       "categories": [],
       "supportedOps": [
@@ -87,7 +87,7 @@
       "elementId": "plan.pro.cta",
       "screen": "plan",
       "role": "button",
-      "label": "Choose Pro",
+      "label": "Start free trial",
       "protected": false,
       "categories": [],
       "supportedOps": [
@@ -110,7 +110,7 @@
       "elementId": "plan.pro.price",
       "screen": "plan",
       "role": "text",
-      "label": "$12 / month",
+      "label": "$12 / user / month",
       "protected": true,
       "categories": [
         "pricing"
@@ -118,16 +118,17 @@
       "supportedOps": []
     },
     {
-      "elementId": "plan.compare.link",
+      "elementId": "plan.free.note",
       "screen": "plan",
-      "role": "link",
-      "label": "Compare plans",
+      "role": "text",
+      "label": "No card required",
       "protected": false,
       "categories": [],
       "supportedOps": [
         "set_visibility",
         "set_label"
-      ]
+      ],
+      "visible": false
     },
     {
       "elementId": "invite.email",
@@ -141,10 +142,10 @@
       "supportedOps": []
     },
     {
-      "elementId": "invite.submit",
+      "elementId": "invite.send",
       "screen": "invite",
       "role": "button",
-      "label": "Send invite or skip",
+      "label": "Send invite",
       "protected": false,
       "categories": [],
       "supportedOps": [
@@ -153,14 +154,48 @@
       ]
     },
     {
-      "elementId": "done.heading",
-      "screen": "done",
+      "elementId": "confirm.title",
+      "screen": "confirm",
       "role": "heading",
       "label": "You're all set",
       "protected": false,
       "categories": [],
       "supportedOps": [
         "set_label"
+      ]
+    },
+    {
+      "elementId": "signup.name",
+      "screen": "signup",
+      "role": "textbox",
+      "label": "Full name",
+      "protected": true,
+      "categories": [
+        "signup"
+      ],
+      "supportedOps": []
+    },
+    {
+      "elementId": "invite.error",
+      "screen": "invite",
+      "role": "alert",
+      "label": "",
+      "protected": true,
+      "categories": [
+        "validation"
+      ],
+      "supportedOps": []
+    },
+    {
+      "elementId": "confirm.done",
+      "screen": "confirm",
+      "role": "button",
+      "label": "Go to dashboard",
+      "protected": false,
+      "categories": [],
+      "supportedOps": [
+        "set_label",
+        "set_style_token"
       ]
     }
   ]

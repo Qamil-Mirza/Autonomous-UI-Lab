@@ -9,7 +9,7 @@ import { protectedConstraintsFor, validatePacket } from "../src/policy";
 describe.skipIf(!process.env.ANTHROPIC_LIVE_TEST)("Claude analysis (live API)", () => {
   it("returns a proposal that passes packet validation with at least one open patch", async () => {
     const observations = loadFixture("observations.json", z.array(ObservationTrend));
-    const manifest = loadFixture("manifest.base.json", DesignManifest);
+    const manifest = loadFixture("manifest.legacy.json", DesignManifest);
     const protocol = loadFixture("protocol.default.json", ExperimentProtocol);
     const { raw, usage } = await createClaudeAnalysis().proposeFeedback({
       experimentId: protocol.experimentId,

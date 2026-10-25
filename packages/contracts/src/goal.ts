@@ -18,6 +18,9 @@ export const GoalCheckResult = z
     at: z.string().datetime(),
   })
   .superRefine((r, ctx) => {
+    if (new Set(r.checks.map(c => c.name)).size !== r.checks.length) {
+      ctx.addIssue({ code: "custom", path: ["checks"], message: "Check names must be unique" });
+    }
     if (r.achieved !== r.checks.every((c) => c.passed)) {
       ctx.addIssue({ code: "custom", path: ["achieved"], message: "achieved must equal every check passing" });
     }

@@ -20,7 +20,7 @@ const NOW = "2026-10-24T10:00:00.000Z";
 const T0 = Date.parse(NOW);
 const BASE = "ver_base0001";
 const fixtureProtocol = loadFixture("protocol.default.json", ExperimentProtocol);
-const baseManifest = loadFixture("manifest.base.json", DesignManifest);
+const baseManifest = loadFixture("manifest.legacy.json", DesignManifest);
 const { id: _id, frozenAt: _f, experimentId: _e, ...draft } = fixtureProtocol;
 
 interface SetupOpts {

@@ -14,7 +14,7 @@ import { defaultProposal } from "../src/mocks/analysis";
 import { protectedConstraintsFor, validatePacket } from "../src/policy";
 
 const observations = loadFixture("observations.json", z.array(ObservationTrend));
-const manifest = loadFixture("manifest.base.json", DesignManifest);
+const manifest = loadFixture("manifest.legacy.json", DesignManifest);
 const protocol = loadFixture("protocol.default.json", ExperimentProtocol);
 
 const editableElements = manifest.elements.filter((el) => !el.protected);

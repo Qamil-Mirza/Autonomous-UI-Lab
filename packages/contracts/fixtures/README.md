@@ -88,3 +88,13 @@ Conventions used in every batch:
 - Every event has a screenshot reference `{ uri: "artifacts/<runId>/<seq>.png", width: 1280, height: 800 }`.
 - A plan revisit is the `plan → compare → plan` loop through `plan.compare.link`. The only other screen any run
   revisits is `compare`, in the `step_limit` run that opens the comparison twice.
+
+## Current prototype handoff versus historical metric fixtures
+
+`manifest.base.json` now describes the handed-off `ver_baseline` element names and
+labels. `plan.free.note` is static text with `visible: false`, not a link.
+`manifest.legacy.json` preserves `ver_base0001` for the older synthetic batches,
+feedback packets and evaluations. Those fixtures use the old comparison screen
+and optional-invite flow; they are not runnable demonstrations of the new required
+invitation flow. Do not join their traces to `ver_baseline` or silently rename their
+actions. Use fresh simulator traces for the current app.

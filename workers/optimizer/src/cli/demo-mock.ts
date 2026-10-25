@@ -99,7 +99,7 @@ async function drive(
 
   const fixture = loadFixture("protocol.default.json", ExperimentProtocol);
   const { id: _id, frozenAt: _f, experimentId: _e, ...protocol } = fixture;
-  const manifest = loadFixture("manifest.base.json", DesignManifest);
+  const manifest = loadFixture("manifest.legacy.json", DesignManifest);
   const created = await cmd.createExperiment({ protocol, baseVersionUrl: "http://localhost:5173/v/ver_base0001", baseManifestHash: manifest.manifestHash });
   if (!created.ok) throw new Error(`create failed: ${created.message}`);
   const id = created.value.experimentId;

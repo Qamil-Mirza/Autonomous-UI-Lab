@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0.0",
+  "fixtures": [
+    { "name": "live-baseline-success", "run": "recorded-2026-10-24/success/run.json", "manifest": "recorded-2026-10-24/success/manifest.json" },
+    { "name": "live-baseline-step-limit", "run": "recorded-2026-10-24/non-success/run.json", "manifest": "recorded-2026-10-24/non-success/manifest.json" }
+  ]
+}

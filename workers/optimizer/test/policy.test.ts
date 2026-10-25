@@ -13,7 +13,7 @@ import { aggregateObservations } from "../src/observations";
 import { classifyPatch, validatePacket } from "../src/policy";
 
 const protocol = loadFixture("protocol.default.json", ExperimentProtocol);
-const manifest = loadFixture("manifest.base.json", DesignManifest);
+const manifest = loadFixture("manifest.legacy.json", DesignManifest);
 const batch = loadFixture("batch.baseline.json", BatchResult);
 
 function observationsWith(dispositions: Map<string, ObservationDisposition>) {
@@ -65,6 +65,10 @@ const rawPricePatch = {
 const rawHypothesis = { statement: "Agents use the comparison view before choosing.", observationIds: [planObs.id], confidence: "medium" as const };
 
 describe("classifyPatch", () => {
+  it("supports the current baseline's noninteractive Free note visibility patch", () => {
+    const current = loadFixture("manifest.base.json", DesignManifest);
+    expect(classifyPatch({ targetElementId: "plan.free.note", op: "set_visibility", value: true }, protocol, current).risk).toBe("review_required");
+  });
   it.each([
     ["plan.pro.price", "set_label", "x", "blocked"],
     ["signup.consent", "set_visibility", false, "blocked"],
