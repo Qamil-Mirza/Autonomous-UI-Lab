@@ -72,6 +72,10 @@ export interface PatchView {
   blocked: boolean
   correspondence: string
   observationIds: string[]
+  /** Screen the target element is on (from the manifest), for opening previews there. */
+  screen?: string
+  /** The stored patch, for building a preview; absent for sample data. */
+  raw?: MutationPatch
 }
 
 export type BehaviorRow = [label: string, original: string, updated: string, difference: string, tone: Tone]
@@ -336,6 +340,8 @@ function patchView(p: MutationPatch, elements: Elements, snap: Snapshot, figma: 
     blocked: p.state === "blocked" || p.risk === "blocked",
     correspondence: figma,
     observationIds: p.observationIds,
+    ...(el?.screen ? { screen: el.screen } : {}),
+    raw: p,
   }
 }
 

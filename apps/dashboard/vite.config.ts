@@ -10,6 +10,25 @@ const prototype = process.env.GHOSTLOOP_PROTOTYPE_URL ?? "http://localhost:5173"
 // Simulator screenshots: the worker publishes them as /artifacts/... URLs relative to this directory.
 const artifactsDir = path.resolve(process.env.GHOSTLOOP_ARTIFACTS_DIR ?? path.join(__dirname, "../../workers/simulator/artifacts"));
 
+// Design manifests live here; the prototype serves the same directory, so preview versions written here render there.
+const designsDir = path.resolve(process.env.GHOSTLOOP_DESIGNS_DIR ?? path.join(__dirname, "../../designs"));
+
+// POST /api/preview: applies proposed patches to a version and writes a throwaway preview version (server/preview.ts).
+// Loaded through Vite's SSR loader per request: the config loader can't import workspace TypeScript packages.
+// Dev server only.
+function servePreviews(): Plugin {
+  return {
+    name: "ghostloop-previews",
+    configureServer: (server) =>
+      void server.middlewares.use("/api/preview", (req, res, next) => {
+        server
+          .ssrLoadModule("/server/preview.ts")
+          .then((m) => (m as typeof import("./server/preview")).previewHandler(designsDir)(req, res, next))
+          .catch(next);
+      }),
+  };
+}
+
 // Serves PNG screenshots from artifactsDir at /artifacts, read from disk per request so new runs show up live.
 function serveArtifacts(): Plugin {
   const handler: Connect.NextHandleFunction = (req, res, next) => {
@@ -39,7 +58,7 @@ function serveArtifacts(): Plugin {
 
 // Designer dashboard. 5174 so it runs beside the prototype (5173).
 export default defineConfig({
-  plugins: [react(), tailwindcss(), serveArtifacts()],
+  plugins: [react(), tailwindcss(), serveArtifacts(), servePreviews()],
   resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
   server: { port: 5174, strictPort: true, proxy: { "/designs": prototype } },
   preview: { port: 5174, strictPort: true, proxy: { "/designs": prototype } },

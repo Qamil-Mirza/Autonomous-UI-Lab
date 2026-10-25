@@ -4,6 +4,7 @@ import { experiment } from "./sampleData"
 import { sampleAdapter } from "./mockService"
 import { sampleSummaries, sampleView, type SampleScenario } from "./sample"
 import { useElements, useGhostloop, useNames, type LinkStatus } from "./live/useGhostloop"
+import { usePreview } from "./live/usePreview"
 import { experimentView, summaries, type ExperimentSummary, type ExperimentView, type RunView } from "./live/view"
 import { buildCreatePayload, DEFAULT_PROTOTYPE_URL, fetchManifest, LIMITS, parsePrototypeUrl, validateForm, type SetupForm } from "./live/setup"
 
@@ -509,8 +510,21 @@ function LiveReplay({ run }: { run: RunView }) {
   )
 }
 
-/** A live view of a prototype version. */
+const FRAME = { width: 1280, height: 800 }
+
+/** A live view of a prototype version, rendered at desktop size and scaled down to fit its column. */
 function VersionPreview({ url, title }: { url: string; title: string }) {
+  const box = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(0.5)
+  useEffect(() => {
+    const el = box.current
+    if (!el) return
+    const fit = () => setScale(el.clientWidth / FRAME.width)
+    fit()
+    const observer = new ResizeObserver(fit)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
   return (
     <div className="subject version-preview">
       <div className="subject-top">
@@ -522,7 +536,14 @@ function VersionPreview({ url, title }: { url: string; title: string }) {
           Open ↗
         </a>
       </div>
-      <iframe src={url} title={title} sandbox="allow-scripts allow-same-origin allow-forms" />
+      <div className="frame-box" ref={box} style={{ height: FRAME.height * scale }}>
+        <iframe
+          src={url}
+          title={title}
+          sandbox="allow-scripts allow-same-origin allow-forms"
+          style={{ width: FRAME.width, height: FRAME.height, transform: `scale(${scale})` }}
+        />
+      </div>
     </div>
   )
 }
@@ -1210,18 +1231,11 @@ function Review({
         <div className="section-title">
           <div>
             <small>VISUAL CHECK</small>
-            <h2>{live ? "Current version" : "Current and updated version"}</h2>
+            <h2>Current and updated version</h2>
           </div>
         </div>
         {live ? (
-          view.incumbentUrl ? (
-            <VersionPreview url={view.incumbentUrl} title="Current version" />
-          ) : (
-            <div className="no-shot">
-              <b>No preview available</b>
-              <span>The current version has no URL.</span>
-            </div>
-          )
+          <LiveCompare view={view} selected={selected} />
         ) : (
           <div className="compare">
             <div>
@@ -1236,6 +1250,48 @@ function Review({
         )}
       </section>
     </>
+  )
+}
+
+/** The current version beside a preview of the selected patches, both opened on the screen the first change is on. */
+function LiveCompare({ view, selected }: { view: ExperimentView; selected: string[] }) {
+  const chosen = view.patches.filter((p) => selected.includes(p.id) && p.raw)
+  const preview = usePreview(view.incumbentVersionId, chosen.map((p) => p.raw!))
+  if (!view.incumbentUrl) {
+    return (
+      <div className="no-shot">
+        <b>No preview available</b>
+        <span>The current version has no URL.</span>
+      </div>
+    )
+  }
+  const origin = new URL(view.incumbentUrl).origin
+  const screen = chosen.find((p) => p.screen)?.screen ?? "signup"
+  const at = (versionId: string) => `${origin}/v/${versionId}/${screen}`
+  return (
+    <div className="compare live-compare">
+      <div>
+        <b>Current · {view.incumbentVersionId}</b>
+        <VersionPreview url={at(view.incumbentVersionId)} title="Current version" />
+      </div>
+      <div>
+        <b>Updated version to test{chosen.length ? ` · ${chosen.length} change${chosen.length === 1 ? "" : "s"}` : ""}</b>
+        {preview.kind === "ready" ? (
+          <VersionPreview url={at(preview.versionId)} title="Proposed version" />
+        ) : (
+          <div className="no-shot preview-state">
+            <b>
+              {preview.kind === "loading"
+                ? "Building the preview…"
+                : preview.kind === "error"
+                  ? "This combination can't be previewed"
+                  : "Choose a suggestion to preview it"}
+            </b>
+            {preview.kind === "error" && <span>{preview.message}</span>}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
