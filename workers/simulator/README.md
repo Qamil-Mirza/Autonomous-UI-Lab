@@ -435,16 +435,16 @@ queued round-robin across scenarios, so a batch that stops early still covers ea
 
 - First-time/cost-conscious: cautious public persona instructions.
 - Returning/product-familiar: confident persona instructions, still with fresh app state.
-- Invalid-email recovery: two labeled controlled actions type and submit an invalid
-  invitation email. The model then observes the error and chooses how to recover.
-- Low persistence: a labeled controlled stop when the user is stuck: two submissions with
-  validation errors, three actions in a row that get nowhere (failed, no effect, or back to
-  an earlier screen), or 14 actions in total. A clear path still succeeds. This is a fixed
-  experimental rule, not spontaneous AI behavior.
+- Invalid-email recovery: the persona's invite address in its inputs has a realistic typo
+  the prototype rejects (`teammate@examplecom`), and its description names the address it
+  meant. The model decides whether to submit it, reads any error, and corrects it.
+- Low persistence: persona instructions only (little patience; stop when stuck or going in
+  circles). The model decides when to give up; the action limit still applies.
 
-Each session owns an isolated browser and a unique initialized server run. Events
-carry `decisionSource: "model"` or `"scenario"`; controlled interventions do not
-consume model calls. Every new session gets a fresh intervention policy instance.
+There are no scripted steps: scenarios differ only in persona text and input data, and
+every event is the model's own decision (`decisionSource: "model"`). Older recordings
+may contain labeled scripted steps (`"scenario"`); D's observations ignore them. Each
+session owns an isolated browser and a unique initialized server run.
 
 `--runs-per-scenario 2` schedules eight sessions. Limits are 100 sessions, eight
 concurrent sessions, and 20 actions per session. Ctrl+C stops new admissions,

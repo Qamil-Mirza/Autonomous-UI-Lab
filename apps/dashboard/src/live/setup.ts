@@ -16,15 +16,20 @@ export interface SetupForm {
 // The simulator's hard limits (workers/simulator/src/batch.ts).
 export const LIMITS = { trials: 100, maxSteps: 20 } as const
 
-// The simulator's controlled scenarios (workers/simulator/src/scenarios.ts): it applies extra rules to
-// scn_invalid_email and scn_low_persistence by ID, and the prototype's signup needs every input here.
+// The simulator's controlled scenarios (workers/simulator/src/scenarios.ts). They differ only in persona text and
+// input data; every action is the model's own. The prototype's signup needs every input here.
 const INPUTS = { fullName: "Test User", email: "test@example.com", password: "Demo-only-Pass123!", workspaceName: "Demo", inviteEmail: "teammate@example.com" }
 export const SCENARIOS = [
   { id: "scn_cost_conscious", name: "First-time / cost-conscious", description: "You are new to this product. Read labels carefully and avoid spending money or starting a trial." },
   { id: "scn_product_familiar", name: "Returning / product-familiar", description: "You have used similar products before and move confidently through familiar forms. This is a fresh account and workspace." },
-  { id: "scn_invalid_email", name: "Invalid-email recovery", description: "You make an email typo when inviting a teammate. After submitting it, read any validation message and correct the address using inviteEmail." },
-  { id: "scn_low_persistence", name: "Low persistence", description: "You have little patience. You give up when you get stuck: after two submissions produce validation errors, or after a few actions in a row get you nowhere." },
-].map((s) => ({ ...s, inputs: { ...INPUTS } }))
+  {
+    id: "scn_invalid_email",
+    name: "Invalid-email recovery",
+    inputs: { ...INPUTS, inviteEmail: "teammate@examplecom" },
+    description: "You type quickly and sometimes make mistakes. The invite address in your inputs is what you wrote down from memory and may contain a typo; your teammate's real address is teammate@example.com. If the form rejects an address, read the message and correct it.",
+  },
+  { id: "scn_low_persistence", name: "Low persistence", description: "You have little patience. If you get stuck, see the same error again, or feel you are going in circles, stop and say why." },
+].map((s) => ({ inputs: { ...INPUTS }, ...s }))
 
 // Simulated users running at once. Each step is one model call, so higher values hit the provider's rate limit.
 export const DEFAULT_CONCURRENCY = 2
@@ -79,7 +84,7 @@ export function buildCreatePayload(f: SetupForm, manifestHash: string): CreateEx
     baseVersionId: parsed.versionId,
     task: f.task.trim(),
     mode: f.manualReview ? "manual" : "auto",
-    scenarios: SCENARIOS.map((s, i) => ({ ...s, runs: runs[i] })).filter((s) => s.runs > 0),
+    scenarios: SCENARIOS.map((s, i) => ({ ...s, runs: runs[i] ?? 0 })).filter((s) => s.runs > 0),
     budgets: {
       ...base.budgets,
       runsPerBatch: f.trials,

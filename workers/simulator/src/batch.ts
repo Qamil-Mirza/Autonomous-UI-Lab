@@ -5,7 +5,6 @@ import { BatchRequest, BatchResult, type SimulationAdapter, type PrototypeGoalAd
 import { runOne, type RunOptions } from './run';
 import { prototypeIntegration } from './prototype';
 import { bitdeerDecider, type Decider } from './bitdeer';
-import { scenarioPolicy } from './scenarios';
 import { ModelResponseError } from './decision';
 
 export interface BatchOptions {
@@ -105,7 +104,6 @@ export function createSimulationAdapter(options: BatchOptions): SimulationAdapte
                 throw error;
               }
             },
-            decisionPolicy: scenarioPolicy(scenario),
             task: req.task, scenario, experimentId: req.experimentId, protocolId: req.protocolId, batchId: req.batchId,
             maxActions: req.maxActionsPerRun, maxWallClockMs: Math.max(1, Math.min(240_000, Math.ceil(maxMs - (performance.now() - started)))),
             provenance: options.provenance, headed: options.headed, estimatedUsdPerCall: price,
