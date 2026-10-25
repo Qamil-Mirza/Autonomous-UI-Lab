@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react"
-import { Badge, VersionPreview } from "./ui"
+import { Badge, formatWhen, VersionPreview } from "./ui"
 import {
   CONTROL_ROLES,
   STEPS,
   describeCheck,
   formatInputs,
+  friendlyError,
   importsApi,
   isActive,
   lines,
   parseInputs,
   stepOf,
+  taskProblems,
   useImports,
   type ImportTask,
   type ImportView,
@@ -53,6 +55,7 @@ export function ImportsPage({ open }: { open: (id: string) => void }) {
   const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
   const [formError, setFormError] = useState("")
+  const [dragging, setDragging] = useState(false)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -84,6 +87,11 @@ export function ImportsPage({ open }: { open: (id: string) => void }) {
             shows you a live preview before any test runs.
           </p>
         </div>
+        <div>
+          <Badge tone={!runtime ? "muted" : runtime.available ? "good" : "bad"}>
+            {!runtime ? "Checking sandbox…" : runtime.available ? "Sandbox ready" : "Sandbox unavailable"}
+          </Badge>
+        </div>
       </div>
       <RuntimeBanner runtime={runtime} />
       {error && <div className="alert bad">{error}</div>}
@@ -94,9 +102,38 @@ export function ImportsPage({ open }: { open: (id: string) => void }) {
             Project name
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Checkout redesign" maxLength={120} />
           </label>
-          <label>
+          <label
+            className={`dropzone-field${dragging ? " over" : ""}`}
+            onDragOver={(e) => {
+              e.preventDefault()
+              setDragging(true)
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault()
+              setDragging(false)
+              const dropped = e.dataTransfer.files[0]
+              if (dropped) setFile(dropped)
+            }}
+          >
             Code ZIP
-            <input type="file" accept=".zip,application/zip" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            <input className="sr-only" type="file" accept=".zip,application/zip" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            <span className="dropzone">
+              <span className="dropzone-icon" aria-hidden="true">
+                ⇪
+              </span>
+              {file ? (
+                <span>
+                  <b>{file.name}</b>
+                  <small>{file.size < 1024 * 1024 ? `${Math.max(1, Math.round(file.size / 1024))} KB` : `${(file.size / 1024 / 1024).toFixed(1)} MB`} · click to change</small>
+                </span>
+              ) : (
+                <span>
+                  <b>Choose a .zip file</b>
+                  <small>or drop it here · up to 50 MB</small>
+                </span>
+              )}
+            </span>
           </label>
         </div>
         <label>
@@ -150,8 +187,10 @@ export function ImportsPage({ open }: { open: (id: string) => void }) {
                 <b>{i.name}</b>
                 <small>{i.id}</small>
               </span>
-              <Badge tone={STATUS[i.status][1]}>{STATUS[i.status][0]}</Badge>
-              <span>{new Date(i.updatedAt).toLocaleString()}</span>
+              <span>
+                <Badge tone={STATUS[i.status][1]}>{STATUS[i.status][0]}</Badge>
+              </span>
+              <span>{formatWhen(i.updatedAt)}</span>
               <span>View →</span>
             </button>
           ))}
@@ -208,7 +247,7 @@ function CheckEditor({ check, set, remove }: { check: SuccessCheck; set: (c: Suc
               <option value="exact">is exactly</option>
               <option value="prefix">starts with</option>
             </select>
-            <input aria-label="Route" value={check.path} onChange={(e) => set({ ...check, path: e.target.value })} placeholder="/order/confirmed" />
+            <input aria-label="Route" value={check.path} onChange={(e) => set({ ...check, path: e.target.value })} placeholder="e.g. /order/confirmed" aria-invalid={!check.path.trim()} />
           </>
         )}
         {check.kind === "text" && (
@@ -217,7 +256,7 @@ function CheckEditor({ check, set, remove }: { check: SuccessCheck; set: (c: Suc
               <option value="contains">page contains</option>
               <option value="exact">an element is exactly</option>
             </select>
-            <input aria-label="Text" value={check.text} onChange={(e) => set({ ...check, text: e.target.value })} placeholder="Order confirmed" />
+            <input aria-label="Text" value={check.text} onChange={(e) => set({ ...check, text: e.target.value })} placeholder="e.g. Order confirmed" aria-invalid={!check.text.trim()} />
           </>
         )}
         {check.kind === "control" && (
@@ -229,7 +268,7 @@ function CheckEditor({ check, set, remove }: { check: SuccessCheck; set: (c: Suc
                 </option>
               ))}
             </select>
-            <input aria-label="Accessible name" value={check.name} onChange={(e) => set({ ...check, name: e.target.value })} placeholder="Track my order" />
+            <input aria-label="Accessible name" value={check.name} onChange={(e) => set({ ...check, name: e.target.value })} placeholder="e.g. Track my order" aria-invalid={!check.name.trim()} />
           </>
         )}
         {remove && (
@@ -254,6 +293,7 @@ export function ImportDetail({ id, back, started }: { id: string; back: () => vo
   const [behaviorText, setBehaviorText] = useState("")
   const [inputsText, setInputsText] = useState("")
   const [dirty, setDirty] = useState(false)
+  const [formError, setFormError] = useState("")
   const [run, setRun] = useState({ trials: 6, maxSteps: 12, maxUsd: 10, maxMinutes: 20, minImprovementPp: 10 })
 
   useEffect(() => {
@@ -308,12 +348,24 @@ export function ImportDetail({ id, back, started }: { id: string; back: () => vo
     setDirty(true)
   }
   const draft = (): ImportTask => ({ ...task, protectedTexts: lines(protectedText), protectedBehavior: lines(behaviorText), inputs: parseInputs(inputsText) })
-  const save = () =>
-    act("save", async () => {
-      const r = await importsApi.saveTask(id, draft())
-      setDirty(false)
-      return r
-    })
+  const problems = taskProblems(draft())
+  /** Saves the form (when it changed) and, with `check`, verifies it against the preview right after. */
+  const submitTask = async (check: boolean) => {
+    setBusy(check ? "verify" : "save")
+    setFormError("")
+    setError("")
+    try {
+      if (dirty || !rec.task) {
+        setRec(await importsApi.saveTask(id, draft()))
+        setDirty(false)
+      }
+      if (check) setRec(await importsApi.verify(id))
+    } catch (e) {
+      setFormError(friendlyError(e instanceof Error ? e.message : String(e)))
+    } finally {
+      setBusy(undefined)
+    }
+  }
   const ready = rec.status === "ready_for_review" || rec.status === "ready_to_test"
   const [label, tone] = STATUS[rec.status]
   const v = rec.verification
@@ -418,12 +470,12 @@ export function ImportDetail({ id, back, started }: { id: string; back: () => vo
             className="card form"
             onSubmit={(e) => {
               e.preventDefault()
-              void save()
+              void submitTask(true)
             }}
           >
             <label>
               Task description <span className="optional">(the simulated users see exactly this, before and after changes)</span>
-              <textarea rows={3} value={task.task} onChange={(e) => edit({ ...task, task: e.target.value })} placeholder="Order one flat white for pickup and get it confirmed." />
+              <textarea rows={3} value={task.task} onChange={(e) => edit({ ...task, task: e.target.value })} placeholder="e.g. Order one flat white for pickup and get it confirmed." />
             </label>
             <div className="field-row">
               <label>
@@ -471,30 +523,40 @@ export function ImportDetail({ id, back, started }: { id: string; back: () => vo
             <div className="field-row">
               <label>
                 Protected text <span className="optional">(one per line; never edited)</span>
-                <textarea rows={3} value={protectedText} onChange={(e) => (setProtectedText(e.target.value), setDirty(true))} placeholder={"Order confirmed\nTotal"} />
+                <textarea rows={3} value={protectedText} onChange={(e) => (setProtectedText(e.target.value), setDirty(true))} placeholder={"e.g. Order confirmed\nTotal"} />
               </label>
               <label>
                 Protected behavior <span className="optional">(one per line; constraints for suggestions)</span>
-                <textarea rows={3} value={behaviorText} onChange={(e) => (setBehaviorText(e.target.value), setDirty(true))} placeholder="Removing items from the bag keeps working." />
+                <textarea rows={3} value={behaviorText} onChange={(e) => (setBehaviorText(e.target.value), setDirty(true))} placeholder="e.g. Removing items from the bag keeps working." />
               </label>
             </div>
             <label>
               Test data the simulated users may type <span className="optional">(key=value per line; fictional values only)</span>
-              <textarea rows={2} value={inputsText} onChange={(e) => (setInputsText(e.target.value), setDirty(true))} placeholder={"name=Pat Example\nemail=pat@example.com"} />
+              <textarea rows={2} value={inputsText} onChange={(e) => (setInputsText(e.target.value), setDirty(true))} placeholder={"e.g. name=Pat Example\nemail=pat@example.com"} />
             </label>
+            {problems.length > 0 && (
+              <div className="alert warn task-todo" role="status">
+                <b>Before checking, fill in:</b>
+                <ul>
+                  {problems.map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {formError && (
+              <div className="alert bad" role="alert">
+                <b>Couldn't {busy === "save" || !rec.task || dirty ? "save" : "check"} the task.</b> {formError}
+              </div>
+            )}
             <div className="form-foot">
-              <span>{dirty ? "Unsaved changes." : rec.task ? "Saved." : "Not saved yet."}</span>
-              <div>
-                <button className="btn secondary" disabled={busy !== undefined}>
+              <span>{dirty ? "Unsaved changes; checking saves them first." : rec.task ? "Saved." : "Not saved yet."}</span>
+              <div className="form-actions">
+                <button type="button" className="btn secondary" disabled={busy !== undefined || problems.length > 0 || (!dirty && Boolean(rec.task))} onClick={() => void submitTask(false)}>
                   {busy === "save" ? "Saving…" : "Save task"}
-                </button>{" "}
-                <button
-                  type="button"
-                  className="btn primary"
-                  disabled={busy !== undefined || dirty || !rec.task}
-                  onClick={() => act("verify", () => importsApi.verify(id))}
-                >
-                  {busy === "verify" ? "Checking…" : "Check preview and task"}
+                </button>
+                <button className="btn primary" disabled={busy !== undefined || problems.length > 0}>
+                  {busy === "verify" ? "Checking the preview…" : dirty || !rec.task ? "Save and check" : "Check preview and task"}
                 </button>
               </div>
             </div>

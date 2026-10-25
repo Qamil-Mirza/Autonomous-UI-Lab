@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { describeCheck, formatInputs, isImportedVersion, lines, parseInputs, stepOf } from "../src/live/imports"
+import { describeCheck, formatInputs, friendlyError, isImportedVersion, lines, parseInputs, stepOf, taskProblems } from "../src/live/imports"
 import { checksOf } from "../src/live/view"
 import type { StoredRun } from "../src/live/snapshot"
 
@@ -57,5 +57,35 @@ describe("checksOf", () => {
   it("ignores judged runs and unreadable evidence", () => {
     expect(checksOf(run({ goalEvidence: "Trusted application-state checker verified the task." }))).toBeUndefined()
     expect(checksOf(run({ goalEvidence: "{}", judge: { reached: true, explanation: "x", evidence: [], model: "m", instructionVersion: "v", usd: 0 } }))).toBeUndefined()
+  })
+})
+
+describe("task form guidance", () => {
+  const base = {
+    task: "Find the matrix coordinates for a point.",
+    startRoute: "/",
+    viewport: { width: 1280, height: 800 },
+    successChecks: [{ kind: "text" as const, text: "", match: "contains" as const }],
+    protectedTexts: [],
+    protectedBehavior: [],
+    inputs: {},
+    personas: [],
+  }
+
+  it("lists exactly what is missing before the task can be checked", () => {
+    expect(taskProblems(base)).toEqual(["Success check needs the text to look for."])
+    expect(taskProblems({ ...base, task: "short", startRoute: "checkout", successChecks: [{ kind: "text", text: "Done", match: "contains" }, { kind: "route", path: "", match: "exact" }] })).toEqual([
+      "Describe the task in a sentence (at least 10 characters).",
+      "The starting route must be a path like / or /checkout.",
+      "Success check 2 needs a route.",
+    ])
+    expect(taskProblems({ ...base, successChecks: [{ kind: "control", role: "button", name: "Save" }] })).toEqual([])
+  })
+
+  it("rewrites server validation messages in plain language", () => {
+    expect(friendlyError("successChecks.0.text: String must contain at least 1 character(s)")).toBe("Success check 1: can't be empty")
+    expect(friendlyError("task: describe the task in a sentence or more; startRoute: the starting route is a path")).toBe(
+      "Task description: describe the task in a sentence or more Starting route: the starting route is a path",
+    )
   })
 })

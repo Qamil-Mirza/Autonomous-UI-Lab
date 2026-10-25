@@ -226,3 +226,39 @@ export const lines = (text: string) =>
     .split("\n")
     .map((l) => l.trim())
     .filter(Boolean)
+
+const CHECK_FIELD = { route: "a route", text: "the text to look for", control: "the control's name" } as const
+
+/** What still has to be filled in before the task can be saved and checked, in the designer's words. */
+export function taskProblems(t: ImportTask): string[] {
+  const out: string[] = []
+  if (t.task.trim().length < 10) out.push("Describe the task in a sentence (at least 10 characters).")
+  if (!/^\/(?!\/)\S*$/.test(t.startRoute)) out.push("The starting route must be a path like / or /checkout.")
+  t.successChecks.forEach((c, i) => {
+    const value = c.kind === "route" ? c.path : c.kind === "text" ? c.text : c.name
+    const n = t.successChecks.length > 1 ? ` ${i + 1}` : ""
+    if (!value.trim()) out.push(`Success check${n} needs ${CHECK_FIELD[c.kind]}.`)
+    else if (c.kind === "route" && !/^(\/|#\/)\S*$/.test(c.path)) out.push(`Success check${n}: a route starts with / (or #/ for hash routes).`)
+  })
+  return out
+}
+
+/** Turns the server's field-path validation messages into plain language. */
+export function friendlyError(message: string): string {
+  return message
+    .split("; ")
+    .map((part) =>
+      part
+        .replace(/^successChecks\.(\d+)\.\w+:/, (_, i: string) => `Success check ${Number(i) + 1}:`)
+        .replace(/^successChecks:/, "Success checks:")
+        .replace(/^task:/, "Task description:")
+        .replace(/^startRoute:/, "Starting route:")
+        .replace(/^viewport[.\w]*:/, "Viewport:")
+        .replace(/^protectedTexts[.\d]*:/, "Protected text:")
+        .replace(/^protectedBehavior[.\d]*:/, "Protected behavior:")
+        .replace(/^inputs[.\w]*:/, "Test data:")
+        .replace(/String must contain at least 1 character\(s\)/, "can't be empty")
+        .replace(/String must contain at most (\d+) character\(s\)/, "must be at most $1 characters"),
+    )
+    .join(" ")
+}
