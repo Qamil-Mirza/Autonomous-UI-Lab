@@ -18,8 +18,11 @@ function render() {
   if (p === '/') root.innerHTML = '<h1>Menu</h1><p>Items in bag: ' + bag().length + '</p><button id="add">Add flat white</button> <a href="/bag" id="bag">Go to bag</a> <a href="https://example.org/" id="ext">Partner site</a>';
   else if (p === '/bag') root.innerHTML = '<h1>Your bag</h1><p>' + bag().length + ' items</p><label>Email <input id="email" type="email"></label><button id="pay">Proceed</button>';
   else if (p === '/done') root.innerHTML = '<h1>Order confirmed</h1>';
+  else if (p === '/panel') root.innerHTML = '<div style="position:fixed;inset:0;overflow:auto"><h1>Less, but better.</h1><div style="height:2000px"></div><button id="sora">Add Sora watch</button></div>';
+  else if (p === '/tall') root.innerHTML = '<h1>Less, but better.</h1><p>Scroll to explore</p><div style="height:2000px"></div><h2>The collection</h2><button id="sora">Add Sora watch</button>';
   var add = document.getElementById('add'); if (add) add.onclick = function () { localStorage.setItem('bag', JSON.stringify(bag().concat(['fw']))); render(); };
   var bagLink = document.getElementById('bag'); if (bagLink) bagLink.onclick = function (e) { e.preventDefault(); go('/bag'); };
+  var sora = document.getElementById('sora'); if (sora) sora.onclick = function () { go('/done'); };
   var pay = document.getElementById('pay'); if (pay) pay.onclick = function () {
     var ok = /@/.test(document.getElementById('email').value) && bag().length > 0;
     if (ok) go('/done'); else { var m = document.createElement('p'); m.setAttribute('role', 'alert'); m.textContent = 'Enter an email and add an item.'; root.appendChild(m); }
@@ -66,12 +69,13 @@ const frozen = (over: Partial<ImportTask> = {}) =>
   });
 
 /** Scripted decisions (no model): each picks a control by its discovered label. */
-function scripted(steps: ({ type: "click" | "type" | "stop"; label?: string; value?: string; reason?: string })[], seen: string[][] = []): Decider {
+function scripted(steps: ({ type: "click" | "type" | "scroll" | "stop"; label?: string; value?: string; reason?: string })[], seen: string[][] = []): Decider {
   let i = 0;
   return async (input, controls) => {
     seen.push(controls.map((c) => c.elementId));
     const s = steps[Math.min(i++, steps.length - 1)]!;
     if (s.type === "stop") return { type: "stop", reason: s.reason ?? "done" };
+    if (s.type === "scroll") return { type: "scroll", value: s.value ?? "down", reason: "look further down the page" };
     const c = controls.find((x) => x.label === s.label);
     if (!c) return { type: "stop", reason: `no control labeled ${s.label}` };
     const reason = "scripted test step";
@@ -100,6 +104,32 @@ describe("imported-app run (real browser, scripted decisions)", () => {
     expect(result.events[0]!.viewport).toEqual({ width: 1024, height: 700 });
     const png = await readFile(result.screenshots[0]!.uri);
     expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1024, 700]);
+  }, 60_000);
+
+  it("scrolls to reach controls below the fold", async () => {
+    const seen: string[][] = [];
+    const result = await runOne({
+      url: origin, outputDir: dir, signal: new AbortController().signal, provenance: "mock-decisions", maxActions: 8,
+      task: frozen().task.task, prototype: integration(frozen({ startRoute: "/tall" })),
+      decide: scripted([{ type: "scroll", value: "down" }, { type: "scroll", value: "down" }, { type: "scroll", value: "down" }, { type: "click", label: "Add Sora watch" }], seen),
+    });
+    // Off-screen controls stay hidden until the user scrolls to them, as for a person.
+    expect(seen[0]).not.toContain("button.add-sora-watch");
+    expect(seen[3]).toContain("button.add-sora-watch");
+    expect(result.events.slice(0, 3).map((e) => [e.action.type, e.result])).toEqual([["scroll", "ok"], ["scroll", "ok"], ["scroll", "ok"]]);
+    expect(result.outcome).toBe("goal");
+    expect(result.stepCount).toBe(4);
+  }, 60_000);
+
+  it("scrolls an app's own scroll container, not only the document", async () => {
+    const seen: string[][] = [];
+    const result = await runOne({
+      url: origin, outputDir: dir, signal: new AbortController().signal, provenance: "mock-decisions", maxActions: 8,
+      task: frozen().task.task, prototype: integration(frozen({ startRoute: "/panel" })),
+      decide: scripted([{ type: "scroll", value: "down" }, { type: "scroll", value: "down" }, { type: "scroll", value: "down" }, { type: "click", label: "Add Sora watch" }], seen),
+    });
+    expect(seen[3]).toContain("button.add-sora-watch");
+    expect(result.outcome).toBe("goal");
   }, 60_000);
 
   it("does not count the model's own claim of success", async () => {

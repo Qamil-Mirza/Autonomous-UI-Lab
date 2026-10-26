@@ -227,7 +227,7 @@ const OUTCOME: Record<RunOutcome, [string, Tone]> = {
   user_cancelled: ["Cancelled", "muted"],
 }
 
-const VERB = { click: "Clicked", type: "Typed into", select: "Selected", stop: "Stopped" } as const
+const VERB = { click: "Clicked", type: "Typed into", select: "Selected", scroll: "Scrolled", stop: "Stopped" } as const
 
 const RESULT: Record<Exclude<ActionResult, "ok">, string> = {
   validation_error: "Validation error shown",
@@ -256,7 +256,9 @@ export function actionView(e: AgentActionEvent, elements: Elements): ActionView 
   const target =
     action.type === "stop"
       ? "Session"
-      : action.elementId
+      : action.type === "scroll"
+        ? `Page ${action.value ?? "down"}`
+        : action.elementId
         ? (elements.get(action.elementId)?.label || action.elementId)
         : "Page"
   let result: string

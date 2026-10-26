@@ -114,5 +114,5 @@ Use one entry for each of Ideation, Prototyping, Handoff, and Code generation, w
 - [ ] Required Figma Slides show both the work and the actual workflow.
 - [ ] Working Code & Prototype submission includes embedded Figma Make(s) and/or prototypes plus a working code/repository link.
 - [ ] Submitted Figma files are accessible to “Anyone”; A/C verify the reviewer view and embeds.
-- [ ] Edu verification is confirmed before submission.
+- [x] Edu verification is confirmed before submission.
 - [ ] Final artifact links are collected in the demo runbook, with live runs, recorded real evidence, and fixtures clearly distinguished.

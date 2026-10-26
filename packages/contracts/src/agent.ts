@@ -46,7 +46,11 @@ export const PublicAgentInput = z
     controls: z.array(Control),
     previousActions: z.array(AgentAction),
     // Optional additions preserve existing consumers and fixtures.
-    visibleUI: z.object({ screenId: z.string(), alerts: z.array(z.string()) }).strict().optional(),
+    visibleUI: z.object({
+      screenId: z.string(), alerts: z.array(z.string()),
+      // Whether scrolling would reveal more of the page; only controls inside the viewport are listed.
+      canScroll: z.object({ up: z.boolean(), down: z.boolean() }).strict().optional(),
+    }).strict().optional(),
     history: z.array(z.object({
       seq: z.number().int().nonnegative(), action: AgentAction,
       screenBefore: z.string(), screenAfter: z.string(), result: ActionResult,
