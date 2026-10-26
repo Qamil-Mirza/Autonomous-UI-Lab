@@ -20,14 +20,15 @@ export const Decision = z.discriminatedUnion('type', [
   z.object({ type: z.literal('click'), elementId, reason }).strict(),
   z.object({ type: z.literal('type'), elementId, value: z.string().max(2000), reason }).strict(),
   z.object({ type: z.literal('select'), elementId, value: z.string().max(2000), reason }).strict(),
+  z.object({ type: z.literal('scroll'), value: z.enum(['up', 'down']), reason }).strict(),
   z.object({ type: z.literal('stop'), reason }).strict(),
 ]);
 export type Decision = z.infer<typeof Decision>;
 export function validateDecision(raw: unknown, controls: ObservedControl[], allowNavigation?: (url: string) => boolean): Decision {
   const parsed = Decision.safeParse(raw);
-  if (!parsed.success) throw new ActionValidationError('Invalid action shape: use only click, type, select, or stop with the required fields');
+  if (!parsed.success) throw new ActionValidationError('Invalid action shape: use only click, type, select, scroll (value "up" or "down"), or stop with the required fields');
   const action = parsed.data;
-  if (action.type === 'stop') return action;
+  if (action.type === 'stop' || action.type === 'scroll') return action;
   const matches = controls.filter(c => c.elementId === action.elementId);
   if (matches.length !== 1) throw new ActionValidationError('Target must identify exactly one observed control');
   const control = matches[0];

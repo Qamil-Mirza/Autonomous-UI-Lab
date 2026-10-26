@@ -30,6 +30,12 @@ describe('strict action validation', () => {
     expect(validateDecision({ ...valid, value: 'bad-email' }, [{ ...control, inputType: 'email' }])).toBeDefined();
     expect(validateDecision({ ...valid, value: '' }, [control])).toBeDefined();
   });
+  it('accepts scrolling up or down without a target, and nothing else', () => {
+    expect(validateDecision({ type: 'scroll', value: 'down' }, [control])).toEqual({ type: 'scroll', value: 'down' });
+    expect(validateDecision({ type: 'scroll', value: 'up', reason: 'back to the menu' }, [])).toBeDefined();
+    for (const raw of [{ type: 'scroll' }, { type: 'scroll', value: 'left' }, { type: 'scroll', value: 'down', elementId: 'name' }])
+      expect(() => validateDecision(raw, [control])).toThrow('Invalid action shape');
+  });
   it('allows only exact version/run navigation routes', () => {
     const integration = prototypeIntegration('http://localhost:5173', 'ver_baseline', { checkGoal: async () => { throw new Error('unused'); } });
     const allow = (url: string) => integration.allowRequest(url, true, 'run_a');

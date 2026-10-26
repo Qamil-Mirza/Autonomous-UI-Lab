@@ -202,11 +202,12 @@ export async function runOne(options: RunOptions): Promise<AgentRunResult> {
       signal.throwIfAborted();
       phase = 'browser_error';
       const controls = observation.controls;
-      if (!controls.length) { outcome = 'flow_blocked'; break; }
+      // A screen with nothing to act on blocks the flow, unless scrolling could still reveal something.
+      if (!controls.length && !observation.canScroll.up && !observation.canScroll.down) { outcome = 'flow_blocked'; break; }
       const input = PublicAgentInput.parse({ runId, task,
         scenario: { description: scenario.description, inputs: scenario.inputs },
         screenshot: observation.screenshot, controls,
-        visibleUI: { screenId: observation.screenId, alerts: observation.alerts },
+        visibleUI: { screenId: observation.screenId, alerts: observation.alerts, canScroll: observation.canScroll },
         history, previousActions: events.map(e => e.action), remainingActions: maxActions - step });
       await appendFile(resolve(dir, 'model-inputs.jsonl'), JSON.stringify({ step, input }) + '\n');
       phase = 'model_error';

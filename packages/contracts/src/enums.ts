@@ -6,7 +6,7 @@ export type RunOutcome = z.infer<typeof RunOutcome>;
 export const BEHAVIORAL_OUTCOMES = ["goal", "agent_stop", "step_limit", "flow_blocked"] as const satisfies readonly RunOutcome[];
 export const INFRA_OUTCOMES = ["model_error", "browser_error"] as const satisfies readonly RunOutcome[];
 
-export const ActionType = z.enum(["click", "type", "select", "stop"]);
+export const ActionType = z.enum(["click", "type", "select", "scroll", "stop"]);
 export type ActionType = z.infer<typeof ActionType>;
 
 export const ActionResult = z.enum(["ok", "validation_error", "no_effect", "rejected_invalid", "execution_error", "observation_error"]);

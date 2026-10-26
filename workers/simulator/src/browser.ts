@@ -5,7 +5,7 @@ import type { ControlRegistryEntry, ScreenshotRef } from '@ghostloop/contracts';
 import type { ObservedControl, Decision } from './actions';
 import { bounded } from './lifecycle';
 import { validateDecision } from './actions';
-import { discoverControls, discoveryAlerts, discoveryScreenId, refSelector } from './discovery';
+import { discoverControls, discoveryAlerts, discoveryScreenId, refSelector, scrollPage, scrollRoom } from './discovery';
 
 const actualPointers = new WeakMap<Page, { x: number; y: number }>();
 export const viewport = { width: 1280, height: 800 };
@@ -145,6 +145,8 @@ export interface BrowserObservation {
   screenId: string;
   viewport: { width: number; height: number };
   scroll: { x: number; y: number };
+  /** Whether scrolling would reveal more of the page; controls are only observed inside the viewport. */
+  canScroll: { up: boolean; down: boolean };
   coordinateSpace: 'css-pixels';
   controls: ObservedControl[];
   alerts: string[];
@@ -181,7 +183,8 @@ export async function captureObservation(page: Page, options: {
   async function sample() {
     const url = page.url();
     if (options.allowUrl && !options.allowUrl(url)) throw new Error(options.discover ? 'The app navigated outside the preview' : 'Prototype navigated outside the expected version/run routes');
-    const dimensions = await page.evaluate(() => ({ viewport: { width: innerWidth, height: innerHeight }, scroll: { x: scrollX, y: scrollY } }));
+    const dimensions = { ...await page.evaluate(() => ({ viewport: { width: innerWidth, height: innerHeight }, scroll: { x: scrollX, y: scrollY } })),
+      canScroll: await scrollRoom(page) };
     if (options.discover) {
       return { url, screenId: await discoveryScreenId(page), ...dimensions, coordinateSpace: 'css-pixels' as const,
         controls: await discoverControls(page), alerts: await discoveryAlerts(page) };
@@ -211,6 +214,7 @@ export async function execute(page: Page, action: Decision, registry?: ControlRe
   // Re-discover (and re-tag) right before acting: the model's choice must still name exactly one live control.
   validateDecision(action, discover ? await discoverControls(page) : await observeControls(page, registry), allowNavigation ?? (url => url === page.url()));
   if (action.type === 'stop') return undefined;
+  if (action.type === 'scroll') { await scrollPage(page, action.value); return undefined; }
   const byTestId = discover ? undefined : page.getByTestId(action.elementId);
   const target = discover ? page.locator(refSelector(action.elementId))
     : await byTestId!.count() ? byTestId! : page.locator(`[data-agent-id="${action.elementId}"]`);

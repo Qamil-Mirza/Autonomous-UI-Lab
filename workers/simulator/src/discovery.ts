@@ -115,6 +115,24 @@ const ALERTS = String.raw`(() => {
   return seen;
 })()`;
 
+/**
+ * Whether a wheel turn over the middle of the viewport would move anything, in each direction: the innermost
+ * scrollable box under that point (apps often scroll a container, not the document), then the document itself.
+ */
+const SCROLL_ROOM = String.raw`(() => {
+  var room = { up: false, down: false };
+  function check(el) {
+    if (el.scrollTop > 1) room.up = true;
+    if (el.scrollHeight - el.clientHeight - el.scrollTop > 1) room.down = true;
+  }
+  for (var el = document.elementFromPoint(innerWidth / 2, innerHeight / 2); el && el !== document.body && el !== document.documentElement; el = el.parentElement) {
+    var oy = getComputedStyle(el).overflowY;
+    if ((oy === 'auto' || oy === 'scroll' || oy === 'overlay') && el.scrollHeight > el.clientHeight + 1) check(el);
+  }
+  check(document.scrollingElement || document.documentElement);
+  return room;
+})()`;
+
 const READY = String.raw`(() => {
   var b = document.body;
   if (!b) return false;
@@ -134,6 +152,32 @@ export async function discoveryScreenId(page: Page): Promise<string> {
 
 export async function discoveryAlerts(page: Page): Promise<string[]> {
   return await page.evaluate(ALERTS) as string[];
+}
+
+/** Scroll offsets of the document and the boxes under the viewport's middle, to tell when a scroll has settled. */
+const SCROLL_MARK = String.raw`(() => {
+  var mark = [scrollX, scrollY];
+  for (var el = document.elementFromPoint(innerWidth / 2, innerHeight / 2); el; el = el.parentElement) mark.push(el.scrollTop);
+  return mark.join(',');
+})()`;
+
+/** Turns the mouse wheel over the middle of the viewport by most of a screen, as a person would, and waits for it to settle. */
+export async function scrollPage(page: Page, direction: 'up' | 'down'): Promise<void> {
+  const { width, height } = await page.evaluate('({ width: innerWidth, height: innerHeight })') as { width: number; height: number };
+  await page.mouse.move(width / 2, height / 2);
+  await page.mouse.wheel(0, Math.round(height * 0.8) * (direction === 'down' ? 1 : -1));
+  // The wheel scrolls asynchronously (and some apps animate it): wait until the offsets stop changing, bounded.
+  let last = '';
+  for (let i = 0; i < 20; i++) {
+    await page.waitForTimeout(50);
+    const mark = await page.evaluate(SCROLL_MARK) as string;
+    if (mark === last) return;
+    last = mark;
+  }
+}
+
+export async function scrollRoom(page: Page): Promise<{ up: boolean; down: boolean }> {
+  return await page.evaluate(SCROLL_ROOM) as { up: boolean; down: boolean };
 }
 
 /** Waits until the app rendered something and network activity has settled (bounded). */
