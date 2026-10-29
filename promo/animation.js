@@ -124,7 +124,7 @@ function build() {
   const frame = $('#frame');
   gsap.set(frame, { transformOrigin: '50% 50%' });
   gsap.set('#app .real>*, #app .chrome', { opacity: 0 });
-  gsap.set('#fix1,#fix2', { opacity: 0 });
+  gsap.set('#fix1,#fix2,#fix3', { opacity: 0 });
   gsap.set('#btn-pro', { border: '1.5px solid rgba(221,226,220,0)' });
 
   // ---- 0–3: Drop in your app ----
@@ -246,24 +246,23 @@ function build() {
   const PANEL = { x: 1660, y: 330 };
   gsap.set(panel, { left: PANEL.x, top: PANEL.y });
   const rectOf = el => ({ left: PANEL.x + el.offsetLeft, top: PANEL.y + el.offsetTop, width: el.offsetWidth, height: el.offsetHeight });
-  const F1 = rectOf($('#fix1')), F2 = rectOf($('#fix2')), AP = rectOf($('#approve'));
+  const F1 = rectOf($('#fix1')), F2 = rectOf($('#fix2')), F3 = rectOf($('#fix3')), AP = rectOf($('#approve'));
   const pinRect = id => { const el = $(id); return { left: el.offsetLeft, top: el.offsetTop, width: 46, height: 46 }; };
   tl.to(cam, { x: 1300, y: 610, z: .9, duration: .8, ease: 'expo.inOut' }, 17.3)
     .fromTo(panel, { x: 120, opacity: 0 }, { x: 0, opacity: 1, duration: .7, ease: 'expo.out' }, 17.6);
   [0, 1, 2].forEach((i, k) => { go(i, 17.35 + k * .08, .9, [[1790, 1960, 2130][k], 296], { bend: 90 }); tl.set(models[i], { z: 30 }, 17.3); });
   tl.to(models.slice(0, 3), { gx: 0, gy: 1, duration: .3 }, 18.3).to(models.slice(0, 3), { gx: -.4, gy: .9, duration: .3 }, 19.1);
   [0, 1, 2].forEach(i => mood(i, 17.5, 'calm'));
-  tl.to('#pin-c', { scale: 0, opacity: 0, duration: .25, ease: 'back.in(2)' }, 17.85)
-    .to('#loopback', { opacity: 0, duration: .3 }, 17.85)
-    .to('#pin-a em, #pin-b em', { opacity: 0, duration: .15 }, 17.95);
-  [['#blob1', '#pin-b', F1], ['#blob2', '#pin-a', F2]].forEach(([b, pin, R], k) => {
+  tl.to('#loopback', { opacity: 0, duration: .3 }, 17.85)
+    .to('#pin-a em, #pin-b em, #pin-c em', { opacity: 0, duration: .15 }, 17.95);
+  [['#blob1', '#pin-b', F1, '#fix1'], ['#blob2', '#pin-a', F2, '#fix2'], ['#blob3', '#pin-c', F3, '#fix3']].forEach(([b, pin, R, fx], k) => {
     const P = pinRect(pin), at = 18.0 + k * .1;
     tl.set(b, { ...P, borderRadius: 23, backgroundColor: '#ee7375', opacity: 1 }, at)
       .set(pin, { opacity: 0 }, at)
       .to(b, { left: R.left, duration: .7, ease: 'power3.inOut' }, at)
       .to(b, { top: R.top, duration: .7, ease: 'power2.inOut' }, at)
       .to(b, { width: R.width, height: R.height, borderRadius: 18, backgroundColor: '#2b3531', duration: .7, ease: 'expo.inOut' }, at)
-      .to(k ? '#fix2' : '#fix1', { opacity: 1, duration: .2 }, at + .62)
+      .to(fx, { opacity: 1, duration: .2 }, at + .62)
       .set(b, { opacity: 0 }, at + .8);
   });
   // Cursor arcs in, presses Approve.
@@ -284,6 +283,7 @@ function build() {
 
   // ---- 20.5–24.5: Fixes fly into the app; retest ----
   const FB = { left: APP.x + 112, top: APP.y + 564, width: 456, height: 58 };
+  const PB = { left: APP.x + 672, top: APP.y + 564, width: 456, height: 58 };
   [['#blob1', F1, '#fix1'], ['#blob2', F2, '#fix2']].forEach(([b, R, fx], k) => {
     const at = 20.55 + k * .1;
     tl.set(b, { ...R, borderRadius: 18, backgroundColor: '#2b3531', opacity: 1 }, at)
@@ -293,11 +293,19 @@ function build() {
       .to(b, { width: FB.width, height: FB.height, borderRadius: 13, backgroundColor: '#17201d', duration: .7, ease: 'expo.inOut' }, at)
       .set(b, { opacity: 0 }, 21.42);
   });
+  tl.set('#blob3', { ...F3, borderRadius: 18, backgroundColor: '#2b3531', opacity: 1 }, 20.75)
+    .set('#fix3', { opacity: 0 }, 20.75)
+    .to('#blob3', { left: PB.left, duration: .7, ease: 'power3.inOut' }, 20.75)
+    .to('#blob3', { top: PB.top, duration: .7, ease: 'power2.inOut' }, 20.75)
+    .to('#blob3', { width: PB.width, height: PB.height, borderRadius: 13, backgroundColor: '#ffffff', duration: .7, ease: 'expo.inOut' }, 20.75)
+    .set('#blob3', { opacity: 0 }, 21.47);
   tl.to(panel, { x: 140, opacity: 0, duration: .5, ease: 'power2.in' }, 20.85)
     .to(cam, { x: 900, y: 640, z: 1.02, duration: .9, ease: 'expo.inOut' }, 20.6)
     .to('#btn-free', { width: 456, backgroundColor: '#17201d', borderColor: '#17201d', color: '#ffffff', boxShadow: '0 8px 20px #17201d33', duration: .35, ease: 'expo.out' }, 21.3)
     .to('#btn-free .roll span', { y: -28, duration: .4, ease: 'back.out(2)' }, 21.32)
     .to('#btn-pro', { backgroundColor: '#ffffff', color: '#17201d', borderColor: 'rgba(221,226,220,1)', boxShadow: '0 0 0 #0000', duration: .35 }, 21.3)
+    .to('#btn-pro .roll span', { y: -28, duration: .4, ease: 'back.out(2)' }, 21.47)
+    .fromTo('#btn-pro', { scale: 1 }, { scale: 1.04, duration: .12, yoyo: true, repeat: 1, ease: 'power2.out', immediateRender: false }, 21.47)
     .fromTo('#btn-free', { scale: 1 }, { scale: 1.05, duration: .12, yoyo: true, repeat: 1, ease: 'power2.out' }, 21.32)
     .to('#pin-a, #pin-b', { opacity: 0, duration: .01 }, 21.3);
   // Testers glide straight to the now-obvious button, one after another, and press it.

@@ -61,6 +61,9 @@ if (mode === 'preview') { console.log(`Promo preview: ${url}`); } else {
         out.noStrays = [.5, 1.2, 2.5, 7.4, 10.4, 14.25].every(t => stray(t).length === 0);
         seekFilm(22.6); { const btn = document.querySelector('#btn-free').getBoundingClientRect(), lab = document.querySelector('#btn-free .roll span:last-child').getBoundingClientRect();
           out.labelCentered = Math.abs((lab.top + lab.height / 2) - (btn.top + btn.height / 2)) < 3 && Math.abs((lab.left + lab.width / 2) - (btn.left + btn.width / 2)) < 3; }
+        seekFilm(22.6); { const btn = document.querySelector('#btn-pro').getBoundingClientRect(), lab = document.querySelector('#btn-pro .roll span:last-child').getBoundingClientRect();
+          out.proRenamed = lab.top >= btn.top && lab.bottom <= btn.bottom && Math.abs((lab.left + lab.width / 2) - (btn.left + btn.width / 2)) < 3; }
+        seekFilm(20.3); out.threeFixes = ['#fix1', '#fix2', '#fix3'].every(s => +getComputedStyle(document.querySelector(s)).opacity > .9);
         seekFilm(29.5); out.brand = getComputedStyle(document.querySelector('#mark')).visibility === 'visible' && +getComputedStyle(document.querySelector('#tagline')).opacity > .9;
         return out;
       });
@@ -71,7 +74,7 @@ if (mode === 'preview') { console.log(`Promo preview: ${url}`); } else {
         world: document.querySelector('#world').style.transform,
         night: document.querySelector('#night').style.clipPath,
         ghosts: [...document.querySelectorAll('#ghosts .ghost')].map(g => [g.style.transform, g.style.opacity, g.style.zIndex, g.querySelector('.mouth').getAttribute('d'), g.querySelector('.body').getAttribute('d')]),
-        els: ['#frame', '#btn-free', '#btn-pro', '#panel', '#blob1', '#blob2', '#pin-a', '#pin-b', '#pin-c', '#cursor', '#o2', '#mark', '#mascot', '#tagline', '#score', '#zipfly', '#chip'].map(s => { const c = getComputedStyle(document.querySelector(s)); return [c.left, c.top, c.width, c.height, c.opacity, c.transform, c.backgroundColor, c.visibility].join('|'); }),
+        els: ['#frame', '#btn-free', '#btn-pro', '#panel', '#blob1', '#blob2', '#blob3', '#pin-a', '#pin-b', '#pin-c', '#cursor', '#o2', '#mark', '#mascot', '#tagline', '#score', '#zipfly', '#chip'].map(s => { const c = getComputedStyle(document.querySelector(s)); return [c.left, c.top, c.width, c.height, c.opacity, c.transform, c.backgroundColor, c.visibility].join('|'); }),
         caps: [...document.querySelectorAll('.caption')].map(c => getComputedStyle(c).visibility + getComputedStyle(c).opacity + [...c.querySelectorAll('.w>span')].map(w => w.style.transform).join()),
       }));
       for (const t of [4.35, 10.4, 14.25, 18.45, 21.45, 26.7]) {
