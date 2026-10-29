@@ -1,0 +1,61 @@
+// Captures the real GhostLoop dashboard + Matrix Coor prototype at 1440x900 (2x) and records element boxes for annotations.
+import { chromium } from 'playwright';
+import { writeFile } from 'node:fs/promises';
+const out = 'promo/launch/assets/ui';
+const b = await chromium.launch({channel:'chrome',headless:true,args:['--hide-scrollbars']});
+const p = await b.newPage({viewport:{width:1440,height:900},deviceScaleFactor:2});
+const boxes={};
+const box=async(name,loc)=>{const r=await loc.first().boundingBox().catch(()=>null);if(r)boxes[name]={x:+r.x.toFixed(1),y:+r.y.toFixed(1),w:+r.width.toFixed(1),h:+r.height.toFixed(1)};else console.warn('no box',name);};
+const shot=async n=>{await p.waitForTimeout(800);await p.screenshot({path:`${out}/${n}.png`});console.log('shot',n);};
+const live='http://localhost:5174/';
+await p.goto(live);await p.waitForTimeout(2500);await shot('landing');
+await box('landing.cta',p.getByText('Open dashboard'));
+await p.getByText('Open dashboard').first().click();await p.waitForTimeout(500);
+await p.getByRole('button',{name:'Start a new test'}).first().click();await shot('setup');
+await box('setup.task',p.locator('textarea').first());await box('setup.name',p.locator('input').nth(0));await box('setup.url',p.locator('input').nth(1));
+await box('setup.start',p.getByRole('button',{name:/Start/}).first());
+await box('setup.title',p.getByText('What should someone be able to do?'));
+// experiment with Matrix Coor trials
+await p.getByRole('button',{name:'Overview'}).first().click();await p.waitForTimeout(400);
+const row=p.locator('button.table-row',{hasText:'exp_2b70513fbcdd'});await row.scrollIntoViewIfNeeded();await row.click();await p.waitForTimeout(800);
+await shot('runs');
+await box('runs.metric',p.locator('text=/\\d+%/').first());await box('runs.metricCard',p.locator('text=/trials reached the goal/').first());
+await box('runs.trialList',p.getByText('Test trials').first());
+const t2=p.getByText(/Trial 02/).first();await t2.click();await p.waitForTimeout(400);
+for(let i=0;i<4;i++){await p.getByRole('button',{name:'Next'}).first().click();await p.waitForTimeout(250);}
+await shot('runs-trial');
+await box('runs.trial02',t2);await box('runs.replay',p.getByText(/Recorded screenshots|session replay/).first());await box('runs.timeline',p.getByText('Action timeline').first());
+await box('runs.step',p.locator('text=/Step \\d+ · /').first());await box('runs.next',p.getByRole('button',{name:'Next'}).first());
+const recBtn=p.getByRole('button',{name:'Recommendations'});await recBtn.first().click();await shot('recommendations');
+await box('rec.title',p.getByText('Where people may be getting stuck'));await box('rec.card01',p.getByText('01',{exact:true}).first());
+await box('rec.saw',p.getByText(/What we saw/i).first());await box('rec.suggest',p.getByText(/Suggested improvement/i).first());
+await box('rec.why',p.getByText(/Why this might help/i).first());await box('rec.review',p.getByRole('button',{name:'Review suggested improvements'}));
+await p.getByRole('button',{name:'Review suggested improvements'}).first().click();await shot('review');
+await box('review.title',p.getByText('Review suggested improvements').first());await box('review.before',p.getByText('Before',{exact:true}).first());await box('review.after',p.getByText('After',{exact:true}).first());
+await box('review.selected',p.getByText(/change selected/).first());await box('review.test',p.getByRole('button',{name:'Test the selected improvements'}));
+await box('review.keep',p.getByRole('button',{name:'Keep the current design'}));await box('review.visual',p.getByText('Current and updated version').first());
+await p.evaluate(()=>window.scrollTo(0,560));await shot('review-visual');
+await box('reviewVisual.current',p.getByText(/Current · /).first());await box('reviewVisual.updated',p.getByText(/Updated version to test/).first());
+await p.evaluate(()=>window.scrollTo(0,0));
+// sample results (offline dashboard)
+await p.goto('http://localhost:5176/');await p.waitForTimeout(3500);await p.getByText('Open dashboard').first().click();await p.waitForTimeout(300);
+await p.getByRole('button',{name:/Start/}).first().click();await p.waitForTimeout(2500);
+await p.getByRole('button',{name:'View recommendations'}).first().click();await p.waitForTimeout(400);
+await p.getByRole('button',{name:'Review suggested improvements'}).first().click();await p.waitForTimeout(400);
+await p.getByRole('button',{name:'Test the selected improvements'}).first().click();await p.waitForTimeout(2500);await shot('results');
+await box('results.title',p.getByText('How behavior changed'));await box('results.accepted',p.getByText('Accepted',{exact:true}).first());
+await box('results.original',p.getByText('Original',{exact:true}).first());await box('results.updated',p.getByText('Updated',{exact:true}).first());await box('results.change',p.getByText('Change',{exact:true}).first());
+await box('results.pp',p.getByText(/\+16\.7/).first());await box('results.table',p.getByText('What people did differently').first());
+await box('results.sample',p.getByText(/Sample comparison/i).first());await box('results.demo',p.getByText(/Demo · Sample data/).first());
+await box('results.promote',p.getByRole('button',{name:'Promote this version'}));
+// prototype
+const proto='http://localhost:5173/v/ver_baseline/';
+await p.goto(proto+'signup');await shot('proto-signup');
+await box('signup.name',p.locator('input').nth(0));await box('signup.email',p.locator('input').nth(1));await box('signup.password',p.locator('input').nth(2));await box('signup.terms',p.locator('input[type=checkbox]'));await box('signup.create',p.getByRole('button',{name:/Create account/}));
+await p.goto(proto+'workspace');await shot('proto-workspace');await box('workspace.name',p.locator('input').first());await box('workspace.continue',p.getByRole('button',{name:/Continue/}));
+await p.goto(proto+'plan');await shot('proto-plan');await box('plan.freeContinue',p.getByRole('button',{name:/Continue/}));await box('plan.proTrial',p.getByRole('button',{name:/Start free trial/}));await box('plan.freeCard',p.getByText('Free',{exact:true}).first());await box('plan.proCard',p.getByText('Pro',{exact:true}).first());
+await p.goto(proto+'invite');await shot('proto-invite');await box('invite.email',p.locator('input').first());await box('invite.send',p.getByRole('button',{name:/Send invite/}));
+await p.goto(proto+'confirm');await shot('proto-confirm');await box('confirm.title',p.getByText(/all set/));
+await writeFile(`${out}/boxes.json`,JSON.stringify(boxes,null,1));
+console.log(Object.keys(boxes).length,'boxes');
+await b.close();
