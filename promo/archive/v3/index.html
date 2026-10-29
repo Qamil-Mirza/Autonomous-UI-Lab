@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GhostLoop — Better before launch</title><link rel="stylesheet" href="style.css"></head><body>
+<main id="viewport"><div id="stage">
+<div id="backdrop"></div><div class="paper-texture"></div><div id="night-bloom"></div>
+<div id="floor-shadow"></div><div id="impact-ring"></div>
+<div id="caption-mask"><div id="captions"></div></div>
+<div id="world">
+<div id="housing"><div id="upload-face">
+<div class="upload-border"></div>
+<div id="upload-empty"><div class="upload-symbol"><svg viewBox="0 0 80 80"><path d="M40 51V15m-14 14 14-14 14 14M19 48v15h42V48" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div id="choose-file">Choose file <span>↗</span></div></div>
+<div id="upload-selected"><div class="upload-file-icon">&lt;/&gt;</div><b>app.tsx</b><span class="upload-check">✓</span><div class="upload-track"><i id="upload-progress"></i></div><div class="upload-status"><span id="uploading-label">Uploading…</span><span id="uploaded-label">Uploaded</span><span id="building-label">Building your app…</span></div></div>
+</div>
+<div id="app">
+<div class="chrome"><div class="traffic"><i></i><i></i><i></i></div><span>coor.app</span><div class="chrome-check">✓</div></div>
+<nav class="app-nav"><b>coor<span>.</span></b><div class="nav-active"></div><div class="nav-link n0"><span>◯</span>Account</div><div class="nav-link n1"><span>▦</span>Workspace</div><div class="nav-link n2"><span>◈</span>Plan</div></nav>
+<div class="workspace">
+<div class="app-page account"><div class="avatar">A</div><div class="mock-line wide"></div><div class="input-shape"><span>Alex</span><i>✓</i></div><div class="input-shape"><span>alex@example.com</span><i>✓</i></div><div class="next-button">Next <span>→</span></div></div>
+<div class="app-page team"><div class="team-tiles"><i></i><i></i><i></i></div><div class="mock-line wide"></div><div class="input-shape"><span>Ghost Studio</span><i>✓</i></div><div class="next-button">Next <span>→</span></div></div>
+<div class="app-page plans"><h3>Choose your plan.</h3><div class="plan-card plan-one"><div class="plan-old"><b>Pro</b><strong>$18</strong></div><div class="plan-new"><b>Free</b><strong>$0</strong></div><div class="feature-lines"><i></i><i></i></div><div class="plan-button"><span class="old-cta">Continue</span><span class="new-cta">Continue with Free</span><span class="button-arrow">→</span></div></div><div class="plan-card plan-two"><b class="second-old">Business</b><b class="second-new">Pro</b><strong class="second-old">$39</strong><strong class="second-new second-price">$18</strong><div class="feature-lines"><i></i><i></i></div><div class="plan-button">Continue <span>→</span></div></div><div class="free-link">or use Free</div></div>
+</div>
+<svg id="run-lines" viewBox="0 0 1120 620"><path id="bad-route" d="M180 220C380 150 380 500 590 450S880 270 950 420"/><path id="good-route" d="M180 460C340 460 360 360 500 360S760 360 900 360"/></svg>
+<div id="runners"></div><div id="friction-pins"><div class="friction-pin pin1">!</div><div class="friction-pin pin2">!</div><div class="friction-pin pin3">!</div></div>
+<div id="success"><span>✓</span><b>You’re in.</b></div>
+<div id="app-cursor"> </div>
+</div></div>
+<div id="upload-pointer"></div>
+<svg id="vortex" viewBox="0 0 1920 1080"><ellipse class="vortex-ring vr1" cx="960" cy="575" rx="630" ry="270"/><ellipse class="vortex-ring vr2" cx="960" cy="575" rx="520" ry="210"/><ellipse class="vortex-ring vr3" cx="960" cy="575" rx="390" ry="155"/></svg>
+<div id="swarm"></div><div id="personality-labels"></div>
+<div id="portal"><div></div><span></span></div>
+<div id="fixes"><div class="fix-chip fix-one"><i>◉</i>Show Free<span>↗</span></div><div class="fix-chip fix-two"><i>↗</i>Clear next step<span>↗</span></div></div>
+<div id="approve">✓ <span>Apply & retest</span></div><div id="approve-pointer"></div>
+<div id="score"><span class="score-before">3</span><span class="score-arrow">→</span><span class="score-after">1</span><small>friction points</small></div><div id="demo-note">Illustrative demo</div>
+<div id="outro"><div class="outro-ghost"></div><div class="outro-word">GhostLoop<span>.</span></div><div class="outro-tag">Better before launch.</div><div class="outro-orbit"></div></div>
+</div>
+</div></main>
+<div id="controls"><button id="play">Play</button><button id="replay">Replay</button><input id="seek" type="range" min="0" max="32" step="0.01" value="0" aria-label="Video position"><output id="time">0:00 / 0:32</output><label><input id="sound" type="checkbox" checked> Sound</label><a href="output/ghostloop-promo-v3.mp4">Download MP4</a></div>
+<audio id="audio" src="output/soundtrack-v3.wav" preload="auto"></audio>
+<script src="assets/gsap.min.js"></script><script src="characters.js"></script><script src="animation.js"></script></body></html>
