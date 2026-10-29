@@ -19,8 +19,8 @@ A 30-second, 1920×1080 / 30 fps film, animated with GSAP and rendered with FFmp
 | 6–9 | Ink wipe; three testers shoot up in front of the app with name chips; nine more pop in | Meet your testers. |
 | 9–12 | The swarm orbits in front of and behind the window, accelerates, and dives into the screen | AI users. Real browser. |
 | 12–17 | Camera whips between buttons: two testers bonk the loud paid-trial button, one hesitates on Free and goes back to compare; coral pins | See where they get stuck. |
-| 17–21 | Pins morph into two suggested fixes in the GhostLoop panel; the cursor approves | You approve every fix. |
-| 21–24.5 | The fixes fly into the Free button, which becomes primary; testers press it and celebrate; 3 → 0 stuck points | Then we test it again. |
+| 17–21 | The three pins morph into three suggested fixes in the GhostLoop panel; the cursor approves | You approve every fix. |
+| 21–24.5 | Two fixes fly into the Free button, which becomes primary "Continue with Free"; the third renames the paid button "Start Pro trial"; testers press Free and celebrate; 3 → 0 stuck points | Then we test it again. |
 | 24.5–30 | The window collapses into the coral loop; testers fly a figure-eight through the "oo"; mascot and tagline | ghostloop · Your first users, before your first real user. |
 
 The UI, friction points, and 3 → 0 count are illustrative, not measured performance claims. The film no longer carries an on-screen "Illustrative demo" label.
